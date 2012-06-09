@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fillViewport="true" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#000000" >
+
+        <!-- Header Starts -->
+
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dip" >
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="60dip"
+                android:background="@layout/login_header_logo"
+                android:gravity="center_vertical|center_horizontal"
+                android:padding="10dip"
+                android:text="@string/app_name"
+                android:textColor="#0000cc"
+                android:textSize="32dip" />
+        </LinearLayout>
+
+        <!-- Header Ends -->
+
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/header"
+            android:orientation="vertical"
+            android:padding="10dip" >
+
+            <TextView
+                android:id="@+id/server_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/server_address"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <EditText
+                android:id="@+id/server_address"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dip"
+                android:layout_marginTop="5dip"
+                android:inputType="text"
+                android:singleLine="true"
+                android:text="75.73.67.83">
+
+                <requestFocus />
+            </EditText>
+
+            <TextView
+                android:id="@+id/login_user_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/user_login"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <EditText
+                android:id="@+id/login_user"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dip"
+                android:layout_marginTop="5dip"
+                android:inputType="text"
+                android:singleLine="true" 
+                android:text="nperrier"/>
+
+            <TextView
+                android:id="@+id/login_password_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/user_password"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <EditText
+                android:id="@+id/login_password"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dip"
+                android:layout_marginTop="5dip"
+                android:inputType="textPassword"
+                android:singleLine="true" 
+                android:text="greenday94"/>
+
+            <Button
+                android:id="@+id/connect_button_label"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickConnect"
+                android:text="@string/connect_button" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</ScrollView>

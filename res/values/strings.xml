@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MainActivity</string>
+    <string name="app_name">Sockso</string>
+    <string name="server_address">Server:</string>
+    <string name="user_login">User:</string>
+    <string name="user_password">Password:</string>
+    <string name="connect_button">Connect</string>
+    <string name="port_number">Port:</string>
 </resources>
