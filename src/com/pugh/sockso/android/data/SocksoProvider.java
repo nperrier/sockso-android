@@ -18,7 +18,7 @@ public class SocksoProvider extends ContentProvider {
 	private SocksoDB mDB;
 
 	private static final String AUTHORITY = "com.pugh.sockso.android.data.SocksoProvider";
-	private static final Uri    CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+	public  static final Uri    CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 	
 	public static final int ARTISTS_CODE    	   = 100;
 	public static final int ARTISTS_ID_CODE 	   = 101;
@@ -81,7 +81,7 @@ public class SocksoProvider extends ContentProvider {
 
     	private Album() {}
        
-    	public static final String TABLE_NAME = "album";
+    	public static final String TABLE_NAME = "albums";
     	
     	// Columns:
     	public final class Columns implements BaseColumns {
@@ -209,15 +209,23 @@ public class SocksoProvider extends ContentProvider {
 			String[] selectionArgs, String sortOrder) {
 		
 		    SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-		    queryBuilder.setTables(Artist.TABLE_NAME);
 		 
 		    int uriType = sURIMatcher.match(uri);
 		    
 		    switch (uriType) {
+	    		case ARTISTS_CODE:
+	    		    queryBuilder.setTables(Artist.TABLE_NAME);
+		        break;
 		    	case ARTISTS_ID_CODE:
+				    queryBuilder.setTables(Artist.TABLE_NAME);
 		    		queryBuilder.appendWhere(Artist.Columns._ID + "=" + uri.getLastPathSegment());
 		        break;
-		    	case ARTISTS_CODE:
+		    	case ALBUMS_CODE:
+				    queryBuilder.setTables(Album.TABLE_NAME);
+		        break;
+		    	case ALBUMS_ID_CODE:
+				    queryBuilder.setTables(Album.TABLE_NAME);
+		    		queryBuilder.appendWhere(Album.Columns._ID + "=" + uri.getLastPathSegment());
 		        break;
 		    	default:
 		    		throw new IllegalArgumentException("Unknown URI");
@@ -226,6 +234,7 @@ public class SocksoProvider extends ContentProvider {
 		    Cursor cursor = queryBuilder.query(mDB.getReadableDatabase(),
 		            projection, selection, selectionArgs, null, null, sortOrder);
 		    cursor.setNotificationUri(getContext().getContentResolver(), uri);
+		    
 		    return cursor;
 		}
 

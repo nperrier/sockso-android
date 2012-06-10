@@ -14,9 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 
-import com.pugh.sockso.android.ArtistFragment;
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.TrackFragment;
 
 /**
  * Demonstrates combining a TabHost with a ViewPager to implement a tab UI that

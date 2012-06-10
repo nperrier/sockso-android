@@ -1,4 +1,4 @@
-package com.pugh.sockso.android;
+package com.pugh.sockso.android.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,7 +10,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-import com.pugh.sockso.android.activity.TabControllerActivity;
+import com.pugh.sockso.android.Config;
+import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.R.id;
+import com.pugh.sockso.android.R.layout;
 
 public class LoginActivity extends Activity {
 

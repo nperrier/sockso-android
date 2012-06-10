@@ -12,7 +12,7 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name" >
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.LoginActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,10 +28,12 @@
         </activity>
         <activity android:name=".activity.TrackListFragmentActivity" >
         </activity>
-        <activity android:name=".activity.ArtistActivity" >
-        </activity>
-        <activity android:name=".activity.AlbumActivity" >
-        </activity>
+
+        <provider
+            android:name=".data.SocksoProvider"
+            android:authorities="com.pugh.sockso.android.data.SocksoProvider"
+            android:multiprocess="true" >
+        </provider>
     </application>
 
 </manifest>

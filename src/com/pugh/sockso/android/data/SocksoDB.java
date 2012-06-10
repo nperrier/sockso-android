@@ -22,38 +22,48 @@ public class SocksoDB extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 
-		StringBuffer db_schema = new StringBuffer();
-		
-		// Albums Table
-		db_schema.append("CREATE TABLE ").append(Album.TABLE_NAME)
-				 .append(" (")
-		 		 .append(Album.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-		 		 .append(Album.Columns.NAME).append(" TEXT NOT NULL, ")
-		 		 .append(Album.Columns.YEAR).append(" INTEGER")
-		 		 .append(")");
+		StringBuffer table_albums  = new StringBuffer();
+		StringBuffer table_artists = new StringBuffer();
+		StringBuffer table_tracks  = new StringBuffer();
 		
 		// Artists table
-		db_schema.append("CREATE TABLE ").append(Artist.TABLE_NAME)
-		         .append(" (")
-				 .append(Artist.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-				 .append(Artist.Columns.NAME).append(" TEXT NOT NULL")
-				 .append(")");
+		table_artists.append("CREATE TABLE ").append(Artist.TABLE_NAME)
+					 .append(" (")
+					 .append(Artist.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					 .append(Artist.Columns.NAME).append(" TEXT NOT NULL")
+					 .append(")").append(";");
 
+		// Albums Table
+		table_albums.append("CREATE TABLE ").append(Album.TABLE_NAME)
+					.append(" (")
+					.append(Album.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					.append(Album.Columns.NAME).append(" TEXT NOT NULL, ")	
+					.append(Album.Columns.YEAR).append(" INTEGER, ")
+					.append(Album.Columns.ARTIST_ID).append(" INTEGER, ")
+					.append("FOREIGN KEY(").append(Album.Columns.ARTIST_ID).append(") REFERENCES ")
+					.append(Artist.TABLE_NAME).append("(").append(Artist.Columns._ID).append(") ")
+					.append(")").append(";");
+		
 		// TrackAPI Table
-		db_schema.append("CREATE TABLE ").append(Track.TABLE_NAME)
-			     .append(" (")
-				 .append(Track.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-				 .append(Track.Columns.ARTIST_ID).append(" TEXT NOT NULL, ") 
-				 .append(Track.Columns.ALBUM_ID).append(" INTEGER").append("), ")
-				 .append(Track.Columns.NAME).append(" TEXT NOT NULL, ")
-				 .append("FOREIGN KEY(").append(Track.Columns.ARTIST_ID).append(") REFERENCES ")
-				 .append(Artist.TABLE_NAME).append("(").append(Artist.Columns._ID).append("), ")
-				 .append("FOREIGN KEY(").append(Track.Columns.ALBUM_ID).append(") REFERENCES ")
-				 .append(Album.TABLE_NAME).append("(").append(Album.Columns._ID).append(")")
-				 .append(")");
+		table_tracks.append("CREATE TABLE ").append(Track.TABLE_NAME)
+					.append(" (")
+					.append(Track.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					.append(Track.Columns.NAME).append(" TEXT NOT NULL, ")
+					.append(Track.Columns.ARTIST_ID).append(" INTEGER, ")
+					.append(Track.Columns.ALBUM_ID).append(" INTEGER, ")
+					.append("FOREIGN KEY(").append(Track.Columns.ARTIST_ID).append(") REFERENCES ")
+					.append(Artist.TABLE_NAME).append("(").append(Artist.Columns._ID).append("), ")
+					.append("FOREIGN KEY(").append(Track.Columns.ALBUM_ID).append(") REFERENCES ")
+					.append(Album.TABLE_NAME).append("(").append(Album.Columns._ID).append(")")
+					.append(")").append(";");
 
-	    Log.i(DEBUG_TAG, "Creating database schema:\n" + db_schema.toString());
-		db.execSQL(db_schema.toString());
+	    Log.i(DEBUG_TAG, "Creating database schema:\n" + 
+	    		table_artists.toString() + "\n" +
+	    		table_albums.toString() + "\n" +
+	    		table_tracks.toString() + "\n");
+	    db.execSQL(table_artists.toString());
+	    db.execSQL(table_albums.toString());
+	    db.execSQL(table_tracks.toString());
 	}
 
 	@Override
@@ -64,8 +74,8 @@ public class SocksoDB extends SQLiteOpenHelper {
 	    
 		StringBuffer drop_schema = new StringBuffer();
 		
-		drop_schema.append("DROP TABLE IF EXISTS ").append(Album.TABLE_NAME).append(";")
-				   .append("DROP TABLE IF EXISTS ").append(Artist.TABLE_NAME).append(";")
+		drop_schema.append("DROP TABLE IF EXISTS ").append(Artist.TABLE_NAME).append(";")
+				   .append("DROP TABLE IF EXISTS ").append(Album.TABLE_NAME).append(";")
 				   .append("DROP TABLE IF EXISTS ").append(Track.TABLE_NAME).append(";");
 	    db.execSQL(drop_schema.toString());
 	    
