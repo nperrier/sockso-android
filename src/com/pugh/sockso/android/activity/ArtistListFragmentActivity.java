@@ -15,9 +15,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.music.Track;
+import com.pugh.sockso.android.music.Artist;
 
-public class TrackFragmentActivity extends FragmentActivity {
+public class ArtistListFragmentActivity extends FragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,22 +27,22 @@ public class TrackFragmentActivity extends FragmentActivity {
 
 		// Create the list fragment and add it as our sole content.
 		if (fm.findFragmentById(android.R.id.content) == null) {
-			TrackListFragment list = new TrackListFragment();
+			ArtistListFragment list = new ArtistListFragment();
 			fm.beginTransaction().add(android.R.id.content, list).commit();
 		}
 	}
 
-	public static class TrackListAdapter extends ArrayAdapter<Track> {
+	public static class ArtistListAdapter extends ArrayAdapter<Artist> {
 
 		private final Context context;
-		private final Track[] values;
+		private final Artist[] values;
 		
         private final LayoutInflater mInflater;
 		
-		public TrackListAdapter(Context context, Track[] tracks) {
-			super(context, R.layout.track_list_item, tracks);
+		public ArtistListAdapter(Context context, Artist[] artists) {
+			super(context, R.layout.artist_list_item, artists);
 			this.context = context;
-			this.values = tracks;
+			this.values = artists;
 			mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		}
 
@@ -50,43 +50,40 @@ public class TrackFragmentActivity extends FragmentActivity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View view;
 			if (convertView == null) {
-				view = mInflater.inflate(R.layout.track_list_item,
+				view = mInflater.inflate(R.layout.artist_list_item,
 						parent, false);
 			}
 			else{
 				view = convertView;
 			}
 
-			Track track = getItem(position);
+			Artist artist = getItem(position);
 			
-			TextView trackTitleText = (TextView) view.findViewById(R.id.track_title_text);
-			trackTitleText.setText(track.getTitle());
-
-			TextView artistTitleText = (TextView) view.findViewById(R.id.track_artist_text);
-			artistTitleText.setText(track.getArtist());
+			TextView artistTitleText = (TextView) view.findViewById(R.id.artist_name_text);
+			artistTitleText.setText(artist.getArtist());
 			
-			ImageView imageView = (ImageView) view.findViewById(R.id.track_cover_image);
-			imageView.setImageResource(R.drawable.icon);
+			//ImageView imageView = (ImageView) view.findViewById(R.id.artist_cover_image);
+			//imageView.setImageResource(R.drawable.icon);
 
             return view;
 		}
 	}
 
-	public static class TrackListFragment extends ListFragment {
+	public static class ArtistListFragment extends ListFragment {
 
-		private final static String TAG = TrackListFragment.class.getName();
+		private final static String TAG = ArtistListFragment.class.getName();
 
 		// This is the Adapter being used to display the list's data.
-		TrackListAdapter mTrackAdapter;
+		ArtistListAdapter mArtistAdapter;
 
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
 			
-			Track[] tracks = {
-					new Track("Robot Rock", "Human After All", "Daft Punk"),
-					new Track("Paperback Writer", "Rubber Soul", "Beatles"),
-					new Track("5 Years", "Ziggy Stardust", "David Bowie")
+			Artist[] artists = {
+					new Artist("Daft Punk"),
+					new Artist("Beatles"),
+					new Artist("David Bowie")
 			};
 
 			// Give some text to display if there is no data. In a real
@@ -94,8 +91,8 @@ public class TrackFragmentActivity extends FragmentActivity {
 			setEmptyText("No applications");
 
 			// Create an empty adapter we will use to display the loaded data.
-			mTrackAdapter = new TrackListAdapter(getActivity(), tracks);
-			setListAdapter(mTrackAdapter);
+			mArtistAdapter = new ArtistListAdapter(getActivity(), artists);
+			setListAdapter(mArtistAdapter);
 
 		}
 

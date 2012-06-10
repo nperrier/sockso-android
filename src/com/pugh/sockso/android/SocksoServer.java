@@ -242,7 +242,6 @@ public class SocksoServer {
 			response = httpClient.execute(httpGet);
 
 			// response headers
-
 			Log.i(TAG, "Http Response: " + response.toString());
 			Log.i(TAG, "Status: " + response.getStatusLine());
 			for (Header h : response.getAllHeaders()) {

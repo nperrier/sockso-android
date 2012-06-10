@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.music.Album;
 
-public class AlbumFragmentActivity extends FragmentActivity {
+public class AlbumListFragmentActivity extends FragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

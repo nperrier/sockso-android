@@ -45,14 +45,14 @@ public class TabControllerActivity extends FragmentActivity {
 		mTabsAdapter = new TabsAdapter(this, mTabHost, mViewPager);
 
 		mTabsAdapter.addTab(mTabHost.newTabSpec("tracks").setIndicator("Tracks"),
-				TrackFragmentActivity.TrackListFragment.class, null);
+				TrackListFragmentActivity.TrackListFragment.class, null);
 
 		mTabsAdapter.addTab(
 				mTabHost.newTabSpec("artists").setIndicator("Artists"),
-				ArtistFragmentActivity.ArtistListFragment.class, null);
+				ArtistListFragmentActivity.ArtistListFragment.class, null);
 
 		mTabsAdapter.addTab(mTabHost.newTabSpec("albums")
-				.setIndicator("Albums"), AlbumFragmentActivity.AlbumListFragment.class, null);
+				.setIndicator("Albums"), AlbumListFragmentActivity.AlbumListFragment.class, null);
 
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
