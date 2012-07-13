@@ -11,7 +11,7 @@ import android.util.Log;
 
 public class SocksoDB extends SQLiteOpenHelper {
 
-	private static final String DEBUG_TAG  = SocksoDB.class.getName();
+	private static final String TAG  = SocksoDB.class.getName();
 	private static final int    DB_VERSION = 1;
 	private static final String DB_NAME    = "sockso.db";
 	
@@ -57,10 +57,11 @@ public class SocksoDB extends SQLiteOpenHelper {
 					.append(Album.TABLE_NAME).append("(").append(Album.Columns._ID).append(")")
 					.append(")").append(";");
 
-	    Log.i(DEBUG_TAG, "Creating database schema:\n" + 
+	    Log.i(TAG, "Creating database schema:\n" + 
 	    		table_artists.toString() + "\n" +
 	    		table_albums.toString() + "\n" +
 	    		table_tracks.toString() + "\n");
+	    
 	    db.execSQL(table_artists.toString());
 	    db.execSQL(table_albums.toString());
 	    db.execSQL(table_tracks.toString());
@@ -69,7 +70,7 @@ public class SocksoDB extends SQLiteOpenHelper {
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		
-	    Log.w(DEBUG_TAG, "Upgrading database. Existing contents will be lost. ["
+	    Log.w(TAG, "Upgrading database. Existing contents will be lost. ["
 	            + oldVersion + "]->[" + newVersion + "]");
 	    
 		StringBuffer drop_schema = new StringBuffer();

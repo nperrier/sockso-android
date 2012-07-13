@@ -10,6 +10,10 @@ public class SocksoSyncService extends Service {
 	private static final Object sSyncAdapterLock = new Object();
 	private static SocksoSyncAdapter sSyncAdapter = null;
 
+	public SocksoSyncService(){
+		super();
+	}
+	
 	@Override
 	public void onCreate() {
 		synchronized (sSyncAdapterLock) {

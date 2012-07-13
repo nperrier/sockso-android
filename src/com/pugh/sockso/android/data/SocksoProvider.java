@@ -11,14 +11,17 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Log;
 
 
 public class SocksoProvider extends ContentProvider {
 
 	private SocksoDB mDB;
 
-	private static final String AUTHORITY = "com.pugh.sockso.android.data.SocksoProvider";
-	public  static final Uri    CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+	private static final String TAG = "SocksoProvider";
+	
+	public static final String AUTHORITY = "com.pugh.sockso.android.data.SocksoProvider";
+	public static final Uri    CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 	
 	public static final int ARTISTS_CODE    	   = 100;
 	public static final int ARTISTS_ID_CODE 	   = 101;
@@ -42,7 +45,7 @@ public class SocksoProvider extends ContentProvider {
 	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + AUTHORITY;
 
 	private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-	
+
 	static {
 	    sURIMatcher.addURI(AUTHORITY, Artist.TABLE_NAME, ARTISTS_CODE);
 	    sURIMatcher.addURI(AUTHORITY, Artist.TABLE_NAME + "/#", ARTISTS_ID_CODE);
@@ -137,6 +140,9 @@ public class SocksoProvider extends ContentProvider {
 	@Override
 	public boolean onCreate() {
 		mDB = new SocksoDB(getContext());
+		
+		Log.i(TAG, "onCreate() ran");
+		
 		return true;
 	}
 

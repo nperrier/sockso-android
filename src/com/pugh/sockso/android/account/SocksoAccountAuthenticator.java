@@ -5,20 +5,20 @@ import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.accounts.NetworkErrorException;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 
+import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.SocksoConfig;
+import com.pugh.sockso.android.activity.AccountFailActivity;
 import com.pugh.sockso.android.activity.LoginActivity;
+import com.pugh.sockso.android.data.SocksoProvider;
 
 /**
- * This class is an implementation of AbstractAccountAuthenticator for
- * authenticating accounts in the com.example.android.samplesync domain.
- * 
- * The interesting thing that this class demonstrates is the use of authTokens
- * as part of the authentication process.
- * 
  * In the account setup UI, the user enters their username and password.
  * 
  * But for our subsequent calls off to the service for syncing, we want to use
@@ -46,7 +46,6 @@ import com.pugh.sockso.android.activity.LoginActivity;
 public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 
 	private static final String TAG = SocksoAccountAuthenticator.class.getName();
-	private static final String PARAM_ACCOUNT_TYPE = "com.pugh.sockso.android.account";
 	private static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
 	
 	private Context mContext;
@@ -56,23 +55,61 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 		mContext = context;
 	}
 
+	// Called from the "Add Account" page in the Accounts setting
 	@Override
 	public Bundle addAccount(AccountAuthenticatorResponse response, String accountType, String authTokenType,
 			String[] requiredFeatures, Bundle options) throws NetworkErrorException {
-		Log.i(TAG, "Adding account");
-		
-		// call the activity to add a new account
-		final Intent intent = new Intent(mContext, LoginActivity.class);
-		
-		intent.putExtra(PARAM_AUTHTOKEN_TYPE, authTokenType);
-		intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
-		
-		final Bundle bundle = new Bundle();
-		bundle.putParcelable(AccountManager.KEY_INTENT, intent);
+		Log.i(TAG, "Adding Sockso account");
 
-		return bundle;
+		Bundle result = new Bundle();
+		
+		if(hasSocksoAccount(mContext)) { 
+			// Hey! We already have an account
+			Intent intent = new Intent(mContext, AccountFailActivity.class);
+			intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
+			result.putParcelable(AccountManager.KEY_INTENT, intent);
+		}
+		else {
+			// New accounts redirect to LoginActivity with Intent to create a new account
+			Intent intent = new Intent(mContext, LoginActivity.class);
+			intent.setAction("com.pugh.sockso.android.activity.LOGIN");
+			intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
+			result.putParcelable(AccountManager.KEY_INTENT, intent);			
+		}			
+		
+		return result;
 	}
 
+	// LoginTask calls this one
+	public static void addAccount(Context context, SocksoConfig config, Parcelable response) {
+		
+		Log.i(TAG, "Adding Sockso account explicitly");
+		
+		Bundle result = null;
+		
+		Account account = new Account(config.getUser(), context.getString(R.string.ACCOUNT_TYPE));
+		AccountManager am = AccountManager.get(context);
+		// TODO store a hashed password 
+		// String hashedPassword = MD5.getInstance().hash(config.getPassword());
+		
+	    final Bundle extraData = new Bundle();
+	    extraData.putString("server", config.getServer());
+	    extraData.putString("port", Integer.valueOf(config.getPort()).toString() ); // I wish I could just use putInt()...
+	    
+		if (am.addAccountExplicitly(account, config.getPassword(), extraData)) {
+			result = new Bundle();
+			result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+			result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+		}
+		
+		AccountAuthenticatorResponse authResponse = (AccountAuthenticatorResponse) response;
+		
+		if(authResponse != null){
+			authResponse.onResult(result);
+		}
+		
+	}
+	
 	@Override
 	public Bundle confirmCredentials(AccountAuthenticatorResponse response, Account account, Bundle options)
 			throws NetworkErrorException {
@@ -89,7 +126,8 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	@Override
 	public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account, String authTokenType,
 			Bundle options) throws NetworkErrorException {
-
+		Log.i(TAG, "getAuthToken() ran");
+		
 		// bad auth token type
 		if (!authTokenType.equals(PARAM_AUTHTOKEN_TYPE)) {
 			final Bundle result = new Bundle();
@@ -100,17 +138,17 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 		final AccountManager accountManager = AccountManager.get(mContext);
 		final String password = accountManager.getPassword(account);
 
-		// checks if the account is validt and get auth token
+		// checks if the account is valid and get auth token
 		if (password != null) {
 			boolean verified = true;
 			
 			//callSomeLoginServiceThatReturnsTrueIfValid(account.name, password);
-			String authToken = "ABCDEF0123456789";
+			String authToken = "ABCDEF0123456789"; // TODO
 			
 			if (verified) {
 				final Bundle result = new Bundle();
 				result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-				result.putString(AccountManager.KEY_ACCOUNT_TYPE, PARAM_ACCOUNT_TYPE);
+				result.putLong(AccountManager.KEY_ACCOUNT_TYPE, R.string.ACCOUNT_TYPE);
 				result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
 				return result;
 			}
@@ -126,6 +164,15 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 		return bundle;
 	}
 
+	public static Boolean hasSocksoAccount(Context context) {
+		AccountManager am = AccountManager.get(context);
+		Account[] accounts = am.getAccountsByType(context.getString(R.string.ACCOUNT_TYPE));
+		if(accounts != null && accounts.length > 0)
+			return true;
+		else
+			return false;
+	}
+	
 	@Override
 	public String getAuthTokenLabel(String authTokenType) {
 		// TODO Auto-generated method stub

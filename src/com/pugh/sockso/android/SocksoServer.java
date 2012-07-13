@@ -37,21 +37,21 @@ public class SocksoServer {
 
 	private static SocksoServer instance;
 
-	private Config mConfig;
+	private SocksoConfig mConfig;
 	private String mAuthToken;
 	
-	private SocksoServer(Config config){
+	private SocksoServer(SocksoConfig config){
 		this.mConfig = config;
 	}
 
-	public static SocksoServer getInstance(Config config) {
+	public static SocksoServer getInstance(SocksoConfig config) {
 		if (instance == null) {
 			instance = new SocksoServer(config);
 		}
 		return instance;
 	}
 	
-	public Session authenticate(String username, String password) {
+	public SocksoSession authenticate(String username, String password) {
 
 		LoginAPI login = new LoginAPI(mConfig.getServer(), mConfig.getPort());
 		Uri uri = login.getLoginURI();
@@ -72,12 +72,12 @@ public class SocksoServer {
 			e.printStackTrace();
 		}
 
-		Session session = null;
+		SocksoSession session = null;
 		try {
 			HttpResponse response = doPost(httpPost);
 			if(response != null){
 				// TODO server has not implemented OAuth yet, so using dummy token
-				session = new Session(username, "authToken");
+				session = new SocksoSession(username, "authToken");
 			}
 		} catch (IOException e) {
 			Log.e(TAG, "IOException: " + e.getMessage());

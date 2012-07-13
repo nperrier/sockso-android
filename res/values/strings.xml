@@ -4,6 +4,9 @@
     <string name="server_address">Server:</string>
     <string name="user_login">User:</string>
     <string name="user_password">Password:</string>
-    <string name="connect_button">Connect</string>
+    <string name="login_button_text">Connect</string>
     <string name="port_number">Port:</string>
+    <string name="ACCOUNT_TYPE">com.pugh.sockso.account</string>
+    <string name="login_authenticating">Authenticating…</string>
+    <string name="common_ok">OK</string>
 </resources>

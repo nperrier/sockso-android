@@ -3,6 +3,7 @@ package com.pugh.sockso.android.activity;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -15,6 +16,7 @@ import android.widget.TabHost;
 import android.widget.TabWidget;
 
 import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 
 /**
  * Demonstrates combining a TabHost with a ViewPager to implement a tab UI that
@@ -34,7 +36,15 @@ public class TabControllerActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate ran");
 		
+		// Check if we have an account first
+		if( !SocksoAccountAuthenticator.hasSocksoAccount(getApplicationContext()) ){
+			Intent intent = new Intent(TabControllerActivity.this, LoginActivity.class);
+			//startActivityForResult(intent, NEW_ACCOUNT);
+			startActivity(intent);
+		}
+		
 		setContentView(R.layout.tab_host);
+		
 		mTabHost = (TabHost) findViewById(android.R.id.tabhost);
 		mTabHost.setup();
 
@@ -56,8 +66,10 @@ public class TabControllerActivity extends FragmentActivity {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
 		}
 
+		Log.i(TAG, "onCreate() ended");
 	}
-
+	
+	
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);

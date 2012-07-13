@@ -1,7 +1,7 @@
 package com.pugh.sockso.android;
 
 // represents a sockso configuration
-public class Config {
+public class SocksoConfig {
 
 	public static final int DEFAULT_PORT = 4444;
 	
@@ -10,21 +10,21 @@ public class Config {
 	private int    port = DEFAULT_PORT;	
 	private String password;
 
-	public Config(){}
+	public SocksoConfig(){}
 	
-	public Config(String server){
-		this(server, DEFAULT_PORT, null, null);
+	public SocksoConfig(String server){
+		this(null, null, server, DEFAULT_PORT);
 	}
 	
-	public Config(String server, int port){
-		this(server, port, null, null);
+	public SocksoConfig(String server, int port){
+		this(null, null, server, port);
 	}
 	
-	public Config(String server, String user, String password){
-		this(server, DEFAULT_PORT, user, password);
+	public SocksoConfig(String user, String password, String server){
+		this(user, password, server, DEFAULT_PORT);
 	}
 	
-	public Config(String server, int port, String user, String password){
+	public SocksoConfig(String user, String password, String server, int port){
 		this.server   = server;
 		this.port     = port;
 		this.user     = user;

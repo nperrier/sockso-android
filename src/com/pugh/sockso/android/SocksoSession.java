@@ -1,13 +1,12 @@
 package com.pugh.sockso.android;
 
-
 // Represents a Sockso session
-public class Session {
+public class SocksoSession {
 	
 	private String username;
 	private String sessionKey;
 	
-	public Session(String username, String sessionKey){
+	public SocksoSession(String username, String sessionKey){
 		this.username = username;
 		this.sessionKey = sessionKey;
 	}
@@ -28,4 +27,3 @@ public class Session {
 		this.username = username;
 	}
 }
-

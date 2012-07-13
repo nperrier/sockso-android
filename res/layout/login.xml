@@ -96,11 +96,10 @@
                 android:text="greenday94"/>
 
             <Button
-                android:id="@+id/connect_button_label"
+                android:id="@+id/login_button"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:onClick="onClickConnect"
-                android:text="@string/connect_button" />
+                android:text="@string/login_button_text" />
         </LinearLayout>
     </RelativeLayout>
 

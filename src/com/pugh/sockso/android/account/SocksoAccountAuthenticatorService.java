@@ -1,6 +1,5 @@
 package com.pugh.sockso.android.account;
 
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -12,6 +11,10 @@ public class SocksoAccountAuthenticatorService extends Service {
 
 	private SocksoAccountAuthenticator mAuthenticator;
 
+	public SocksoAccountAuthenticatorService(){
+		super();
+	}
+	
 	@Override
 	public void onCreate() {
 		if (Log.isLoggable(TAG, Log.VERBOSE)) {

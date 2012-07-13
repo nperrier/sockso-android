@@ -2,7 +2,7 @@ package com.pugh.sockso.android.api;
 
 import android.net.Uri;
 
-import com.pugh.sockso.android.Config;
+import com.pugh.sockso.android.SocksoConfig;
 
 public abstract class AbstractAPIMethod {
 	
