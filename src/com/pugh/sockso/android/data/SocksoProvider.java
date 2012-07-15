@@ -76,7 +76,9 @@ public class SocksoProvider extends ContentProvider {
     		private Columns() {}
 
     		// Columns:
+    		public static final String SERVER_ID = "server_id";
     		public static final String NAME = "name";
+    		
     	}
     }
   
@@ -90,7 +92,8 @@ public class SocksoProvider extends ContentProvider {
     	public final class Columns implements BaseColumns {
 
     		private Columns() {}
-
+    		
+    		public static final String SERVER_ID = "server_id";
     		public static final String NAME      = "name";
     		public static final String ARTIST_ID = "artist_id";
     		public static final String YEAR      = "year";
@@ -109,6 +112,7 @@ public class SocksoProvider extends ContentProvider {
     		private Columns() {}
 
     		// Columns:
+    		public static final String SERVER_ID = "server_id";
     		public static final String NAME      = "name";
     		public static final String ARTIST_ID = "artist_id";
     		public static final String ALBUM_ID  = "album_id";
@@ -131,11 +135,11 @@ public class SocksoProvider extends ContentProvider {
     		private Columns() {}
 
     		// Columns:
+    		public static final String SERVER_ID = "server_id";
     		public static final String NAME = "name";
     		public static final String USER_ID = "user_id";
     	}
     }
-	
 	
 	@Override
 	public boolean onCreate() {

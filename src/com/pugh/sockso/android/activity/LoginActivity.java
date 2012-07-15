@@ -20,7 +20,7 @@ import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 
 public class LoginActivity extends Activity {
 
-	private final static String TAG = LoginActivity.class.getName();
+	private final static String TAG = "LoginActivity";
 
 	public static final String LOGIN_INTENT    = "com.pugh.sockso.android.activity.LOGIN";
 	public static final String LOGIN_PREFS     = "sockso-login-preferences";

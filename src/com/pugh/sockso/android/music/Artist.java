@@ -1,33 +1,36 @@
 package com.pugh.sockso.android.music;
 
-import java.util.List;
 
 public class Artist {
 
-	private String artist;
-	private List<Album> albums;
-
+	private int id = 0;
+	private String name;
+	
 	public Artist() {
 	}
 
-	public Artist(String artist) {
-		this.artist = artist;
+	public Artist(String name) {
+		this.name = name;
 	}
 
-	public String getArtist() {
-		return artist;
+	public int getId() {
+		return id;
 	}
 
-	public void setArtist(String artist) {
-		this.artist = artist;
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
 	}
 
-	public List<Album> getAlbums() {
-		return albums;
+	public void setName(String name) {
+		this.name = name;
 	}
-
-	public void setAlbums(List<Album> albums) {
-		this.albums = albums;
-	}
-
+	
+	@Override
+	public String toString(){
+		return this.name;
+	}	
 }

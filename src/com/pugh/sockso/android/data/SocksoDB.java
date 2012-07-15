@@ -11,7 +11,7 @@ import android.util.Log;
 
 public class SocksoDB extends SQLiteOpenHelper {
 
-	private static final String TAG  = SocksoDB.class.getName();
+	private static final String TAG  = "SocksoDB";
 	private static final int    DB_VERSION = 1;
 	private static final String DB_NAME    = "sockso.db";
 	
@@ -30,6 +30,7 @@ public class SocksoDB extends SQLiteOpenHelper {
 		table_artists.append("CREATE TABLE ").append(Artist.TABLE_NAME)
 					 .append(" (")
 					 .append(Artist.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					 .append(Artist.Columns.SERVER_ID).append(" INTEGER NOT NULL, ")					 
 					 .append(Artist.Columns.NAME).append(" TEXT NOT NULL")
 					 .append(")").append(";");
 
@@ -37,6 +38,7 @@ public class SocksoDB extends SQLiteOpenHelper {
 		table_albums.append("CREATE TABLE ").append(Album.TABLE_NAME)
 					.append(" (")
 					.append(Album.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					.append(Artist.Columns.SERVER_ID).append(" INTEGER NOT NULL, ")
 					.append(Album.Columns.NAME).append(" TEXT NOT NULL, ")	
 					.append(Album.Columns.YEAR).append(" INTEGER, ")
 					.append(Album.Columns.ARTIST_ID).append(" INTEGER, ")
@@ -44,10 +46,11 @@ public class SocksoDB extends SQLiteOpenHelper {
 					.append(Artist.TABLE_NAME).append("(").append(Artist.Columns._ID).append(") ")
 					.append(")").append(";");
 		
-		// TrackAPI Table
+		// TrackAPIBuilder Table
 		table_tracks.append("CREATE TABLE ").append(Track.TABLE_NAME)
 					.append(" (")
 					.append(Track.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					.append(Artist.Columns.SERVER_ID).append(" INTEGER NOT NULL, ")
 					.append(Track.Columns.NAME).append(" TEXT NOT NULL, ")
 					.append(Track.Columns.ARTIST_ID).append(" INTEGER, ")
 					.append(Track.Columns.ALBUM_ID).append(" INTEGER, ")
@@ -70,17 +73,19 @@ public class SocksoDB extends SQLiteOpenHelper {
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		
-	    Log.w(TAG, "Upgrading database. Existing contents will be lost. ["
-	            + oldVersion + "]->[" + newVersion + "]");
+	    //Log.w(TAG, "Upgrading database. Existing contents will be lost. ["
+	    //        + oldVersion + "]->[" + newVersion + "]");
 	    
-		StringBuffer drop_schema = new StringBuffer();
+		//StringBuffer drop_schema = new StringBuffer();
 		
-		drop_schema.append("DROP TABLE IF EXISTS ").append(Artist.TABLE_NAME).append(";")
-				   .append("DROP TABLE IF EXISTS ").append(Album.TABLE_NAME).append(";")
-				   .append("DROP TABLE IF EXISTS ").append(Track.TABLE_NAME).append(";");
-	    db.execSQL(drop_schema.toString());
+		// TODO Probably should have migrator class to handle upgrades between versions,  but
+		// for now wiping out the db and re-populating is safest (data should be read-only anyway)
+		//drop_schema.append("DROP TABLE IF EXISTS ").append(Artist.TABLE_NAME).append(";")
+		//		   .append("DROP TABLE IF EXISTS ").append(Album.TABLE_NAME).append(";")
+		//		   .append("DROP TABLE IF EXISTS ").append(Track.TABLE_NAME).append(";");
+	    //db.execSQL(drop_schema.toString());
 	    
-	    onCreate(db);
+	    //onCreate(db);
 	}
 
 }

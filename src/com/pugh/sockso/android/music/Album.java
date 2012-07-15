@@ -1,26 +1,40 @@
 package com.pugh.sockso.android.music;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Album {
-	
-	private String title;
+
+	private int id = 0;
+	private String name;
+	private String image; // link to the cover of the album?
+
 	private String artist;
-	private List<Track> tracks;
-	
-	public Album(){}
-	
-	public Album(String title, String artist){
-		this.title = title;
-		this.artist = artist;
-	}
-	
-	public String getTitle() {
-		return title;
+	//private Artist artist;
+	private List<Track> tracks = new ArrayList<Track>();
+
+	public Album() {
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
+	public Album(String name, String artist) {
+		this.name = name;
+		this.artist = artist;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getArtist() {
@@ -38,8 +52,17 @@ public class Album {
 	public void setTracks(List<Track> tracks) {
 		this.tracks = tracks;
 	}
-	
-	
-	
 
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+
+	@Override
+	public String toString(){
+		return this.name;
+	}
 }

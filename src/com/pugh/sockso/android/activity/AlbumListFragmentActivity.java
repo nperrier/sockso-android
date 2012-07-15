@@ -69,7 +69,7 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 			Album album = getItem(position);
 			
 			TextView albumTitleText = (TextView) view.findViewById(R.id.album_title_text);
-			albumTitleText.setText(album.getTitle());
+			albumTitleText.setText(album.getName());
 
 			TextView artistTitleText = (TextView) view.findViewById(R.id.album_artist_text);
 			artistTitleText.setText(album.getArtist());
@@ -117,7 +117,7 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 		    setListAdapter(adapter);
 		}
 		
-		/*
+		
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
@@ -137,7 +137,7 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 			setListAdapter(mAlbumAdapter);
 
 		}
-		*/
+		
 
 		@Override
 		public void onSaveInstanceState(Bundle savedInstanceState) {

@@ -25,8 +25,8 @@ import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
  */
 public class TabControllerActivity extends FragmentActivity {
 
-	private final static String TAG = TabControllerActivity.class.getName();
-
+	private final static String TAG = TabControllerActivity.class.getSimpleName();
+	
 	TabHost mTabHost;
 	ViewPager mViewPager;
 	TabsAdapter mTabsAdapter;

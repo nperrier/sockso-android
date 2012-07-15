@@ -60,7 +60,7 @@ public class TrackListFragmentActivity extends FragmentActivity {
 			Track track = getItem(position);
 			
 			TextView trackTitleText = (TextView) view.findViewById(R.id.track_title_text);
-			trackTitleText.setText(track.getTitle());
+			trackTitleText.setText(track.getName());
 
 			TextView artistTitleText = (TextView) view.findViewById(R.id.track_artist_text);
 			artistTitleText.setText(track.getArtist());

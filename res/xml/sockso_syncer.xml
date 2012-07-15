@@ -3,5 +3,4 @@
 	android:accountType="com.pugh.sockso.account"
 	android:contentAuthority="com.pugh.sockso.android.data.SocksoProvider"
 	android:userVisible="true">
-
 </sync-adapter>

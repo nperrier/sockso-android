@@ -60,7 +60,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 			Artist artist = getItem(position);
 			
 			TextView artistTitleText = (TextView) view.findViewById(R.id.artist_name_text);
-			artistTitleText.setText(artist.getArtist());
+			artistTitleText.setText(artist.getName());
 			
 			//ImageView imageView = (ImageView) view.findViewById(R.id.artist_cover_image);
 			//imageView.setImageResource(R.drawable.icon);
@@ -80,6 +80,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
 			
+			// TODO REMOVE TEST DATA
 			Artist[] artists = {
 					new Artist("Daft Punk"),
 					new Artist("Beatles"),

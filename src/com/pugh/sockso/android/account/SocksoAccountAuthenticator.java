@@ -45,8 +45,9 @@ import com.pugh.sockso.android.data.SocksoProvider;
  */
 public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 
-	private static final String TAG = SocksoAccountAuthenticator.class.getName();
+	private static final String TAG = "SocksoAccountAuthenticator";
 	private static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
+	public static final String  ACCOUNT_TYPE = "com.pugh.sockso.account";
 	
 	private Context mContext;
 
@@ -74,7 +75,7 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 			Intent intent = new Intent(mContext, LoginActivity.class);
 			intent.setAction("com.pugh.sockso.android.activity.LOGIN");
 			intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
-			result.putParcelable(AccountManager.KEY_INTENT, intent);			
+			result.putParcelable(AccountManager.KEY_INTENT, intent);
 		}			
 		
 		return result;
@@ -97,9 +98,15 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	    extraData.putString("port", Integer.valueOf(config.getPort()).toString() ); // I wish I could just use putInt()...
 	    
 		if (am.addAccountExplicitly(account, config.getPassword(), extraData)) {
+			
+			// Add the server and port number along with the account name and password:
 			result = new Bundle();
 			result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
 			result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+			
+			// Set sync enabled (if false, user must explicitly enable it through Account settings)
+			// TODO Might want to do a manual sync upon new account creation, so enable it later?
+			ContentResolver.setSyncAutomatically(account, SocksoProvider.AUTHORITY, true);
 		}
 		
 		AccountAuthenticatorResponse authResponse = (AccountAuthenticatorResponse) response;
