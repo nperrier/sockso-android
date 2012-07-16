@@ -1,52 +1,66 @@
 package com.pugh.sockso.android.api;
 
-public class ServerInfo {
+import org.json.JSONException;
+import org.json.JSONObject;
 
-	/*
-	 * {
-	 * "title":"Sockso",
-	 * "tagline":"Personal Music Server",
-	 * "version":"1.5.3",
-	 * "requiresLogin":"0"
-	 * }
-	 */
+public class ServerInfo {
 	
-	private String mTitle = "Sockso"; //default
-	private String mTagline = "Personal Music Server";
-	private String mVersion;  // server version (not client)
+	public static final String VERSION = "version";
+	public static final String TITLE   = "title";
+	public static final String TAGLINE = "tagline";
+	
+	private String title = "Sockso"; //default
+	private String tagline = "Personal Music Server";
+	private String version;  // server version (not client)
 	
 	public ServerInfo(String version){
-		this.setmVersion(version);
+		this.setVersion(version);
 	}
 	
 	public ServerInfo(String version, String title, String tagline){
-		this.setmVersion(version);
-		this.setmTitle(title);
-		this.setmTagline(tagline);
+		this.setVersion(version);
+		this.setTitle(title);
+		this.setTagline(tagline);
 	}
 
-	public String getmTitle() {
-		return mTitle;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setmTitle(String mTitle) {
-		this.mTitle = mTitle;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
-	public String getmTagline() {
-		return mTagline;
+	public String getTagline() {
+		return tagline;
 	}
 
-	public void setmTagline(String mTagline) {
-		this.mTagline = mTagline;
+	public void setTagline(String tagline) {
+		this.tagline = tagline;
 	}
 
-	public String getmVersion() {
-		return mVersion;
+	public String getVersion() {
+		return version;
 	}
 
-	public void setmVersion(String mVersion) {
-		this.mVersion = mVersion;
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	
+	/* {
+	 * "title":   "Sockso",
+	 * "tagline": "Personal Music Server",
+	 * "version": "1.5.3",
+	 * "requiresLogin": "0"
+	 * }
+	 */
+	public static ServerInfo fromJSON(JSONObject jsonObj) throws JSONException {
+
+		String version = jsonObj.getString(VERSION);
+		String title   = jsonObj.getString(TITLE);
+		String tagline = jsonObj.getString(TAGLINE);
+		
+		return new ServerInfo(version, title, tagline);
 	}
 	
 }

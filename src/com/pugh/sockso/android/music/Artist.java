@@ -1,7 +1,17 @@
 package com.pugh.sockso.android.music;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class Artist {
+
+	private static final String ID   = "id";
+	private static final String NAME = "name";
 
 	private int id = 0;
 	private String name;
@@ -32,5 +42,30 @@ public class Artist {
 	@Override
 	public String toString(){
 		return this.name;
-	}	
+	}
+
+	// Creates a single Artist object from a JSONObject
+	public static Artist fromJSON(JSONObject jsonObj) throws JSONException {
+
+		Artist artist = new Artist();
+		
+		artist.setId(jsonObj.getInt(ID));
+		artist.setName(jsonObj.getString(NAME));
+
+		return artist;
+	}
+
+	// Builds a list of Artist from a JSONArray
+	public static List<Artist> fromJSONArray(JSONArray jsonArray) throws JSONException {
+
+		List<Artist> artists = new ArrayList<Artist>();
+		
+		if (jsonArray != null) {
+			for (int i = 0; i < jsonArray.length(); i++) {
+				artists.add(fromJSON(jsonArray.getJSONObject(i)));
+			}
+		}
+
+		return artists;
+	}
 }

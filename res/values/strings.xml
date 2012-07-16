@@ -9,4 +9,6 @@
     <string name="ACCOUNT_TYPE">com.pugh.sockso.account</string>
     <string name="login_authenticating">Authenticating…</string>
     <string name="common_ok">OK</string>
+    <string name="album_image_description">Album Image</string>
+    <string name="track_image_description">Track Image</string>
 </resources>

@@ -1,9 +1,6 @@
 package com.pugh.sockso.android;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,6 +13,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,28 +23,20 @@ import android.util.Log;
 // Singleton
 public class SocksoServer implements ISocksoServer {
 
-	private static final String TAG = SocksoServer.class.getName();
+	private static final String TAG = SocksoServer.class.getSimpleName();
 	
-	private static SocksoServer instance;
 	private SocksoConfig mConfig;
-	//private String       mAuthToken; // Session TODO
-	private Uri.Builder  mRootUri;
+	//private String mAuthToken;   // TODO Session 
+	private final String mRootUrl;
 
-	private SocksoServer(final SocksoConfig config) {
+	// TODO Singleton?
+	public SocksoServer(final SocksoConfig config) {
 		this.mConfig = config;
-		mRootUri = Uri.parse("http://" + config.getServer() + ":" + config.getPort()).buildUpon();
+		mRootUrl = "http://" + config.getServer() + ":" + config.getPort();
 	}
 
-	// Singleton
-	public static synchronized SocksoServer getInstance(final SocksoConfig config) {
-		if (instance == null) {
-			instance = new SocksoServer(config);
-		}
-		return instance;
-	}
-
-	public Uri.Builder getRootUri() {
-		return mRootUri;
+	public String getRootUrl() {
+		return mRootUrl;
 	}
 
 	/*
@@ -89,7 +79,6 @@ public class SocksoServer implements ISocksoServer {
 	}
 
 	public String doGet(String url) throws IOException {
-
 		Log.d(TAG, "doGet() url: " + url);
 
 		String data = null;
@@ -101,6 +90,7 @@ public class SocksoServer implements ISocksoServer {
 			Log.e(TAG, "Bad URI: " + e.getMessage());
 			e.printStackTrace();
 		}
+		
 		HttpGet httpGet = new HttpGet(encodedUri);
 
 		HttpClient httpClient = new DefaultHttpClient();
@@ -123,10 +113,8 @@ public class SocksoServer implements ISocksoServer {
 		HttpEntity httpEntity = httpResponse.getEntity();
 
 		if (httpEntity != null) {
-
-			InputStream inputStream = httpEntity.getContent();
-			data = convertStreamToString(inputStream);
-
+			
+			data = EntityUtils.toString(httpEntity);
 			// clean the contents of the response
 			httpEntity.consumeContent();
 		}
@@ -158,29 +146,4 @@ public class SocksoServer implements ISocksoServer {
 	 * return response; }
 	 */
 	
-	private static String convertStreamToString(InputStream is) {
-
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-		StringBuilder sb = new StringBuilder();
-
-		String line = null;
-
-		try {
-			while ((line = reader.readLine()) != null) {
-				sb.append(line + "\n");
-			}
-		} catch (IOException e) {
-			Log.e(TAG, "Error coverting stream to String: " + e.getMessage());
-			e.printStackTrace();
-		} finally {
-			try {
-				is.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return sb.toString();
-	}
-
 }

@@ -59,13 +59,13 @@ public class TrackListFragmentActivity extends FragmentActivity {
 
 			Track track = getItem(position);
 			
-			TextView trackTitleText = (TextView) view.findViewById(R.id.track_title_text);
+			TextView trackTitleText = (TextView) view.findViewById(R.id.track_title_id);
 			trackTitleText.setText(track.getName());
 
-			TextView artistTitleText = (TextView) view.findViewById(R.id.track_artist_text);
+			TextView artistTitleText = (TextView) view.findViewById(R.id.track_artist_id);
 			artistTitleText.setText(track.getArtist());
 			
-			ImageView imageView = (ImageView) view.findViewById(R.id.track_cover_image);
+			ImageView imageView = (ImageView) view.findViewById(R.id.track_image_id);
 			imageView.setImageResource(R.drawable.icon);
 
             return view;

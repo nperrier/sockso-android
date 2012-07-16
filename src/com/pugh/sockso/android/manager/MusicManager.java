@@ -1,13 +1,15 @@
 package com.pugh.sockso.android.manager;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.content.ContentResolver;
+import android.content.Context;
 import android.util.Log;
 
 public class MusicManager {
 
-
     private static final String TAG = "MusicManager";
-
-	
 	
 	// This should be only run to populate the database
 	// the very first time
@@ -19,8 +21,7 @@ public class MusicManager {
 	public static void initLibrary(){
 		
 		Log.d(TAG, "initLibrary() ran");
-		
-		
+				
 	}
 	
     /**
@@ -35,19 +36,23 @@ public class MusicManager {
      * @return the server syncState that should be used in our next
      * sync request.
      */
+
 	/*
 	// small updates 
 	// called when onPerformSync() runs
 	public static synchronized long updateLibrary(Context context, String account,
-	            List<RawContact> rawContacts, long lastSyncMarker) {
+	        List<RawContact> rawContacts, long lastSyncMarker) {
 
+        	Log.d(TAG, "updateLibrary() ran");
+		
 	        long currentSyncMarker = lastSyncMarker;
+	        
 	        final ContentResolver resolver = context.getContentResolver();
+	        
 	        final BatchOperation batchOperation = new BatchOperation(context, resolver);
+	        
 	        final List<RawContact> newUsers = new ArrayList<RawContact>();
 
-	        Log.d(TAG, "updateLibrary() ran");
-	        
 	        for (final RawContact rawContact : rawContacts) {
 	        	
 	            // The server returns a syncState (x) value with each contact record.
@@ -67,6 +72,7 @@ public class MusicManager {
 	            // contains the correct serverId.
 	            final long rawContactId;
 	            final boolean updateServerId;
+	            
 	            if (rawContact.getRawContactId() > 0) {
 	                rawContactId = rawContact.getRawContactId();
 	                updateServerId = true;
@@ -75,6 +81,8 @@ public class MusicManager {
 	                rawContactId = lookupRawContact(resolver, serverContactId);
 	                updateServerId = false;
 	            }
+	            
+	            
 	            if (rawContactId != 0) {
 	                if (!rawContact.isDeleted()) {
 	                    updateContact(context, resolver, rawContact, updateServerId,
@@ -86,15 +94,18 @@ public class MusicManager {
 	                Log.d(TAG, "In addContact");
 	                if (!rawContact.isDeleted()) {
 	                    newUsers.add(rawContact);
-	                    addContact(context, account, rawContact, groupId, true, batchOperation);
+	                    addContact(context, account, rawContact,  true, batchOperation);
 	                }
 	            }
+	            
+	            
 	            // A sync adapter should batch operations on multiple contacts,
 	            // because it will make a dramatic performance difference.
 	            // (UI updates, etc)
 	            if (batchOperation.size() >= 50) {
 	                batchOperation.execute();
 	            }
+	            
 	        }
 	        
 	        batchOperation.execute();
@@ -102,7 +113,5 @@ public class MusicManager {
 	        return currentSyncMarker;
 	    }
 */
-		
-
 	
 }

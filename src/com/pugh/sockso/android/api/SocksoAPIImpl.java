@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.net.Uri;
+import android.util.Log;
 
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.music.Album;
@@ -25,129 +27,55 @@ public class SocksoAPIImpl implements ISocksoAPI {
 	private static final int DEFAULT_LIMIT = 100;
 	private static final int NO_LIMIT = -1;
 
-	private Uri.Builder mBaseApiUri;
-	private SocksoServer server; 	// dependency
+	private String mBaseApiUrl;
+	private SocksoServer mServer; 	// dependency
 
 	public SocksoAPIImpl(SocksoServer server) {
-		mBaseApiUri = server.getRootUri().path(API);
+		
+		mBaseApiUrl = server.getRootUrl();
+		mBaseApiUrl += "/" + API;
+
+		Log.d(TAG, "mBaseApiUri: " + mBaseApiUrl);
+		
+		mServer = server;
+		
 	}
 
 	// Will have to only support a minimum version of Sockso (1.6.0?) server
 	private class ServerInfoAPI {
+		
+		private final String mBaseUri;
 
-		private final Uri.Builder mBaseUri;
-
-		public ServerInfoAPI(Uri.Builder baseApiUri) {
+		public ServerInfoAPI(final String baseApiUri) {
 			this.mBaseUri = baseApiUri;
 		}
 
+		// /api
 		public String getServerInfo() {
-			return mBaseUri.build().toString();
+			return mBaseUri;
 		}
-	}
-
-	private class AlbumAPI {
-
-		private static final String ALBUMS = "albums";
-		private static final String TRACKS = "tracks";
-
-		private final Uri.Builder mBaseUri;
-
-		public AlbumAPI(Uri.Builder baseApiUri) {
-			this.mBaseUri = baseApiUri.path(ALBUMS);
-		}
-
-		// /api/albums/<id>
-		public String getAlbum(final String id) {
-			return mBaseUri.path(id).build().toString();
-		}
-
-		// /api/albums?limit=<limit>&offset=<offset>
-		public String getAlbums(final int limit, final int offset) {
-
-			Uri.Builder b = mBaseUri;
-
-			if (limit != DEFAULT_LIMIT) {
-				b.appendQueryParameter(LIMIT, Integer.toString(limit));
-			}
-
-			if (offset != 0) {
-				b.appendQueryParameter(OFFSET, Integer.toString(offset));
-			}
-
-			return b.build().toString();
-		}
-
-		// /api/albums?limit=-1
-		public String getAlbums() {
-			return getAlbums(NO_LIMIT, 0);
-		}
-
-		// /api/albums/<id>/tracks
-		public String getTracks(final String id) {
-			return mBaseUri.path(id).path(TRACKS).build().toString();
-		}
-
-	}
-
-	private class TrackAPI {
-
-		private static final String TRACKS = "tracks";
-
-		private final Uri.Builder mBaseUri;
-
-		public TrackAPI(Uri.Builder baseApiUri) {
-			this.mBaseUri = baseApiUri.path(TRACKS);
-		}
-
-		// /api/tracks/<id>
-		public String getTrack(final String id) {
-			return mBaseUri.path(id).build().toString();
-		}
-
-		// /api/tracks?limit=<limit>&offset=<offset>
-		public String getTracks(final int limit, final int offset) {
-
-			Uri.Builder b = mBaseUri;
-
-			if (limit != DEFAULT_LIMIT) {
-				b.appendQueryParameter(LIMIT, Integer.toString(limit));
-			}
-
-			if (offset != 0) {
-				b.appendQueryParameter(OFFSET, Integer.toString(offset));
-			}
-
-			return b.build().toString();
-		}
-
-		// /api/tracks?limit=-1
-		public String getTracks() {
-			return getTracks(NO_LIMIT, 0);
-		}
-
 	}
 
 	private class ArtistAPI {
 
-		private static final String ARTISTS = "artists";
-		private static final String TRACKS = "tracks";
+		public static final String ARTISTS = "artists";
+		public static final String TRACKS = "tracks";
 
-		private final Uri.Builder mBaseUri;
+		private final String mBaseUri;
 
-		public ArtistAPI(Uri.Builder baseApiUri) {
-			this.mBaseUri = baseApiUri.path(ARTISTS);
+		public ArtistAPI(final String baseApiUri) {
+			mBaseUri = baseApiUri + "/" + ARTISTS;
 		}
 
 		// /api/artists/$ID - ArtistAPI $ID
 		public String getArtist(final String id) {
-			return mBaseUri.path(id).build().toString();
+			return mBaseUri + "/" + id;
 		}
 
 		// /api/artists?limit=<limit>&offset=<offset>
 		public String getArtists(final int limit, final int offset) {
 
-			Uri.Builder b = mBaseUri;
+			Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
 
 			if (limit != DEFAULT_LIMIT) {
 				b.appendQueryParameter(LIMIT, Integer.toString(limit));
@@ -167,11 +95,92 @@ public class SocksoAPIImpl implements ISocksoAPI {
 
 		// /api/artists/<id>/tracks
 		public String getTracks(final String id) {
-			return mBaseUri.path(id).path(TRACKS).build().toString();
+			return mBaseUri + "/" + id + "/" + TRACKS;
 		}
 
 	}
 
+	private class AlbumAPI {
+
+		public static final String ALBUMS = "albums";
+		public static final String TRACKS = "tracks";
+
+		private final String mBaseUri;
+
+		public AlbumAPI(final String baseApiUri) {
+			this.mBaseUri = baseApiUri + "/" + ALBUMS;
+		}
+
+		// /api/albums/<id>
+		public String getAlbum(final String id) {
+			return mBaseUri + "/" + id;
+		}
+
+		// /api/albums?limit=<limit>&offset=<offset>
+		public String getAlbums(final int limit, final int offset) {
+
+			Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
+
+			if (limit != DEFAULT_LIMIT) {
+				b.appendQueryParameter(LIMIT, Integer.toString(limit));
+			}
+
+			if (offset != 0) {
+				b.appendQueryParameter(OFFSET, Integer.toString(offset));
+			}
+
+			return b.build().toString();
+		}
+
+		// /api/albums?limit=-1
+		public String getAlbums() {
+			return getAlbums(NO_LIMIT, 0);
+		}
+
+		// /api/albums/<id>/tracks
+		public String getTracks(final String id) {
+			return mBaseUri + "/" + id + "/" + TRACKS;
+		}
+
+	}
+
+	private class TrackAPI {
+
+		public static final String TRACKS = "tracks";
+
+		private final String mBaseUri;
+
+		public TrackAPI(final String baseApiUri) {
+			this.mBaseUri = baseApiUri + "/" + TRACKS;
+		}
+
+		// /api/tracks/<id>
+		public String getTrack(final String id) {
+			return mBaseUri + "/" + id;
+		}
+
+		// /api/tracks?limit=<limit>&offset=<offset>
+		public String getTracks(final int limit, final int offset) {
+
+			Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
+
+			if (limit != DEFAULT_LIMIT) {
+				b.appendQueryParameter(LIMIT, Integer.toString(limit));
+			}
+
+			if (offset != 0) {
+				b.appendQueryParameter(OFFSET, Integer.toString(offset));
+			}
+
+			return b.build().toString();
+		}
+
+		// /api/tracks?limit=-1
+		public String getTracks() {
+			return getTracks(NO_LIMIT, 0);
+		}
+
+	}
 	// TODO - API method not currently supported
 	private class PlaylistAPI {
 
@@ -179,105 +188,119 @@ public class SocksoAPIImpl implements ISocksoAPI {
 		private static final String USER = "user";
 		private static final String SITE = "site";
 
-		private final Uri.Builder mBaseUri;
+		private final String mBaseUri;
 
-		public PlaylistAPI(Uri.Builder baseApiUri) {
-			this.mBaseUri = baseApiUri.path(PLAYLISTS);
+		public PlaylistAPI(final String baseApiUri) {
+			this.mBaseUri = baseApiUri + "/" +PLAYLISTS;
 		}
 
 		// /api/playlists?limit=-1
 		public String getPlaylists() {
-			return mBaseUri.appendQueryParameter(LIMIT, Integer.toString(NO_LIMIT)).build().toString();
+			return mBaseUri + "?" + LIMIT + "=" + NO_LIMIT;
 		}
 
 		// /api/playlists/<id>
 		public String getPlaylist(final String id) {
-			return mBaseUri.path(id).build().toString();
+			return mBaseUri + "/" + id;
 		}
 
 		// /api/playlists/site
 		public String getSitePlaylist() {
-			return mBaseUri.path(SITE).build().toString();
+			return mBaseUri + "/" + SITE;
 		}
 
 		// /api/playlists/user
 		public String getUserPlaylist() {
-			return mBaseUri.path(USER).build().toString();
+			return mBaseUri + "/" + USER;
 		}
 
 		// /api/playlists/user/<id>
 		public String getUserPlaylist(final int id) {
-			return mBaseUri.path(USER).path(Integer.toString(id)).build().toString();
+			return mBaseUri + "/" + USER + "/" + id;
 		}
 	}
 
-	public ServerInfo getServerInfo() throws IOException {
-
+	public ServerInfo getServerInfo() throws IOException, JSONException {
+		Log.d(TAG, "getServerInfo() ran");
+		
 		ServerInfo info = null;
-		ServerInfoAPI api = new ServerInfoAPI(mBaseApiUri);
+		ServerInfoAPI api = new ServerInfoAPI(mBaseApiUrl);
 
-		String data = server.doGet(api.getServerInfo());
-
+		String data = mServer.doGet(api.getServerInfo());
+		
+		info = ServerInfo.fromJSON(new JSONObject(data));
 		return info;
 	}
 
-	public Album getAlbum(final String id) throws IOException {
-
+	public Album getAlbum(final String id) throws IOException, JSONException {
+		Log.d(TAG, "getAlbum(id) ran");
+		
 		Album album = null;
-		AlbumAPI api = new AlbumAPI(mBaseApiUri);
+		AlbumAPI api = new AlbumAPI(mBaseApiUrl);
 
-		String data = server.doGet(api.getAlbum(id));
-
+		String data = mServer.doGet(api.getAlbum(id));
+		
+		album = Album.fromJSON(new JSONObject(data));
 		return album;
 	}
 
-	public List<Album> getAlbums() throws IOException {
-
+	public List<Album> getAlbums() throws IOException, JSONException {
+		Log.d(TAG, "getAlbums() ran");
+		
 		List<Album> albums = new ArrayList<Album>();
-		AlbumAPI api = new AlbumAPI(mBaseApiUri);
+		AlbumAPI api = new AlbumAPI(mBaseApiUrl);
 
-		String data = server.doGet(api.getAlbums());
-
+		String data = mServer.doGet(api.getAlbums());
+		
+		albums = Album.fromJSONArray(new JSONArray(data));
 		return albums;
 	}
 
-	public Artist getArtist(final String id) throws IOException {
-
+	public Artist getArtist(final String id) throws IOException, JSONException {
+		Log.d(TAG, "getArtist(id) ran");
+		
 		Artist artist = null;
-		ArtistAPI api = new ArtistAPI(mBaseApiUri);
+		ArtistAPI api = new ArtistAPI(mBaseApiUrl);
 
-		String data = server.doGet(api.getArtist(id));
+		String data = mServer.doGet(api.getArtist(id));
 
+		artist = Artist.fromJSON(new JSONObject(data));
 		return artist;
 	}
 
-	public List<Artist> getArtists() throws IOException {
-
+	public List<Artist> getArtists() throws IOException, JSONException {
+		Log.d(TAG, "getArtists() ran");
+		
 		List<Artist> artists = new ArrayList<Artist>();
-		ArtistAPI api = new ArtistAPI(mBaseApiUri);
+		ArtistAPI api = new ArtistAPI(mBaseApiUrl);
 
-		String data = server.doGet(api.getArtists());
+		String data = mServer.doGet(api.getArtists());
 
+		artists = Artist.fromJSONArray(new JSONArray(data));
 		return artists;
 	}
 
-	public Track getTrack(final String id) throws IOException {
-
+	public Track getTrack(final String id) throws IOException, JSONException {
+		Log.d(TAG, "getTrack(id) ran");
+		
 		Track track = null;
-		TrackAPI api = new TrackAPI(mBaseApiUri);
+		TrackAPI api = new TrackAPI(mBaseApiUrl);
 
-		String data = server.doGet(api.getTrack(id));
+		String data = mServer.doGet(api.getTrack(id));
 
+		track = Track.fromJSON(new JSONObject(data));
 		return track;
 	}
 
-	public List<Track> getTracks() throws IOException {
-
+	public List<Track> getTracks() throws IOException, JSONException {
+		Log.d(TAG, "getTracks() ran");
+		
 		List<Track> tracks = new ArrayList<Track>();
-		TrackAPI api = new TrackAPI(mBaseApiUri);
+		TrackAPI api = new TrackAPI(mBaseApiUrl);
 
-		String data = server.doGet(api.getTracks());
+		String data = mServer.doGet(api.getTracks());
 
+		tracks = Track.fromJSONArray(new JSONArray(data));
 		return tracks;
 	}
 

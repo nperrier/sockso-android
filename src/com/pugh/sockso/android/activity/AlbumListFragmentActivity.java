@@ -68,13 +68,13 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 
 			Album album = getItem(position);
 			
-			TextView albumTitleText = (TextView) view.findViewById(R.id.album_title_text);
+			TextView albumTitleText = (TextView) view.findViewById(R.id.album_title_id);
 			albumTitleText.setText(album.getName());
 
-			TextView artistTitleText = (TextView) view.findViewById(R.id.album_artist_text);
+			TextView artistTitleText = (TextView) view.findViewById(R.id.album_artist_id);
 			artistTitleText.setText(album.getArtist());
 			
-			ImageView imageView = (ImageView) view.findViewById(R.id.album_cover_image);
+			ImageView imageView = (ImageView) view.findViewById(R.id.album_image_id);
 			imageView.setImageResource(R.drawable.icon);
 
             return view;
@@ -98,10 +98,9 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 		public void onCreate(Bundle savedInstanceState) {
 		    super.onCreate(savedInstanceState);
 			Log.i(TAG, "onCreate() ran");
-		    // TODO How do I bind to a column that's in another table ref
-		    // by a foreign key?
+		    // TODO How do I bind to a column that's in another table ref/ by a foreign key?
 		    String[] uiBindFrom = { SocksoProvider.Album.Columns.NAME };
-		    int[]    uiBindTo   = { R.id.album_title_text }; 
+		    int[]    uiBindTo   = { R.id.album_title_id }; 
 		 
 		    getLoaderManager().initLoader(ALBUM_LIST_LOADER, null, this);
 		 

@@ -1,6 +1,6 @@
 package com.pugh.sockso.android.sync;
 
-import com.pugh.sockso.android.manager.MusicManager;
+import java.util.List;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -13,6 +13,15 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.pugh.sockso.android.SocksoConfig;
+import com.pugh.sockso.android.SocksoServer;
+import com.pugh.sockso.android.api.ISocksoAPI;
+import com.pugh.sockso.android.api.SocksoAPIImpl;
+import com.pugh.sockso.android.manager.MusicManager;
+import com.pugh.sockso.android.music.Album;
+import com.pugh.sockso.android.music.Artist;
+import com.pugh.sockso.android.music.Track;
+
 public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 
 	private static final String TAG = SocksoSyncAdapter.class.getName();
@@ -22,10 +31,12 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 
 	private AccountManager mAccountManager;
 	private ContentResolver mContentResolver;
+    private final Context mContext;
 
 	public SocksoSyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
-
+		
+		mContext = context;
 		mAccountManager = AccountManager.get(context);
 		mContentResolver = context.getContentResolver();
 	}
@@ -33,24 +44,27 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 	@Override
 	public void onPerformSync(Account account, Bundle extras, String authority, 
 			ContentProviderClient provider,	SyncResult syncResult) {
-
+		
 		Log.i(TAG, "onPerformSync() ran");
 		
 		Log.d(TAG, "account: " + account.name);
-
+		Log.d(TAG, "extras: " + extras.size());
+		for(String key : extras.keySet())
+			Log.d(TAG, "key: " + key + ", value: " + extras.get(key));
+		Log.d(TAG, "authority: " + authority);
+		Log.d(TAG, "provider: " + provider.getClass());
+		
 		String server = mAccountManager.getUserData(account, "server");
 		String port   = mAccountManager.getUserData(account, "port");
 
 		Log.d(TAG, "server: " + server);
 		Log.d(TAG, "port:   " + port);
-
-		Log.d(TAG, "extras: " + extras.size());
-		for(String key : extras.keySet()){
-			Log.d(TAG, "key: " + key + ", value: " + extras.get(key));
-		}
 		
-		Log.d(TAG, "authority: " + authority);
-		Log.d(TAG, "provider: " + provider.getClass());
+		// Consider putting all this stuff in the SocksoApp global class
+		SocksoConfig config = new SocksoConfig(server, Integer.parseInt(port));
+		SocksoServer socksoServer = new SocksoServer(config);
+		
+		ISocksoAPI socksoAPI = new SocksoAPIImpl(socksoServer);
 		
 		if(syncResult != null)
 			Log.d(TAG, "syncResult: " + syncResult.toString());	
@@ -65,9 +79,8 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 			// talk to our sample server.
 			// If we don't have an AuthToken yet, this could involve a
 			// round-trip to the server to request and AuthToken.
-			// final String authtoken =
-			// mAccountManager.blockingGetAuthToken(account,
-			// PARAM_AUTHTOKEN_TYPE, NOTIFY_AUTH_FAILURE);
+			
+			// final String authtoken = mAccountManager.blockingGetAuthToken(account, PARAM_AUTHTOKEN_TYPE, NOTIFY_AUTH_FAILURE);
 
 			// TODO 0 means we've never synced
 			if (lastSyncMarker != 0) {
@@ -77,17 +90,29 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 				// Update the local contacts database with the changes.
 				// updateContacts() returns a syncState value that indicates the
 				// high-water-mark for the changes we received.
-				// long newSyncState = ContactManager.updateContacts(mContext,
-				// account.name, updatedContacts, groupId, lastSyncMarker);
+				
+				// long newSyncState = ContactManager.updateContacts(mContext, account.name, updatedContacts, groupId, lastSyncMarker);
 
 				// Save off the new sync marker. On our next sync, we only want
-				// to receive
-				// things that have changed since this sync...
+				// to receive things that have changed since this sync...
 				long newSyncState = 1; // TODO Just to tell it we've synced before
 				setServerSyncMarker(account, newSyncState);
 			}
 			else {
-				Log.i(TAG, "onPerformSync(): First sync! Let's init that database");
+				Log.i(TAG, "onPerformSync(): First sync: Let's init that database");
+				
+				// Grab data from server
+				// TODO This is a rather naive approach.  At some point later,
+				// this should be moved into a class that handles batched data retrieval 
+				// and creates batches for the contentProvider in a more incremental manner
+				List<Artist> artists = socksoAPI.getArtists();
+				List<Album>  albums  = socksoAPI.getAlbums();
+				List<Track>  tracks  = socksoAPI.getTracks();
+				
+				Log.d(TAG, "artists.size(): " + artists.size());
+				Log.d(TAG, "albums.size():  " + albums.size());
+				Log.d(TAG, "tracks.size():  " + tracks.size());
+				
 				/*
 				 * Account account, 
 				 * Bundle extras, 
@@ -95,7 +120,9 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 				 * ContentProviderClient provider,	
 				 * SyncResult syncResult
 				 */
-				MusicManager.initLibrary();
+				
+				//MusicManager.initLibrary(mContext);
+				
 			}
 			
 		} catch (Exception e) {
@@ -127,8 +154,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 	 * @param marker The high-water-mark we want to save.
 	 */
 	private void setServerSyncMarker(Account account, long marker) {
-		// mAccountManager.setUserData(account, SYNC_MARKER_KEY,
-		// Long.toString(marker));
+		mAccountManager.setUserData(account, SYNC_MARKER_KEY, Long.toString(marker));
 	}
 
 }
