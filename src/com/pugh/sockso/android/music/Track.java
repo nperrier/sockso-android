@@ -7,18 +7,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Track {
+public class Track implements IMusicItem {
 
 	private static final String ID     = "id";
 	private static final String NAME   = "name";
 	private static final String ARTIST = "artist";
 	private static final String ALBUM  = "album";
-	
-	private int id;
+
+	private int id = 0; // local id
+	private int serverId = 0; // remote server id
 	private String name;
 	private int trackNumber;
 	private int duration;
-	private String image; // link to the cover of the album?
+	private String image; // link to the cover of the track?
+	private int albumId;
+	private int artistId;
 	//private Album album;
 	//private Artist artist;
 	private String album;
@@ -39,6 +42,14 @@ public class Track {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public int getServerId() {
+		return serverId;
+	}
+
+	public void setServerId(int serverId) {
+		this.serverId = serverId;
 	}
 
 	public String getName() {
@@ -89,6 +100,22 @@ public class Track {
 		this.image = image;
 	}
 
+	public int getAlbumId() {
+		return albumId;
+	}
+
+	public void setAlbumId(int albumId) {
+		this.albumId = albumId;
+	}
+
+	public int getArtistId() {
+		return artistId;
+	}
+
+	public void setArtistId(int artistId) {
+		this.artistId = artistId;
+	}
+
 	@Override
 	public String toString(){
 		return this.name;
@@ -112,7 +139,7 @@ public class Track {
 	public static Track fromJSON(JSONObject jsonObj) throws JSONException {
 
 		Track track = new Track();
-		track.setId(jsonObj.getInt(ID));
+		track.setServerId(jsonObj.getInt(ID));
 		track.setName(jsonObj.getString(NAME));
 
 		//ArtistBuilder artistBuilder = new ArtistBuilder();

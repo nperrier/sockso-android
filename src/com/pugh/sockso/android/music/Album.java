@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Album {
+public class Album implements IMusicItem {
 	
 	/*
 	 * "id": 483, 
@@ -21,10 +21,12 @@ public class Album {
 	private static final String NAME   = "name";
 	private static final String ARTIST = "artist";
 
-	private int id = 0;
+	private int id = 0; // local id
+	private int serverId = 0; // remote server id
 	private String name;
 	private String image; // link to the cover of the album?
 	private String artist;
+	private int    artistId = 0;
 	//private Artist artist;
 	//private List<Track> tracks = new ArrayList<Track>();
 
@@ -44,6 +46,14 @@ public class Album {
 		return id;
 	}
 
+	public int getServerId() {
+		return serverId;
+	}
+
+	public void setServerId(int serverId) {
+		this.serverId = serverId;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -60,6 +70,13 @@ public class Album {
 		this.artist = artist;
 	}
 	
+	public int getArtistId() {
+		return artistId;
+	}
+
+	private void setArtistId(int id) {
+		this.artistId = id;
+	}
 /*
 	public List<Track> getTracks() {
 		return tracks;
@@ -88,7 +105,7 @@ public class Album {
 
 		Album album = new Album();
 		
-		album.setId(jsonObj.getInt(ID));
+		album.setServerId(jsonObj.getInt(ID));
 		album.setName(jsonObj.getString(NAME));
 
 		//ArtistBuilder artistBuilder = new ArtistBuilder();
@@ -96,6 +113,7 @@ public class Album {
 		//album.setArtist(artist);
 		JSONObject artistJSON = jsonObj.getJSONObject(ARTIST);
 		album.setArtist(artistJSON.getString(NAME));
+		album.setArtistId(artistJSON.getInt(ID));
 		
 		//TrackBuilder trackBuilder = new TrackBuilder();
 		//List<Track> tracks = trackBuilder.buildList(jsonObject.getJSONArray(TRACKS_KEY));
@@ -130,5 +148,5 @@ public class Album {
 
 		return albums;
 	}
-
+	
 }

@@ -59,7 +59,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
 			Artist artist = getItem(position);
 			
-			TextView artistTitleText = (TextView) view.findViewById(R.id.artist_name_text);
+			TextView artistTitleText = (TextView) view.findViewById(R.id.artist_name_id);
 			artistTitleText.setText(artist.getName());
 			
 			//ImageView imageView = (ImageView) view.findViewById(R.id.artist_cover_image);

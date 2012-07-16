@@ -1,6 +1,8 @@
 package com.pugh.sockso.android.sync;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -17,9 +19,10 @@ import com.pugh.sockso.android.SocksoConfig;
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.api.ISocksoAPI;
 import com.pugh.sockso.android.api.SocksoAPIImpl;
-import com.pugh.sockso.android.manager.MusicManager;
+import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
+import com.pugh.sockso.android.music.IMusicItem;
 import com.pugh.sockso.android.music.Track;
 
 public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
@@ -113,6 +116,10 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 				Log.d(TAG, "albums.size():  " + albums.size());
 				Log.d(TAG, "tracks.size():  " + tracks.size());
 				
+				Map<String, List<? extends IMusicItem>> musicItems = new HashMap<String, List<? extends IMusicItem>>();
+				musicItems.put("artists", artists);
+				musicItems.put("albums", albums);
+				musicItems.put("tracks", tracks);
 				/*
 				 * Account account, 
 				 * Bundle extras, 
@@ -121,7 +128,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 				 * SyncResult syncResult
 				 */
 				
-				//MusicManager.initLibrary(mContext);
+				MusicManager.syncLibrary(mContext, musicItems);
 				
 			}
 			

@@ -6,7 +6,7 @@ import android.content.SharedPreferences.Editor;
 
 public class Preferences {
 
-	private static String PREFS_FILE = "socksoprefs";
+	private static String PREFS_FILE = "sockso.prefs";
 
 	private final SharedPreferences prefs;
 

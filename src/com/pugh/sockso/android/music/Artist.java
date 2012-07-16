@@ -8,12 +8,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class Artist {
+public class Artist implements IMusicItem {
 
 	private static final String ID   = "id";
 	private static final String NAME = "name";
 
-	private int id = 0;
+	private int id = 0; // local id
+	private int serverId = 0; // remote server id
 	private String name;
 	
 	public Artist() {
@@ -29,6 +30,14 @@ public class Artist {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public int getServerId() {
+		return serverId;
+	}
+
+	public void setServerId(int serverId) {
+		this.serverId = serverId;
 	}
 	
 	public String getName() {
@@ -49,7 +58,7 @@ public class Artist {
 
 		Artist artist = new Artist();
 		
-		artist.setId(jsonObj.getInt(ID));
+		artist.setServerId(jsonObj.getInt(ID));
 		artist.setName(jsonObj.getString(NAME));
 
 		return artist;
