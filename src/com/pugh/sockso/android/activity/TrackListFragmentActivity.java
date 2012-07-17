@@ -74,7 +74,7 @@ public class TrackListFragmentActivity extends FragmentActivity {
 
 	public static class TrackListFragment extends ListFragment {
 
-		private final static String TAG = TrackListFragment.class.getName();
+		private final static String TAG = TrackListFragment.class.getSimpleName();
 
 		// This is the Adapter being used to display the list's data.
 		TrackListAdapter mTrackAdapter;

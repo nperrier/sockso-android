@@ -125,7 +125,7 @@ public class MusicManager {
 	}
 
 	private static void addAlbum(Album album, Context context, ContentResolver resolver, BatchOperation batchOperation) {
-		Log.d(TAG, "addArtist() ran");
+		Log.d(TAG, "addAlbum() ran");
 
 		ContentValues contentValues = new ContentValues();
 
@@ -141,7 +141,7 @@ public class MusicManager {
 	}
 
 	private static void addTrack(Track track, Context context, ContentResolver resolver, BatchOperation batchOperation) {
-		Log.d(TAG, "addArtist() ran");
+		Log.d(TAG, "addTrack() ran");
 
 		ContentValues contentValues = new ContentValues();
 
@@ -152,7 +152,7 @@ public class MusicManager {
 		// TODO contentValues.put(SocksoProvider.Track.Columns.TRACK_NO,
 		// track.getTrackNumber());
 
-		Uri insertUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + SocksoProvider.Album.TABLE_NAME);
+		Uri insertUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + SocksoProvider.Track.TABLE_NAME);
 
 		ContentProviderOperation cpo = ContentProviderOperation.newInsert(insertUri).withValues(contentValues).build();
 		batchOperation.add(cpo);

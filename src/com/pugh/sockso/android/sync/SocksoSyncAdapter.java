@@ -131,7 +131,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 				MusicManager.syncLibrary(mContext, musicItems);
 				
 			}
-			
+	
 		} catch (Exception e) {
 			Log.e(TAG, "onPerformSync() caught Exception: " + e.getMessage());
 			e.printStackTrace();

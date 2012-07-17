@@ -71,7 +71,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
 	public static class ArtistListFragment extends ListFragment {
 
-		private final static String TAG = ArtistListFragment.class.getName();
+		private final static String TAG = ArtistListFragment.class.getSimpleName();
 
 		// This is the Adapter being used to display the list's data.
 		ArtistListAdapter mArtistAdapter;

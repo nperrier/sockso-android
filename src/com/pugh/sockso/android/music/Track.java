@@ -147,13 +147,15 @@ public class Track implements IMusicItem {
 		//track.setArtist(artist);
 		JSONObject artistJSON = jsonObj.getJSONObject(ARTIST);
 		track.setArtist(artistJSON.getString(NAME));
+		track.setArtistId(artistJSON.getInt(ID));
 		
 		//AlbumBuilder albumBuilder = new AlbumBuilder();
 		//Album album = albumBuilder.build(jsonObject.getJSONObject(ALBUM_KEY));
 		//track.setAlbum(album);
 		JSONObject albumJSON = jsonObj.getJSONObject(ALBUM);
 		track.setAlbum(albumJSON.getString(NAME));	
-
+		track.setAlbumId(albumJSON.getInt(ID));
+		
 		return track;
 	}
 

@@ -180,6 +180,7 @@ public class SocksoProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
+		Log.d(TAG, "insert() ran");
 		
 	    int uriType = sURIMatcher.match(uri);
 	    
@@ -236,6 +237,13 @@ public class SocksoProvider extends ContentProvider {
 		    	case ALBUMS_ID_CODE:
 				    queryBuilder.setTables(Album.TABLE_NAME);
 		    		queryBuilder.appendWhere(Album.Columns._ID + "=" + uri.getLastPathSegment());
+		        break;
+		    	case TRACKS_CODE:
+				    queryBuilder.setTables(Album.TABLE_NAME);
+		        break;
+		    	case TRACKS_ID_CODE:
+				    queryBuilder.setTables(Track.TABLE_NAME);
+		    		queryBuilder.appendWhere(Track.Columns._ID + "=" + uri.getLastPathSegment());
 		        break;
 		    	default:
 		    		throw new IllegalArgumentException("Unknown URI");

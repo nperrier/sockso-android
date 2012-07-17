@@ -84,7 +84,7 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 	public static class AlbumListFragment extends ListFragment 
 		implements LoaderManager.LoaderCallbacks<Cursor> {
 
-		private final static String TAG = AlbumListFragment.class.getName();
+		private final static String TAG = AlbumListFragment.class.getSimpleName();
 
 		// This is the Adapter being used to display the list's data.
 		AlbumListAdapter mAlbumAdapter;
