@@ -11,4 +11,7 @@
     <string name="common_ok">OK</string>
     <string name="album_image_description">Album Image</string>
     <string name="track_image_description">Track Image</string>
+    <string name="no_artists">No Artists Found</string>
+    <string name="no_albums">No Albums Found</string>
+    <string name="no_tracks">No Tracks Found</string>
 </resources>

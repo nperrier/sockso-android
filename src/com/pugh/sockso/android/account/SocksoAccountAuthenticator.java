@@ -107,6 +107,14 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 			// Set sync enabled (if false, user must explicitly enable it through Account settings)
 			// TODO Might want to do a manual sync upon new account creation, so enable it later?
 			ContentResolver.setSyncAutomatically(account, SocksoProvider.AUTHORITY, true);
+			
+			// This tells Android to run the sync as soon as possible (otherwise it waits about 15-20 seconds
+			// So for new accounts, we want to initialize the database immediately, otherwise the user
+			// will think the application is broken :(
+			// TODO consider using a dialog for the first sync that lets the user know that the sync is running
+			Bundle syncExtras = new Bundle();
+			syncExtras.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+			ContentResolver.requestSync(account, SocksoProvider.AUTHORITY, syncExtras);
 		}
 		
 		AccountAuthenticatorResponse authResponse = (AccountAuthenticatorResponse) response;

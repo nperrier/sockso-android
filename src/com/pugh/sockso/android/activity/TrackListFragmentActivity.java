@@ -1,21 +1,22 @@
 package com.pugh.sockso.android.activity;
 
-import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.music.Track;
+import com.pugh.sockso.android.data.SocksoProvider;
 
 public class TrackListFragmentActivity extends FragmentActivity {
 
@@ -32,71 +33,29 @@ public class TrackListFragmentActivity extends FragmentActivity {
 		}
 	}
 
-	public static class TrackListAdapter extends ArrayAdapter<Track> {
-
-		private final Context context;
-		private final Track[] values;
-		
-        private final LayoutInflater mInflater;
-		
-		public TrackListAdapter(Context context, Track[] tracks) {
-			super(context, R.layout.track_list_item, tracks);
-			this.context = context;
-			this.values = tracks;
-			mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			View view;
-			if (convertView == null) {
-				view = mInflater.inflate(R.layout.track_list_item,
-						parent, false);
-			}
-			else{
-				view = convertView;
-			}
-
-			Track track = getItem(position);
-			
-			TextView trackTitleText = (TextView) view.findViewById(R.id.track_title_id);
-			trackTitleText.setText(track.getName());
-
-			TextView artistTitleText = (TextView) view.findViewById(R.id.track_artist_id);
-			artistTitleText.setText(track.getArtist());
-			
-			ImageView imageView = (ImageView) view.findViewById(R.id.track_image_id);
-			imageView.setImageResource(R.drawable.icon);
-
-            return view;
-		}
-	}
-
-	public static class TrackListFragment extends ListFragment {
+	public static class TrackListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
 		private final static String TAG = TrackListFragment.class.getSimpleName();
 
-		// This is the Adapter being used to display the list's data.
-		TrackListAdapter mTrackAdapter;
+		private static final int TRACK_LIST_LOADER = 0x01;
+
+		private SimpleCursorAdapter mAdapter;
 
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			
-			Track[] tracks = {
-					new Track("Robot Rock", "Human After All", "Daft Punk"),
-					new Track("Paperback Writer", "Rubber Soul", "Beatles"),
-					new Track("5 Years", "Ziggy Stardust", "David Bowie")
-			};
 
-			// Give some text to display if there is no data. In a real
-			// application this would come from a resource.
-			setEmptyText("No applications");
+			String[] uiBindFrom = { SocksoProvider.Track.Columns.NAME };
+			int[] uiBindTo = { R.id.track_title_id };
 
-			// Create an empty adapter we will use to display the loaded data.
-			mTrackAdapter = new TrackListAdapter(getActivity(), tracks);
-			setListAdapter(mTrackAdapter);
+			getLoaderManager().initLoader(TRACK_LIST_LOADER, null, this);
 
+			mAdapter = new SimpleCursorAdapter(getActivity().getApplicationContext(), R.layout.track_list_item, null,
+					uiBindFrom, uiBindTo, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+
+			setListAdapter(mAdapter);
+
+			setEmptyText(getString(R.string.no_tracks));
 		}
 
 		@Override
@@ -109,6 +68,27 @@ public class TrackListFragmentActivity extends FragmentActivity {
 		public void onListItemClick(ListView l, View v, int position, long id) {
 			// Insert desired behavior here.
 			Log.i(TAG, "onListItemClick(): Item clicked: " + id);
+		}
+
+		@Override
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+			Log.i(TAG, "onCreateLoader() ran");
+
+			String[] projection = { SocksoProvider.Track.Columns._ID, SocksoProvider.Track.Columns.NAME };
+			Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + SocksoProvider.Track.TABLE_NAME);
+			CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, null);
+
+			return cursorLoader;
+		}
+
+		@Override
+		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+			mAdapter.swapCursor(cursor);
+		}
+
+		@Override
+		public void onLoaderReset(Loader<Cursor> loader) {
+			mAdapter.swapCursor(null);
 		}
 
 	}

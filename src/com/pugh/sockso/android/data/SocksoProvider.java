@@ -1,6 +1,5 @@
 package com.pugh.sockso.android.data;
 
-
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -13,12 +12,11 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
-
 public class SocksoProvider extends ContentProvider {
 
 	private SocksoDB mDB;
 
-	private static final String TAG = "SocksoProvider";
+	private static final String TAG = SocksoProvider.class.getSimpleName();
 	
 	public static final String AUTHORITY = "com.pugh.sockso.android.data.SocksoProvider";
 	public static final Uri    CONTENT_URI = Uri.parse("content://" + AUTHORITY);
@@ -210,7 +208,7 @@ public class SocksoProvider extends ContentProvider {
 	    		throw new IllegalArgumentException("Unknown or Invalid URI " + uri);
 	    }
 	    
-	    //getContext().getContentResolver().notifyChange(uri, null);
+	    getContext().getContentResolver().notifyChange(uri, null);
 	    
 		return Uri.withAppendedPath(uri, "/" + inserted_id);
 	}
@@ -239,7 +237,7 @@ public class SocksoProvider extends ContentProvider {
 		    		queryBuilder.appendWhere(Album.Columns._ID + "=" + uri.getLastPathSegment());
 		        break;
 		    	case TRACKS_CODE:
-				    queryBuilder.setTables(Album.TABLE_NAME);
+				    queryBuilder.setTables(Track.TABLE_NAME);
 		        break;
 		    	case TRACKS_ID_CODE:
 				    queryBuilder.setTables(Track.TABLE_NAME);
@@ -251,6 +249,7 @@ public class SocksoProvider extends ContentProvider {
 		 
 		    Cursor cursor = queryBuilder.query(mDB.getReadableDatabase(),
 		            projection, selection, selectionArgs, null, null, sortOrder);
+		    
 		    cursor.setNotificationUri(getContext().getContentResolver(), uri);
 		    
 		    return cursor;

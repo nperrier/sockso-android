@@ -98,7 +98,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 
 				// Save off the new sync marker. On our next sync, we only want
 				// to receive things that have changed since this sync...
-				long newSyncState = 1; // TODO Just to tell it we've synced before
+				long newSyncState = 1L; // TODO Just to tell it we've synced before
 				setServerSyncMarker(account, newSyncState);
 			}
 			else {
@@ -130,6 +130,8 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 				
 				MusicManager.syncLibrary(mContext, musicItems);
 				
+				long newSyncState = 1L; // TODO Just to tell it we've synced before
+				setServerSyncMarker(account, newSyncState);				
 			}
 	
 		} catch (Exception e) {
@@ -148,6 +150,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 	 */
 	private long getServerSyncMarker(Account account) {
 		String markerString = mAccountManager.getUserData(account, SYNC_MARKER_KEY);
+		Log.d(TAG, "getServerSyncMarker(): " + markerString);
 		if (!TextUtils.isEmpty(markerString)) {
 			return Long.parseLong(markerString);
 		}
@@ -161,6 +164,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 	 * @param marker The high-water-mark we want to save.
 	 */
 	private void setServerSyncMarker(Account account, long marker) {
+		Log.d(TAG, "setServerSyncMarker(): " + marker);
 		mAccountManager.setUserData(account, SYNC_MARKER_KEY, Long.toString(marker));
 	}
 
