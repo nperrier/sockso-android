@@ -1,5 +1,6 @@
 package com.pugh.sockso.android.activity;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -68,6 +69,16 @@ public class TrackListFragmentActivity extends FragmentActivity {
 		public void onListItemClick(ListView l, View v, int position, long id) {
 			// Insert desired behavior here.
 			Log.i(TAG, "onListItemClick(): Item clicked: " + id);
+            
+            // Start the PlayerActivity and send it the id
+            // of the track which the player activity will retrieve
+            // from the content provider and send to the player service
+            
+            Intent intent = new Intent(getActivity(), PlayerActivity.class);
+            intent.putExtra("track_id", id);
+            
+            //getActivity().startActivity(intent);
+            startActivity(intent);	
 		}
 
 		@Override
