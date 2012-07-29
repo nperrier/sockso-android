@@ -9,7 +9,7 @@ import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
 import com.pugh.sockso.android.music.Track;
 
-public interface ISocksoAPI {
+public interface SocksoAPI {
 
 	public ServerInfo getServerInfo() throws IOException, JSONException;
 

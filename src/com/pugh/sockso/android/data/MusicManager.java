@@ -12,7 +12,7 @@ import android.util.Log;
 
 import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
-import com.pugh.sockso.android.music.IMusicItem;
+import com.pugh.sockso.android.music.MusicItem;
 import com.pugh.sockso.android.music.Track;
 
 public class MusicManager {
@@ -27,7 +27,7 @@ public class MusicManager {
 	// It should run in its own loader task,
 	// and perform insertions in chunked batches
 	// retrieving the data should be done in chunks too (using offset)
-	public static void syncLibrary(final Context context, final Map<String, List<? extends IMusicItem>> musicItems) {
+	public static void syncLibrary(final Context context, final Map<String, List<? extends MusicItem>> musicItems) {
 		Log.d(TAG, "initLibrary() ran");
 
 		final ContentResolver resolver = context.getContentResolver();

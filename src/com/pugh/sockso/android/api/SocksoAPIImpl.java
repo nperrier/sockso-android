@@ -16,7 +16,7 @@ import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
 import com.pugh.sockso.android.music.Track;
 
-public class SocksoAPIImpl implements ISocksoAPI {
+public class SocksoAPIImpl implements SocksoAPI {
 
 	private static final String TAG = SocksoAPIImpl.class.getName();
 

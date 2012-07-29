@@ -24,7 +24,7 @@ import android.util.Log;
  import com.teleca.jamendo.R;
  */
 
-public class SocksoPlayer extends Service {
+public class Player extends Service {
 
 	@Override
 	public IBinder onBind(Intent arg0) {

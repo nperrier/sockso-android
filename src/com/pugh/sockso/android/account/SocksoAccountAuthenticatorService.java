@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class SocksoAccountAuthenticatorService extends Service {
 
-	private static final String TAG = "SocksoAccAuthService";
+	private static final String TAG = "SocksoAccAuthService"; // must be less than 25 chars for logcat
 
 	private SocksoAccountAuthenticator mAuthenticator;
 

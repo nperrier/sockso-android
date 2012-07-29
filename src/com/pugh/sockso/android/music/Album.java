@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Album implements IMusicItem {
+public class Album implements MusicItem {
 	
 	/*
 	 * "id": 483, 

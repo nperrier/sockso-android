@@ -45,7 +45,7 @@ import com.pugh.sockso.android.data.SocksoProvider;
  */
 public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 
-	private static final String TAG = "SocksoAccountAuthenticator";
+	private static final String TAG = "SocksoAccAuthenticator";
 	private static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
 	public static final String  ACCOUNT_TYPE = "com.pugh.sockso.account";
 	

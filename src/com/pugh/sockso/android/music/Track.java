@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Track implements IMusicItem {
+public class Track implements MusicItem {
 
 	private static final String ID     = "id";
 	private static final String NAME   = "name";

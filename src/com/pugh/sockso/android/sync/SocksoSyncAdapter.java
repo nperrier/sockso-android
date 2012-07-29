@@ -17,12 +17,12 @@ import android.util.Log;
 
 import com.pugh.sockso.android.Config;
 import com.pugh.sockso.android.SocksoServerImpl;
-import com.pugh.sockso.android.api.ISocksoAPI;
+import com.pugh.sockso.android.api.SocksoAPI;
 import com.pugh.sockso.android.api.SocksoAPIImpl;
 import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
-import com.pugh.sockso.android.music.IMusicItem;
+import com.pugh.sockso.android.music.MusicItem;
 import com.pugh.sockso.android.music.Track;
 
 public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
@@ -67,7 +67,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 		Config config = new Config(server, Integer.parseInt(port));
 		SocksoServerImpl socksoServer = new SocksoServerImpl(config);
 		
-		ISocksoAPI socksoAPI = new SocksoAPIImpl(socksoServer);
+		SocksoAPI socksoAPI = new SocksoAPIImpl(socksoServer);
 		
 		if(syncResult != null)
 			Log.d(TAG, "syncResult: " + syncResult.toString());	
@@ -116,7 +116,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 				Log.d(TAG, "albums.size():  " + albums.size());
 				Log.d(TAG, "tracks.size():  " + tracks.size());
 				
-				Map<String, List<? extends IMusicItem>> musicItems = new HashMap<String, List<? extends IMusicItem>>();
+				Map<String, List<? extends MusicItem>> musicItems = new HashMap<String, List<? extends MusicItem>>();
 				musicItems.put("artists", artists);
 				musicItems.put("albums", albums);
 				musicItems.put("tracks", tracks);

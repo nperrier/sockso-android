@@ -8,7 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class Artist implements IMusicItem {
+public class Artist implements MusicItem {
 
 	private static final String ID   = "id";
 	private static final String NAME = "name";
