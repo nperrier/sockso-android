@@ -17,16 +17,19 @@ import com.pugh.sockso.android.music.Track;
 
 public class MusicManager {
 
-	private static final String TAG = "MusicManager";
-	private static final int BATCH_MAX = 50;
+	private static final String TAG = MusicManager.class.getSimpleName();
+	
+	private static final int BATCH_MAX = 50;  // max size of inserts to database in one operation
 
-	// TODO This should be only run to populate the database
-	// the very first time
-	// This is going to be inserting a LOT of data, especially for
-	// users with large music libraries (read: me)
-	// It should run in its own loader task,
-	// and perform insertions in chunked batches
-	// retrieving the data should be done in chunks too (using offset)
+	/** TODO This should be only run to populate the database the very first time.
+	 * 
+	 * This is going to be inserting a LOT of data, especially for users 
+	 * with large music libraries (read: me).
+	 *
+	 * It should run in its own loader task, and perform insertions in chunked batches.
+	 * 
+	 * Retrieving the data should be done in chunks too (using offset).
+	 */
 	public static void syncLibrary(final Context context, final Map<String, List<? extends IMusicItem>> musicItems) {
 		Log.d(TAG, "initLibrary() ran");
 

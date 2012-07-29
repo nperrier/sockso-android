@@ -18,19 +18,25 @@ import com.pugh.sockso.android.music.Track;
 
 public class SocksoAPIImpl implements ISocksoAPI {
 
-	private static final String TAG = SocksoAPIImpl.class.getName();
+	private static final String TAG = SocksoAPIImpl.class.getSimpleName();
 
-	private static final String API = "api";
-	private static final String LIMIT = "limit";
+	private static final String API    = "api";
+	private static final String LIMIT  = "limit";
 	private static final String OFFSET = "offset";
 
 	private static final int DEFAULT_LIMIT = 100;
-	private static final int NO_LIMIT = -1;
+	private static final int NO_LIMIT      = -1;
 
-	private String mBaseApiUrl;
+	private String mBaseApiUrl;     
 	private SocksoServer mServer; 	// dependency
 
-	public SocksoAPIImpl(SocksoServer server) {
+	// API classes:
+	ServerInfoAPI serverInfoAPI;
+	ArtistAPI     artistAPI;
+	AlbumAPI      albumAPI;
+	TrackAPI      trackAPI;
+	
+	public SocksoAPIImpl(final SocksoServer server) {
 		
 		mBaseApiUrl = server.getRootUrl();
 		mBaseApiUrl += "/" + API;
@@ -39,6 +45,11 @@ public class SocksoAPIImpl implements ISocksoAPI {
 		
 		mServer = server;
 		
+		// Create API Objects
+		serverInfoAPI = new ServerInfoAPI(mBaseApiUrl);
+		artistAPI     = new ArtistAPI(mBaseApiUrl);
+		albumAPI      = new AlbumAPI(mBaseApiUrl);
+		trackAPI      = new TrackAPI(mBaseApiUrl);
 	}
 
 	// Will have to only support a minimum version of Sockso (1.6.0?) server
@@ -147,10 +158,13 @@ public class SocksoAPIImpl implements ISocksoAPI {
 	private class TrackAPI {
 
 		public static final String TRACKS = "tracks";
+		public static final String STREAM = "stream";
 
+		private final String mBaseApiUri;
 		private final String mBaseUri;
 
 		public TrackAPI(final String baseApiUri) {
+			this.mBaseApiUri = baseApiUri;
 			this.mBaseUri = baseApiUri + "/" + TRACKS;
 		}
 
@@ -179,7 +193,6 @@ public class SocksoAPIImpl implements ISocksoAPI {
 		public String getTracks() {
 			return getTracks(NO_LIMIT, 0);
 		}
-
 	}
 	// TODO - API method not currently supported
 	private class PlaylistAPI {
@@ -224,84 +237,57 @@ public class SocksoAPIImpl implements ISocksoAPI {
 		Log.d(TAG, "getServerInfo() ran");
 		
 		ServerInfo info = null;
-		ServerInfoAPI api = new ServerInfoAPI(mBaseApiUrl);
-
-		String data = mServer.doGet(api.getServerInfo());
+		String data = mServer.doGet(serverInfoAPI.getServerInfo());
 		
-		info = ServerInfo.fromJSON(new JSONObject(data));
-		return info;
+		return ServerInfo.fromJSON(new JSONObject(data));
 	}
 
 	public Album getAlbum(final String id) throws IOException, JSONException {
 		Log.d(TAG, "getAlbum(id) ran");
 		
-		Album album = null;
-		AlbumAPI api = new AlbumAPI(mBaseApiUrl);
-
-		String data = mServer.doGet(api.getAlbum(id));
+		String data = mServer.doGet(albumAPI.getAlbum(id));
 		
-		album = Album.fromJSON(new JSONObject(data));
-		return album;
+		return Album.fromJSON(new JSONObject(data));
 	}
 
 	public List<Album> getAlbums() throws IOException, JSONException {
 		Log.d(TAG, "getAlbums() ran");
 		
-		List<Album> albums = new ArrayList<Album>();
-		AlbumAPI api = new AlbumAPI(mBaseApiUrl);
-
-		String data = mServer.doGet(api.getAlbums());
+		String data = mServer.doGet(albumAPI.getAlbums());
 		
-		albums = Album.fromJSONArray(new JSONArray(data));
-		return albums;
+		return Album.fromJSONArray(new JSONArray(data));
 	}
 
 	public Artist getArtist(final String id) throws IOException, JSONException {
 		Log.d(TAG, "getArtist(id) ran");
 		
-		Artist artist = null;
-		ArtistAPI api = new ArtistAPI(mBaseApiUrl);
-
-		String data = mServer.doGet(api.getArtist(id));
-
-		artist = Artist.fromJSON(new JSONObject(data));
-		return artist;
+		String data = mServer.doGet(artistAPI.getArtist(id));
+		
+		return Artist.fromJSON(new JSONObject(data));
 	}
 
 	public List<Artist> getArtists() throws IOException, JSONException {
 		Log.d(TAG, "getArtists() ran");
 		
-		List<Artist> artists = new ArrayList<Artist>();
-		ArtistAPI api = new ArtistAPI(mBaseApiUrl);
+		String data = mServer.doGet(artistAPI.getArtists());
 
-		String data = mServer.doGet(api.getArtists());
-
-		artists = Artist.fromJSONArray(new JSONArray(data));
-		return artists;
+		return Artist.fromJSONArray(new JSONArray(data));
 	}
 
 	public Track getTrack(final String id) throws IOException, JSONException {
 		Log.d(TAG, "getTrack(id) ran");
 		
-		Track track = null;
-		TrackAPI api = new TrackAPI(mBaseApiUrl);
+		String data = mServer.doGet(trackAPI.getTrack(id));
 
-		String data = mServer.doGet(api.getTrack(id));
-
-		track = Track.fromJSON(new JSONObject(data));
-		return track;
+		return Track.fromJSON(new JSONObject(data));
 	}
 
 	public List<Track> getTracks() throws IOException, JSONException {
 		Log.d(TAG, "getTracks() ran");
 		
-		List<Track> tracks = new ArrayList<Track>();
-		TrackAPI api = new TrackAPI(mBaseApiUrl);
+		String data = mServer.doGet(trackAPI.getTracks());
 
-		String data = mServer.doGet(api.getTracks());
-
-		tracks = Track.fromJSONArray(new JSONArray(data));
-		return tracks;
+		return Track.fromJSONArray(new JSONArray(data));
 	}
 
 }

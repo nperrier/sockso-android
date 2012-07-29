@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:debuggable="true"
@@ -48,6 +49,12 @@
             android:multiprocess="true" >
         </provider>
 
+        <!-- TODO Defined PlayerService intents/meta-data
+        <service
+            android:name=".player.PlayerService"
+            android:exported="true" >
+        </service>
+        -->
         <service
             android:name=".sync.SocksoSyncService"
             android:exported="true" >
