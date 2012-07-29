@@ -14,8 +14,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.SocksoConfig;
-import com.pugh.sockso.android.SocksoSession;
+import com.pugh.sockso.android.Config;
+import com.pugh.sockso.android.Session;
 import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 
 public class LoginActivity extends Activity {
@@ -80,10 +80,10 @@ public class LoginActivity extends Activity {
 
 	}
 
-	private class LoginTask extends AsyncTask<String, Void, SocksoSession> {
+	private class LoginTask extends AsyncTask<String, Void, Session> {
 
 		ProgressDialog mDialog;
-		SocksoConfig mConfig;
+		Config mConfig;
 
 		LoginTask(Context context) {
 			mLoginButton.setEnabled(false);
@@ -93,20 +93,20 @@ public class LoginActivity extends Activity {
 		}
 
 		@Override
-		public SocksoSession doInBackground(String... params) {
+		public Session doInBackground(String... params) {
 			
 			String user   = params[0];
 			String pass   = params[1];
 			String server = params[2];
 
-			mConfig = new SocksoConfig(user, pass, server);
+			mConfig = new Config(user, pass, server);
 				
-			SocksoSession session = login(mConfig);
+			Session session = login(mConfig);
 
 			return null;
 		}
 
-		SocksoSession login(final SocksoConfig config) {
+		Session login(final Config config) {
 
 			// TODO Implement the server later
 
@@ -117,7 +117,7 @@ public class LoginActivity extends Activity {
 
 			// TODO remove
 			String sessionKey = "ABCDEF0123456789";
-			SocksoSession session = new SocksoSession(config.getUser(), sessionKey);
+			Session session = new Session(config.getUser(), sessionKey);
 			
 			SocksoAccountAuthenticator.addAccount(LoginActivity.this, config, authResponse);
 
@@ -125,14 +125,14 @@ public class LoginActivity extends Activity {
 		}
 
 		@Override
-		public void onPostExecute(SocksoSession session) {
+		public void onPostExecute(Session session) {
 			
 			mDialog.dismiss();
 			mLoginButton.setEnabled(true);
 			mLoginTask = null;
 
 			if (session != null) {
-				Log.i(TAG, "We have a SocksoSession!");
+				Log.i(TAG, "We have a Session!");
 				// TODO SocksoApp.getInstance().session = session;
 			} 
 			else {

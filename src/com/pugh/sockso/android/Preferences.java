@@ -15,7 +15,7 @@ public class Preferences {
 				Context.MODE_PRIVATE);
 	}
 
-	public void saveConfig(SocksoConfig config) {
+	public void saveConfig(Config config) {
 		Editor editor = prefs.edit();
 		editor.putString("server", config.getServer());
 		editor.putInt("port", config.getPort());
@@ -24,15 +24,15 @@ public class Preferences {
 		editor.commit();
 	}
 
-	public SocksoConfig getConfig() {
-		SocksoConfig config = new SocksoConfig();
+	public Config getConfig() {
+		Config config = new Config();
 		
 		// TODO maybe use a demo server for first time users
 		String server = prefs.getString("server", null);
 		String user = prefs.getString("user", null);
-		int port = prefs.getInt("port", SocksoConfig.DEFAULT_PORT);
+		int port = prefs.getInt("port", Config.DEFAULT_PORT);
 		String password = prefs.getString("password", null);
-		config = new SocksoConfig(user, password, server, port);
+		config = new Config(user, password, server, port);
 
 		return config;
 	}

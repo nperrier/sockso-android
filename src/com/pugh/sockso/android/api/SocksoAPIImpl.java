@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import android.net.Uri;
 import android.util.Log;
 
-import com.pugh.sockso.android.SocksoServer;
+import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
 import com.pugh.sockso.android.music.Track;
@@ -28,9 +28,9 @@ public class SocksoAPIImpl implements ISocksoAPI {
 	private static final int NO_LIMIT = -1;
 
 	private String mBaseApiUrl;
-	private SocksoServer mServer; 	// dependency
+	private SocksoServerImpl mServer; 	// dependency
 
-	public SocksoAPIImpl(SocksoServer server) {
+	public SocksoAPIImpl(SocksoServerImpl server) {
 		
 		mBaseApiUrl = server.getRootUrl();
 		mBaseApiUrl += "/" + API;

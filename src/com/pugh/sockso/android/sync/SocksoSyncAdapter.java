@@ -15,8 +15,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.pugh.sockso.android.SocksoConfig;
-import com.pugh.sockso.android.SocksoServer;
+import com.pugh.sockso.android.Config;
+import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.api.ISocksoAPI;
 import com.pugh.sockso.android.api.SocksoAPIImpl;
 import com.pugh.sockso.android.data.MusicManager;
@@ -64,8 +64,8 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 		Log.d(TAG, "port:   " + port);
 		
 		// Consider putting all this stuff in the SocksoApp global class
-		SocksoConfig config = new SocksoConfig(server, Integer.parseInt(port));
-		SocksoServer socksoServer = new SocksoServer(config);
+		Config config = new Config(server, Integer.parseInt(port));
+		SocksoServerImpl socksoServer = new SocksoServerImpl(config);
 		
 		ISocksoAPI socksoAPI = new SocksoAPIImpl(socksoServer);
 		

@@ -13,7 +13,7 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.SocksoConfig;
+import com.pugh.sockso.android.Config;
 import com.pugh.sockso.android.activity.AccountFailActivity;
 import com.pugh.sockso.android.activity.LoginActivity;
 import com.pugh.sockso.android.data.SocksoProvider;
@@ -82,7 +82,7 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	}
 
 	// LoginTask calls this one
-	public static void addAccount(Context context, SocksoConfig config, Parcelable response) {
+	public static void addAccount(Context context, Config config, Parcelable response) {
 		
 		Log.i(TAG, "Adding Sockso account explicitly");
 		
