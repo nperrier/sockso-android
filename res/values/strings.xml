@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Sockso</string>
     <string name="server_address">Server:</string>
     <string name="user_login">User:</string>
@@ -14,4 +15,15 @@
     <string name="no_artists">No Artists Found</string>
     <string name="no_albums">No Albums Found</string>
     <string name="no_tracks">No Tracks Found</string>
+    <string name="prefs_login_required_summary">Set this if the server requires login with username/password combo</string>
+    <string name="prefs_login_required_title">Login Required?</string>
+    <string name="prefs_username_summary">Username</string>
+    <string name="prefs_username_title">Username</string>
+    <string name="prefs_password_summary">Password</string>
+    <string name="prefs_password_title">Password</string>
+    <string name="prefs_server_summary">Server</string>
+    <string name="prefs_server_title">Server</string>
+    <string name="prefs_port_summary">Port</string>
+    <string name="prefs_port_title">Port</string>
+
 </resources>

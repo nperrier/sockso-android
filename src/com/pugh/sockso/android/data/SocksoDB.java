@@ -1,8 +1,8 @@
 package com.pugh.sockso.android.data;
 
-import com.pugh.sockso.android.data.SocksoProvider.Album;
-import com.pugh.sockso.android.data.SocksoProvider.Artist;
-import com.pugh.sockso.android.data.SocksoProvider.Track;
+import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
+import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
+import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -27,37 +27,37 @@ public class SocksoDB extends SQLiteOpenHelper {
 		StringBuffer table_tracks  = new StringBuffer();
 		
 		// Artists table
-		table_artists.append("CREATE TABLE ").append(Artist.TABLE_NAME)
+		table_artists.append("CREATE TABLE ").append(ArtistColumns.TABLE_NAME)
 					 .append(" (")
-					 .append(Artist.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-					 .append(Artist.Columns.SERVER_ID).append(" INTEGER NOT NULL, ")					 
-					 .append(Artist.Columns.NAME).append(" TEXT NOT NULL")
+					 .append(ArtistColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					 .append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")					 
+					 .append(ArtistColumns.NAME).append(" TEXT NOT NULL")
 					 .append(")").append(";");
 
 		// Albums Table
-		table_albums.append("CREATE TABLE ").append(Album.TABLE_NAME)
+		table_albums.append("CREATE TABLE ").append(AlbumColumns.TABLE_NAME)
 					.append(" (")
-					.append(Album.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-					.append(Artist.Columns.SERVER_ID).append(" INTEGER NOT NULL, ")
-					.append(Album.Columns.NAME).append(" TEXT NOT NULL, ")	
-					.append(Album.Columns.YEAR).append(" INTEGER, ")
-					.append(Album.Columns.ARTIST_ID).append(" INTEGER, ")
-					.append("FOREIGN KEY(").append(Album.Columns.ARTIST_ID).append(") REFERENCES ")
-					.append(Artist.TABLE_NAME).append("(").append(Artist.Columns._ID).append(") ")
+					.append(AlbumColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
+					.append(AlbumColumns.NAME).append(" TEXT NOT NULL, ")	
+					.append(AlbumColumns.YEAR).append(" INTEGER, ")
+					.append(AlbumColumns.ARTIST_ID).append(" INTEGER, ")
+					.append("FOREIGN KEY(").append(AlbumColumns.ARTIST_ID).append(") REFERENCES ")
+					.append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append(") ")
 					.append(")").append(";");
 		
 		// TrackAPIBuilder Table
-		table_tracks.append("CREATE TABLE ").append(Track.TABLE_NAME)
+		table_tracks.append("CREATE TABLE ").append(TrackColumns.TABLE_NAME)
 					.append(" (")
-					.append(Track.Columns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-					.append(Artist.Columns.SERVER_ID).append(" INTEGER NOT NULL, ")
-					.append(Track.Columns.NAME).append(" TEXT NOT NULL, ")
-					.append(Track.Columns.ARTIST_ID).append(" INTEGER, ")
-					.append(Track.Columns.ALBUM_ID).append(" INTEGER, ")
-					.append("FOREIGN KEY(").append(Track.Columns.ARTIST_ID).append(") REFERENCES ")
-					.append(Artist.TABLE_NAME).append("(").append(Artist.Columns._ID).append("), ")
-					.append("FOREIGN KEY(").append(Track.Columns.ALBUM_ID).append(") REFERENCES ")
-					.append(Album.TABLE_NAME).append("(").append(Album.Columns._ID).append(")")
+					.append(TrackColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
+					.append(TrackColumns.NAME).append(" TEXT NOT NULL, ")
+					.append(TrackColumns.ARTIST_ID).append(" INTEGER, ")
+					.append(TrackColumns.ALBUM_ID).append(" INTEGER, ")
+					.append("FOREIGN KEY(").append(TrackColumns.ARTIST_ID).append(") REFERENCES ")
+					.append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append("), ")
+					.append("FOREIGN KEY(").append(TrackColumns.ALBUM_ID).append(") REFERENCES ")
+					.append(AlbumColumns.TABLE_NAME).append("(").append(AlbumColumns._ID).append(")")
 					.append(")").append(";");
 
 	    Log.i(TAG, "Creating database schema:\n" + 
@@ -80,9 +80,9 @@ public class SocksoDB extends SQLiteOpenHelper {
 		
 		// TODO Probably should have migrator class to handle upgrades between versions,  but
 		// for now wiping out the db and re-populating is safest (data should be read-only anyway)
-		//drop_schema.append("DROP TABLE IF EXISTS ").append(Artist.TABLE_NAME).append(";")
-		//		   .append("DROP TABLE IF EXISTS ").append(Album.TABLE_NAME).append(";")
-		//		   .append("DROP TABLE IF EXISTS ").append(Track.TABLE_NAME).append(";");
+		//drop_schema.append("DROP TABLE IF EXISTS ").append(ArtistColumns.TABLE_NAME).append(";")
+		//		   .append("DROP TABLE IF EXISTS ").append(AlbumColumns.TABLE_NAME).append(";")
+		//		   .append("DROP TABLE IF EXISTS ").append(TrackColumns.TABLE_NAME).append(";");
 	    //db.execSQL(drop_schema.toString());
 	    
 	    //onCreate(db);

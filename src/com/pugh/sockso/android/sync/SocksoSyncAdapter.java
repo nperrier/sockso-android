@@ -15,7 +15,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.pugh.sockso.android.Config;
+import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.api.SocksoAPI;
 import com.pugh.sockso.android.api.SocksoAPIImpl;
@@ -52,20 +52,27 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 		
 		Log.d(TAG, "account: " + account.name);
 		Log.d(TAG, "extras: " + extras.size());
-		for(String key : extras.keySet())
+		for(String key : extras.keySet()) {
 			Log.d(TAG, "key: " + key + ", value: " + extras.get(key));
+		}
 		Log.d(TAG, "authority: " + authority);
 		Log.d(TAG, "provider: " + provider.getClass());
 		
+		// move to shared preferences:
 		String server = mAccountManager.getUserData(account, "server");
-		String port   = mAccountManager.getUserData(account, "port");
+		int    port   = Integer.valueOf(mAccountManager.getUserData(account, "port"));
+		
+	    //SharedPreferences settings = getSharedPreferences(Preferences.FILE, 0);
+	    //String user = settings.getString("server", "");
+	    //int port = settings.getString("port", "");
+	    
 
 		Log.d(TAG, "server: " + server);
 		Log.d(TAG, "port:   " + port);
 		
 		// Consider putting all this stuff in the SocksoApp global class
-		Config config = new Config(server, Integer.parseInt(port));
-		SocksoServerImpl socksoServer = new SocksoServerImpl(config);
+		//Config config = new Config(server, port);
+		SocksoServer socksoServer = new SocksoServerImpl(server, port);
 		
 		SocksoAPI socksoAPI = new SocksoAPIImpl(socksoServer);
 		

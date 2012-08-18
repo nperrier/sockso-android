@@ -7,7 +7,7 @@
     <uses-sdk
         android:minSdkVersion="5"
         android:targetSdkVersion="10" />
-
+ 
     <uses-permission android:name="android.permission.SET_DEBUG_APP" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
@@ -42,6 +42,15 @@
         <activity android:name=".activity.TrackListFragmentActivity" >
         </activity>
         <activity android:name=".activity.PlayerActivity" >
+        </activity>
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:configChanges="orientation|keyboardHidden" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <provider

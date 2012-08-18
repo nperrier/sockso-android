@@ -1,5 +1,6 @@
 package com.pugh.sockso.android.activity;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,85 +13,154 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.SocksoServer;
+import com.pugh.sockso.android.SocksoServerImpl;
+import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.SocksoProvider;
+import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
 
 public class ArtistListFragmentActivity extends FragmentActivity {
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    private static final String TAG = ArtistListFragmentActivity.class.getSimpleName();
 
-		FragmentManager fm = getSupportFragmentManager();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		// Create the list fragment and add it as our sole content.
-		if (fm.findFragmentById(android.R.id.content) == null) {
-			ArtistListFragment list = new ArtistListFragment();
-			fm.beginTransaction().add(android.R.id.content, list).commit();
-		}
+        FragmentManager fm = getSupportFragmentManager();
 
-	}
+        // Create the list fragment and add it as our sole content.
+        if (fm.findFragmentById(android.R.id.content) == null) {
+            ArtistListFragment list = new ArtistListFragment();
+            fm.beginTransaction().add(android.R.id.content, list).commit();
+        }
 
-	public static class ArtistListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    }
 
-		private final static String TAG = ArtistListFragment.class.getSimpleName();
+    // Utility class to store the View ID's retrieved from the layout only once for efficiency
+    static class ArtistViewHolder {
 
-		private static final int ARTIST_LIST_LOADER = 0x01;
+        TextView artist;
+        ImageView cover;
+    }
 
-		private SimpleCursorAdapter mAdapter;
+    // Custom list view item (cover image | artist text)
+    public static class ArtistCursorAdapter extends SimpleCursorAdapter {
 
-		@Override
-		public void onActivityCreated(Bundle savedInstanceState) {
-			super.onActivityCreated(savedInstanceState);
+        private Context mContext;
+        private int mLayout;
 
-			String[] uiBindFrom = { SocksoProvider.Artist.Columns.NAME };
+        public ArtistCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int flags) {
+            super(context, layout, cursor, from, to, flags);
+            this.mContext = context;
+            this.mLayout = layout;
+        }
 
-			int[] uiBindTo = { R.id.artist_name_id };
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            Log.d(TAG, "newView() ran");
 
-			getLoaderManager().initLoader(ARTIST_LIST_LOADER, null, this);
+            final LayoutInflater inflater = LayoutInflater.from(context);
+            View view = inflater.inflate(mLayout, parent, false);
 
-			mAdapter = new SimpleCursorAdapter(getActivity().getApplicationContext(), R.layout.artist_list_item, null,
-					uiBindFrom, uiBindTo, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+            ArtistViewHolder viewHolder = new ArtistViewHolder();
 
-			setListAdapter(mAdapter);
+            viewHolder.artist = (TextView) view.findViewById(R.id.artist_name_id);
+            viewHolder.cover = (ImageView) view.findViewById(R.id.artist_image_id);
 
-			setEmptyText(getString(R.string.no_artists));
-		}
+            view.setTag(viewHolder);
 
-		@Override
-		public void onSaveInstanceState(Bundle savedInstanceState) {
-			savedInstanceState.putString("bla", "Value1");
-			super.onSaveInstanceState(savedInstanceState);
-		}
+            return view;
+        }
 
-		@Override
-		public void onListItemClick(ListView l, View v, int position, long id) {
-			// Insert desired behavior here.
-			Log.i(TAG, "onListItemClick(): Item clicked: " + id);
-		}
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            Log.d(TAG, "bindView() ran");
 
-		@Override
-		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-			Log.i(TAG, "onCreateLoader() ran");
-			// TODO check that projection and CONTENT_URI correct args
-			String[] projection = { SocksoProvider.Artist.Columns._ID, SocksoProvider.Artist.Columns.NAME };
-			Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + SocksoProvider.Artist.TABLE_NAME);
-			CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, null);
-			return cursorLoader;
-		}
+            ArtistViewHolder viewHolder = (ArtistViewHolder) view.getTag();
 
-		@Override
-		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-			mAdapter.swapCursor(cursor);
-		}
+            int artistIdCol = cursor.getColumnIndex(ArtistColumns.SERVER_ID);
+            int artistId = cursor.getInt(artistIdCol);
 
-		@Override
-		public void onLoaderReset(Loader<Cursor> arg0) {
-			mAdapter.swapCursor(null);
-		}
+            int artistNameCol = cursor.getColumnIndex(ArtistColumns.NAME);
+            viewHolder.artist.setText(cursor.getString(artistNameCol));
 
-	}
+            // TODO REMOVE & REPLACE
+            SocksoServer server = new SocksoServerImpl("sockso.perrierliquors.com", 4444);
+            CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
+            coverFetcher.download("http://sockso.perrierliquors.com:4444/file/cover/ar" + artistId, viewHolder.cover);
+        }
+
+        // @Override
+        // TODO, this is for filtered searches
+        // public Cursor runQueryOnBackgroundThread(CharSequence constraint) {}
+    }
+
+    public static class ArtistListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+        private final static String TAG = ArtistListFragment.class.getSimpleName();
+
+        private static final int ARTIST_LIST_LOADER = 0x01;
+
+        private ArtistCursorAdapter mAdapter;
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+
+            String[] uiBindFrom = { ArtistColumns.NAME };
+            int[] uiBindTo = { R.id.artist_name_id };
+
+            getLoaderManager().initLoader(ARTIST_LIST_LOADER, null, this);
+
+            mAdapter = new ArtistCursorAdapter(getActivity().getApplicationContext(), R.layout.artist_list_item, null,
+                    uiBindFrom, uiBindTo, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+
+            setListAdapter(mAdapter);
+
+            setEmptyText(getString(R.string.no_artists));
+        }
+
+        @Override
+        public void onSaveInstanceState(Bundle savedInstanceState) {
+            savedInstanceState.putString("bla", "Value1");
+            super.onSaveInstanceState(savedInstanceState);
+        }
+
+        @Override
+        public void onListItemClick(ListView l, View v, int position, long id) {
+            // Insert desired behavior here.
+            Log.i(TAG, "onListItemClick(): Item clicked: " + id);
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Log.i(TAG, "onCreateLoader() ran");
+
+            String[] projection = { ArtistColumns._ID, ArtistColumns.SERVER_ID, ArtistColumns.NAME };
+            Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + ArtistColumns.TABLE_NAME);
+            CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, null);
+
+            return cursorLoader;
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            mAdapter.swapCursor(cursor);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> arg0) {
+            mAdapter.swapCursor(null);
+        }
+
+    }
 }
