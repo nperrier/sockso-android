@@ -22,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.ServerFactory;
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.data.CoverArtFetcher;
@@ -30,23 +31,24 @@ import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 
 public class TrackListFragmentActivity extends FragmentActivity {
 
-	private static final String TAG = TrackListFragmentActivity.class.getSimpleName();
+    private static final String TAG = TrackListFragmentActivity.class.getSimpleName();
 
     @Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		FragmentManager fm = getSupportFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
 
-		// Create the list fragment and add it as our sole content.
-		if (fm.findFragmentById(android.R.id.content) == null) {
-			TrackListFragment list = new TrackListFragment();
-			fm.beginTransaction().add(android.R.id.content, list).commit();
-		}
-	}
+        // Create the list fragment and add it as our sole content.
+        if (fm.findFragmentById(android.R.id.content) == null) {
+            TrackListFragment list = new TrackListFragment();
+            fm.beginTransaction().add(android.R.id.content, list).commit();
+        }
+    }
 
     // Utility class to store the View ID's retrieved from the layout only once for efficiency
     static class TrackViewHolder {
+
         TextView artist;
         TextView title;
         ImageView cover;
@@ -89,18 +91,18 @@ public class TrackListFragmentActivity extends FragmentActivity {
             TrackViewHolder viewHolder = (TrackViewHolder) view.getTag();
 
             int trackIdCol = cursor.getColumnIndex(TrackColumns.SERVER_ID);
-            int trackId    = cursor.getInt(trackIdCol);
-            
+            int trackId = cursor.getInt(trackIdCol);
+
             int trackTitleCol = cursor.getColumnIndex(TrackColumns.NAME);
             viewHolder.title.setText(cursor.getString(trackTitleCol));
 
             int trackArtistCol = cursor.getColumnIndex(TrackColumns.ARTIST_NAME);
             viewHolder.artist.setText(cursor.getString(trackArtistCol));
 
-            // TODO REMOVE & REPLACE
-            SocksoServer server = new SocksoServerImpl("sockso.perrierliquors.com", 4444);
+            SocksoServer server = ServerFactory.getServer(mContext);
             CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
-            coverFetcher.download("http://sockso.perrierliquors.com:4444/file/cover/tr" + trackId, viewHolder.cover);
+            // TODO REMOVE & REPLACE
+            coverFetcher.download("tr" + trackId, viewHolder.cover);
         }
 
         // @Override
@@ -108,74 +110,75 @@ public class TrackListFragmentActivity extends FragmentActivity {
         // public Cursor runQueryOnBackgroundThread(CharSequence constraint) {}
     }
 
-	public static class TrackListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static class TrackListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-		private final static String TAG = TrackListFragment.class.getSimpleName();
+        private final static String TAG = TrackListFragment.class.getSimpleName();
 
-		private static final int TRACK_LIST_LOADER = 0x01;
+        private static final int TRACK_LIST_LOADER = 0x01;
 
-		private TrackCursorAdapter mAdapter;
+        private TrackCursorAdapter mAdapter;
 
-		@Override
-		public void onActivityCreated(Bundle savedInstanceState) {
-			super.onActivityCreated(savedInstanceState);
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
 
-			String[] uiBindFrom = { TrackColumns.NAME };
-			int[] uiBindTo = { R.id.track_title_id };
+            String[] uiBindFrom = { TrackColumns.NAME };
+            int[] uiBindTo = { R.id.track_title_id };
 
-			getLoaderManager().initLoader(TRACK_LIST_LOADER, null, this);
+            getLoaderManager().initLoader(TRACK_LIST_LOADER, null, this);
 
-			mAdapter = new TrackCursorAdapter(getActivity().getApplicationContext(), R.layout.track_list_item, null,
-					uiBindFrom, uiBindTo, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+            mAdapter = new TrackCursorAdapter(getActivity().getApplicationContext(), R.layout.track_list_item, null,
+                    uiBindFrom, uiBindTo, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 
-			setListAdapter(mAdapter);
+            setListAdapter(mAdapter);
 
-			setEmptyText(getString(R.string.no_tracks));
-		}
+            setEmptyText(getString(R.string.no_tracks));
+        }
 
-		@Override
-		public void onSaveInstanceState(Bundle savedInstanceState) {
-			savedInstanceState.putString("bla", "Value1");
-			super.onSaveInstanceState(savedInstanceState);
-		}
+        @Override
+        public void onSaveInstanceState(Bundle savedInstanceState) {
+            savedInstanceState.putString("bla", "Value1");
+            super.onSaveInstanceState(savedInstanceState);
+        }
 
-		@Override
-		public void onListItemClick(ListView l, View v, int position, long id) {
-			// Insert desired behavior here.
-			Log.i(TAG, "onListItemClick(): Item clicked: " + id);
-            
+        @Override
+        public void onListItemClick(ListView l, View v, int position, long id) {
+            // Insert desired behavior here.
+            Log.i(TAG, "onListItemClick(): Item clicked: " + id);
+
             // Start the PlayerActivity and send it the id
             // of the track which the player activity will retrieve
             // from the content provider and send to the player service
-            
+
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
             intent.putExtra("track_id", id);
-            
-            //getActivity().startActivity(intent);
-            startActivity(intent);	
-		}
 
-		@Override
-		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-			Log.i(TAG, "onCreateLoader() ran");
+            // getActivity().startActivity(intent);
+            startActivity(intent);
+        }
 
-			String[] projection = { TrackColumns._ID, TrackColumns.SERVER_ID, TrackColumns.NAME, TrackColumns.ARTIST_NAME,  };
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Log.i(TAG, "onCreateLoader() ran");
 
-			Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
-			CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, null);
+            String[] projection = { TrackColumns._ID, TrackColumns.SERVER_ID, TrackColumns.NAME,
+                    TrackColumns.ARTIST_NAME, };
 
-			return cursorLoader;
-		}
+            Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
+            CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, null);
 
-		@Override
-		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-			mAdapter.swapCursor(cursor);
-		}
+            return cursorLoader;
+        }
 
-		@Override
-		public void onLoaderReset(Loader<Cursor> loader) {
-			mAdapter.swapCursor(null);
-		}
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            mAdapter.swapCursor(cursor);
+        }
 
-	}
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            mAdapter.swapCursor(null);
+        }
+
+    }
 }

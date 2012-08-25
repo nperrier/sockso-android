@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.pugh.sockso.android.ServerFactory;
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.api.SocksoAPI;
@@ -27,7 +28,7 @@ import com.pugh.sockso.android.music.Track;
 
 public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 
-	private static final String TAG = SocksoSyncAdapter.class.getName();
+	private static final String TAG = SocksoSyncAdapter.class.getSimpleName();
 
 	private static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
 	private static final String SYNC_MARKER_KEY = "com.pugh.sockso.android.sync.MARKER";
@@ -49,7 +50,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 			ContentProviderClient provider,	SyncResult syncResult) {
 		
 		Log.i(TAG, "onPerformSync() ran");
-		
+		/*
 		Log.d(TAG, "account: " + account.name);
 		Log.d(TAG, "extras: " + extras.size());
 		for(String key : extras.keySet()) {
@@ -66,15 +67,17 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 	    //String user = settings.getString("server", "");
 	    //int port = settings.getString("port", "");
 	    
-
 		Log.d(TAG, "server: " + server);
 		Log.d(TAG, "port:   " + port);
 		
 		// Consider putting all this stuff in the SocksoApp global class
-		//Config config = new Config(server, port);
-		SocksoServer socksoServer = new SocksoServerImpl(server, port);
+		// Config config = new Config(server, port);
+		 
 		
-		SocksoAPI socksoAPI = new SocksoAPIImpl(socksoServer);
+		SocksoServer socksoServer = new SocksoServerImpl(server, port);
+		*/
+		
+		SocksoAPI socksoAPI = new SocksoAPIImpl(ServerFactory.getServer(mContext));
 		
 		if(syncResult != null)
 			Log.d(TAG, "syncResult: " + syncResult.toString());	

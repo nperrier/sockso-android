@@ -18,7 +18,7 @@ import com.pugh.sockso.android.music.Track;
 
 public class SocksoAPIImpl implements SocksoAPI {
 
-	private static final String TAG = SocksoAPIImpl.class.getName();
+	private static final String TAG = SocksoAPIImpl.class.getSimpleName();
 
 	private static final String API = "api";
 	private static final String LIMIT = "limit";

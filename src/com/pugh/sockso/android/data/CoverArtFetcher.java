@@ -21,14 +21,16 @@ public class CoverArtFetcher {
         this.mServer = server;
     }
 
-    public Bitmap downloadBitmap(String url) {
+    public Bitmap downloadBitmap(String musicItemId) {
 
+        String url = mServer.getRootUrl() + "/file/cover/" + musicItemId; 
+        
         return mServer.downloadBitmap(url);
     }
 
-    public void download(String url, ImageView imageView) {
+    public void download(String musicItemId, ImageView imageView) {
 
-        if (cancelPotentialDownload(url, imageView)) {
+        if (cancelPotentialDownload(musicItemId, imageView)) {
 
             BitmapDownloaderTask task = new BitmapDownloaderTask(imageView);
 
@@ -36,7 +38,7 @@ public class CoverArtFetcher {
             DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
             imageView.setImageDrawable(downloadedDrawable);
 
-            task.execute(url);
+            task.execute(musicItemId);
         }
     }
 
@@ -45,7 +47,7 @@ public class CoverArtFetcher {
      */
     class BitmapDownloaderTask extends AsyncTask<String, Void, Bitmap> {
 
-        private String url;
+        private String musicItemId;
         private final WeakReference<ImageView> imageViewReference;
 
         public BitmapDownloaderTask(ImageView imageView) {
@@ -57,8 +59,8 @@ public class CoverArtFetcher {
          */
         @Override
         protected Bitmap doInBackground(String... params) {
-            url = params[0];
-            return downloadBitmap(url);
+            musicItemId = params[0];
+            return downloadBitmap(musicItemId);
         }
 
         /**
@@ -85,18 +87,18 @@ public class CoverArtFetcher {
     /**
      * Returns true if the current download has been canceled or if there was no download in
      * progress on this image view.
-     * Returns false if the download in progress deals with the same url.
+     * Returns false if the download in progress deals with the same musicItemId.
      * The download is not stopped in this case.
      */
-    private static boolean cancelPotentialDownload(String url, ImageView imageView) {
+    private static boolean cancelPotentialDownload(String musicItemId, ImageView imageView) {
 
         BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
         if (bitmapDownloaderTask != null) {
 
-            String bitmapUrl = bitmapDownloaderTask.url;
+            String bitmapUrl = bitmapDownloaderTask.musicItemId;
 
-            if ((bitmapUrl == null) || (!bitmapUrl.equals(url))) {
+            if ((bitmapUrl == null) || (!bitmapUrl.equals(musicItemId))) {
                 bitmapDownloaderTask.cancel(true);
             }
             else {

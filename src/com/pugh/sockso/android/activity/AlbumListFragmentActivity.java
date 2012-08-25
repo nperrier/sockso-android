@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.ServerFactory;
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.data.CoverArtFetcher;
@@ -42,7 +43,6 @@ public class AlbumListFragmentActivity extends FragmentActivity {
             AlbumListFragment list = new AlbumListFragment();
             fm.beginTransaction().add(android.R.id.content, list).commit();
         }
-
     }
 
     // Utility class to store the View ID's retrieved from the layout only once for efficiency
@@ -98,10 +98,10 @@ public class AlbumListFragmentActivity extends FragmentActivity {
             int albumArtistCol = cursor.getColumnIndex(AlbumColumns.ARTIST_NAME);
             viewHolder.artist.setText(cursor.getString(albumArtistCol));
 
-            // TODO REMOVE & REPLACE
-            SocksoServer server = new SocksoServerImpl("sockso.perrierliquors.com", 4444);
+            SocksoServer server = ServerFactory.getServer(mContext);
             CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
-            coverFetcher.download("http://sockso.perrierliquors.com:4444/file/cover/al" + albumId, viewHolder.cover);
+            // TODO REMOVE & REPLACE
+            coverFetcher.download("al" + albumId, viewHolder.cover);
         }
 
         // @Override
