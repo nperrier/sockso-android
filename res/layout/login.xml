@@ -56,7 +56,7 @@
                 android:layout_marginTop="5dip"
                 android:inputType="text"
                 android:singleLine="true"
-                android:text="75.73.67.83">
+                android:text="sockso.perrierliquors.com">
 
                 <requestFocus />
             </EditText>

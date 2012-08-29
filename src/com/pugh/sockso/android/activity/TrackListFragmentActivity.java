@@ -151,9 +151,8 @@ public class TrackListFragmentActivity extends FragmentActivity {
             // from the content provider and send to the player service
 
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
+            intent.setAction(PlayerActivity.ACTION_PLAY);
             intent.putExtra("track_id", id);
-
-            // getActivity().startActivity(intent);
             startActivity(intent);
         }
 
