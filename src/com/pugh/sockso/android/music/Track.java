@@ -14,14 +14,14 @@ public class Track implements MusicItem {
 	private static final String ARTIST = "artist";
 	private static final String ALBUM  = "album";
 
-	private int id = 0; // local id
-	private int serverId = 0; // remote server id
+	private long id = 0; // local id
+	private long serverId = 0; // remote server id
 	private String name;
 	private int trackNumber;
 	private int duration;
 	private String image; // link to the cover of the track?
-	private int albumId;
-	private int artistId;
+	private long albumId;
+	private long artistId;
 	//private Album album;
 	//private Artist artist;
 	private String album;
@@ -35,20 +35,20 @@ public class Track implements MusicItem {
 		this.artist = artist;
 		this.setAlbum(album);
 	}
-
-	public int getId() {
+	
+	public long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
-	public int getServerId() {
+	public long getServerId() {
 		return serverId;
 	}
 
-	public void setServerId(int serverId) {
+	public void setServerId(long serverId) {
 		this.serverId = serverId;
 	}
 
@@ -100,19 +100,19 @@ public class Track implements MusicItem {
 		this.image = image;
 	}
 
-	public int getAlbumId() {
+	public long getAlbumId() {
 		return albumId;
 	}
 
-	public void setAlbumId(int albumId) {
+	public void setAlbumId(long albumId) {
 		this.albumId = albumId;
 	}
 
-	public int getArtistId() {
+	public long getArtistId() {
 		return artistId;
 	}
 
-	public void setArtistId(int artistId) {
+	public void setArtistId(long artistId) {
 		this.artistId = artistId;
 	}
 

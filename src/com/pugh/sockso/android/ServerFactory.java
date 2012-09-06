@@ -19,8 +19,6 @@ public class ServerFactory {
         AccountManager accountManager = AccountManager.get(context);
         Account[] accounts = accountManager.getAccountsByType(context.getString(R.string.ACCOUNT_TYPE));
         
-        Log.d(TAG, "In ServerFactory.getServer()");
-        
         if(accounts != null && accounts.length > 0) {
             
             Account account = accounts[0];
@@ -37,8 +35,6 @@ public class ServerFactory {
             //Config config = new Config(server, port);
             server = new SocksoServerImpl(host, port);
         }
-
-        Log.d(TAG, "server == null? : " + server);
         
         return server;
     }

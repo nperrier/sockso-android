@@ -52,6 +52,7 @@ public class SocksoDB extends SQLiteOpenHelper {
 					.append(TrackColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
 					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
 					.append(TrackColumns.NAME).append(" TEXT NOT NULL, ")
+					.append(TrackColumns.TRACK_NO).append(" INTEGER, ")
 					.append(TrackColumns.ARTIST_ID).append(" INTEGER, ")
 					.append(TrackColumns.ALBUM_ID).append(" INTEGER, ")
 					.append("FOREIGN KEY(").append(TrackColumns.ARTIST_ID).append(") REFERENCES ")

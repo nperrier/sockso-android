@@ -13,8 +13,8 @@ public class Artist implements MusicItem {
 	private static final String ID   = "id";
 	private static final String NAME = "name";
 
-	private int id = 0; // local id
-	private int serverId = 0; // remote server id
+	private long id = 0; // local id
+	private long serverId = 0; // remote server id
 	private String name;
 	
 	public Artist() {
@@ -24,19 +24,19 @@ public class Artist implements MusicItem {
 		this.name = name;
 	}
 
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
-	public int getServerId() {
+	public long getServerId() {
 		return serverId;
 	}
 
-	public void setServerId(int serverId) {
+	public void setServerId(long serverId) {
 		this.serverId = serverId;
 	}
 	

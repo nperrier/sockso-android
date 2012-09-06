@@ -10,6 +10,7 @@
     <string name="ACCOUNT_TYPE">com.pugh.sockso.account</string>
     <string name="login_authenticating">Authenticating…</string>
     <string name="common_ok">OK</string>
+    <string name="artist_image_description">Album Image</string>    
     <string name="album_image_description">Album Image</string>
     <string name="track_image_description">Track Image</string>
     <string name="no_artists">No Artists Found</string>
@@ -25,5 +26,5 @@
     <string name="prefs_server_title">Server</string>
     <string name="prefs_port_summary">Port</string>
     <string name="prefs_port_title">Port</string>
-
+    <string name="notification_playing">Playing</string>
 </resources>

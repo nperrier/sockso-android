@@ -71,6 +71,7 @@ public class SocksoProvider extends ContentProvider {
 
     private static final Map<String, String> sAlbumProjectionMap = new HashMap<String, String>();
     private static final Map<String, String> sTrackProjectionMap = new HashMap<String, String>();
+    
     // Projection Maps
     static {
         sAlbumProjectionMap.put(AlbumColumns.ARTIST_NAME, ArtistColumns.FULL_NAME + " AS " + AlbumColumns.ARTIST_NAME);
@@ -79,8 +80,10 @@ public class SocksoProvider extends ContentProvider {
         sAlbumProjectionMap.put(AlbumColumns._ID, AlbumColumns.FULL_ID);
 
         sTrackProjectionMap.put(TrackColumns.ARTIST_NAME, ArtistColumns.FULL_NAME + " AS " + TrackColumns.ARTIST_NAME);
+        sTrackProjectionMap.put(TrackColumns.ALBUM_NAME, AlbumColumns.FULL_NAME + " AS " + TrackColumns.ALBUM_NAME);
         sTrackProjectionMap.put(TrackColumns.SERVER_ID, TrackColumns.FULL_SERVER_ID);
         sTrackProjectionMap.put(TrackColumns.NAME, TrackColumns.FULL_NAME);
+        sTrackProjectionMap.put(TrackColumns.TRACK_NO, TrackColumns.FULL_TRACK_NO);
         sTrackProjectionMap.put(TrackColumns._ID, TrackColumns.FULL_ID);
     }
 
@@ -141,7 +144,8 @@ public class SocksoProvider extends ContentProvider {
 
         // Mapped Columns:
         public static final String ARTIST_NAME = "artist_name";
-
+        public static final String ALBUM_NAME = "album_name";
+        
         // Fully qualified columns (non-public)
         static final String FULL_SERVER_ID = TABLE_NAME + "." + SERVER_ID;
         static final String FULL_NAME = TABLE_NAME + "." + NAME;
@@ -285,14 +289,23 @@ public class SocksoProvider extends ContentProvider {
             Log.d(TAG, "In TRACKS_CODE");
 
             queryBuilder.setProjectionMap(sTrackProjectionMap);
-            queryBuilder.setTables(TrackColumns.TABLE_NAME + " JOIN " + ArtistColumns.TABLE_NAME + " ON "
-                    + TrackColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID);
+            queryBuilder.setTables(TrackColumns.TABLE_NAME 
+                    + " JOIN " + ArtistColumns.TABLE_NAME 
+                    + " ON " + TrackColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID 
+                    + " JOIN " + AlbumColumns.TABLE_NAME 
+                    + " ON " + TrackColumns.FULL_ALBUM_ID + "=" + AlbumColumns.FULL_SERVER_ID);
 
             break;
         case TRACKS_ID_CODE:
             Log.d(TAG, "In TRACKS_ID_CODE");
-            queryBuilder.setTables(TrackColumns.TABLE_NAME);
-            queryBuilder.appendWhere(TrackColumns._ID + "=" + uri.getLastPathSegment());
+
+            queryBuilder.setProjectionMap(sTrackProjectionMap);
+            queryBuilder.setTables(TrackColumns.TABLE_NAME 
+                    + " JOIN " + ArtistColumns.TABLE_NAME 
+                    + " ON " + TrackColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID 
+                    + " JOIN " + AlbumColumns.TABLE_NAME 
+                    + " ON " + TrackColumns.FULL_ALBUM_ID + "=" + AlbumColumns.FULL_SERVER_ID);
+            queryBuilder.appendWhere(TrackColumns.FULL_ID + "=" + uri.getLastPathSegment());
             break;
         default:
             throw new IllegalArgumentException("Unknown URI");

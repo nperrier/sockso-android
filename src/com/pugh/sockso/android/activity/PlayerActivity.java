@@ -1,12 +1,18 @@
 package com.pugh.sockso.android.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -16,6 +22,12 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.ServerFactory;
+import com.pugh.sockso.android.SocksoServer;
+import com.pugh.sockso.android.data.CoverArtFetcher;
+import com.pugh.sockso.android.data.SocksoProvider;
+import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
+import com.pugh.sockso.android.music.Track;
 import com.pugh.sockso.android.player.PlayerService;
 
 public class PlayerActivity extends Activity {
@@ -51,12 +63,12 @@ public class PlayerActivity extends Activity {
     private PlayerService mService;
 
     // Is this activity bound to the PlayerService?
-    private boolean mIsBound = false;
+    private boolean mIsBound     = false;
 
     private boolean mIsShuffling = false;
     private boolean mIsRepeating = false;
-    private boolean mIsPlaying = false;
-
+    private boolean mIsPlaying   = false;
+    
     // Intent actions
     public static final String ACTION_PLAY = "com.pugh.sockso.android.player.ACTION_PLAY";
 
@@ -91,11 +103,17 @@ public class PlayerActivity extends Activity {
         mShuffleButton  = (ImageButton) findViewById(R.id.shuffleButton);
 
         mTrackProgressBar = (SeekBar) findViewById(R.id.trackProgressBar);
-
-        mTrackNameLabel = (TextView) findViewById(R.id.trackNameLabel);
         mTrackCurrentDurationLabel = (TextView) findViewById(R.id.trackCurrentDurationLabel);
         mTrackTotalDurationLabel   = (TextView) findViewById(R.id.trackTotalDurationLabel);
 
+        mTrackNameLabel = (TextView) findViewById(R.id.trackNameLabel);
+
+        mAlbumCover = (ImageView) findViewById(R.id.coverImage);
+        
+        // TODO Add these to the view:
+        //mAlbumNameLabel = (TextView) findViewById(R.id.);
+        //mArtistNameLabel = (TextView) findViewById(R.id.);
+        
         /**
          * Play button click event
          * Plays a song and changes button to pause image Pauses a song and
@@ -171,7 +189,7 @@ public class PlayerActivity extends Activity {
         mShuffleButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View arg0) {
+            public void onClick(View view) {
                 toggleShuffle();
 
             }
@@ -228,42 +246,40 @@ public class PlayerActivity extends Activity {
 
     }
 
-    private ServiceConnection mServiceConn = new ServiceConnection() {
 
+    private BroadcastReceiver mStatusListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive() called");
+            
+            String action = intent.getAction();
+            
+            if (action.equals(PlayerService.TRACK_CHANGED)) {
+                // Update the UI:
+                
+                // redraw the artist/title info 
+                // set new max for progress bar
+                
+                updateTrackInfo();
+                setPlayButtonImage();
+                //queueNextRefresh(1);
+            }
+            else if (action.equals(PlayerService.TRACK_ENDED)) {
+                
+                mIsPlaying = false;
+                setPlayButtonImage();
+            }
+        }
+    };
+    
+    private ServiceConnection mServiceConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName classname, IBinder service) {
-
             Log.d(TAG, "onServiceConnected() ran");
-
             mService = ((PlayerService.PlayerServiceBinder) service).getService();
-
-            // Assume something is playing when the service says it is,
-            // but also if the audio ID is valid but the service is paused.
-            // if (mService.getAudioId() >= 0 || mService.isPlaying() || mService.getPath() != null)
-            // {
-            if (mService.isPlaying()) {
-                Log.d(TAG, "service is playing something currently");
-                // something is playing now, so just update the view
-                
-                mIsPlaying = true;
-                setRepeatButtonImage();
-                setShuffleButtonImage();
-                setPlayButtonImage();
-
-                return;
-            } 
-            else {
-                // nothing is playing?
-                startPlayback();
-            }
-
-            /**
-             * TODO Service is dead or not playing anything.
-             * If we got here as part of a "play this file" Intent, exit.
-             * Otherwise go to the Music app start screen.
-             */
-
-            // finish();
+            
+            // Now that the service is connected, handle the intent sent to this activity:
+            handleIntent(getIntent());
         }
 
         @Override
@@ -272,36 +288,162 @@ public class PlayerActivity extends Activity {
         }
     };
 
-    private void startPlayback() {
-        Log.d(TAG, "startPlayback() called");
+    private void handleIntent(Intent intent) {
+        
+        String action = intent.getAction();
+        Log.d(TAG, "intent.getAction(): " + action);
+        
+        if (action != null) {
+            // Play a track
+            if (action.equals(ACTION_PLAY)) {
+                Bundle bundle = intent.getExtras();
+                if (bundle != null) {
+                    
+                    long trackId = bundle.getLong("track_id", -1);
+                    
+                    if (trackId != -1) {
+                        
+                        startPlayback(trackId);
+                        
+                    }
+                }
+            }
+        }
+
+        if (mService.isPlaying() || mService.isPaused()) {
+            Log.d(TAG, "service is in the middle of playing something");
+            // something is playing now, so just update the view
+
+            if (mService.isPlaying()) {
+                mIsPlaying = true;
+            }
+
+            setRepeatButtonImage();
+            setShuffleButtonImage();
+            setPlayButtonImage();
+            
+            updateTrackInfo();
+            
+            return;
+        }
+        else {
+            // nothing is playing, but no request to play?
+        }
+    
+    }
+    
+    
+    // TODO Should the Track object be created by the activity or service?
+    private Track getTrack( long trackId ) {
+        Log.d(TAG, "getTrack() called");
+        
+        Track track = null;
+        
+        // Start the PlayerActivity and send it the id
+        // of the track which the player activity will retrieve
+        // from the content provider and send to the player service
+        
+        String[] projection = { TrackColumns.SERVER_ID, 
+                                TrackColumns.ARTIST_NAME, 
+                                TrackColumns.NAME,
+                                TrackColumns.TRACK_NO
+                              };
+        Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME + "/" + trackId);
+        
+        ContentResolver cr = getContentResolver();
+        Cursor cursor = cr.query(uri, projection, null, null, null);
+        
+        Log.d(TAG, "col count: " + cursor.getColumnCount());
+        Log.d(TAG, "column_name[0]: " + cursor.getColumnName(0));
+        Log.d(TAG, "row count: " + cursor.getCount());
+        
+        cursor.moveToNext();
+        
+        long serverTrackId = cursor.getLong(0);
+        String artistName = cursor.getString(1);
+        String trackName  = cursor.getString(2);
+        int trackNumber   = cursor.getInt(3);
+        
+        cursor.close();
+        Log.d(TAG, "serverTrackId: " + serverTrackId);
+        
+        track = new Track();
+        track.setId(trackId); // TODO Should be long type
+        track.setServerId(serverTrackId);
+        track.setName(trackName);
+        track.setArtist(artistName);
+        track.setTrackNumber(trackNumber);
+        
+        return track;
+    }
+    
+    private void startPlayback( long trackId ) {
+        Log.d(TAG, "startPlayback() called with trackId: " + trackId);
 
         if (mService == null) {
-            Log.d(TAG, "mService is null!");
+            Log.d(TAG, "mService is null");
             return;
         }
 
-        Intent intent = getIntent();
-        Uri uri = intent.getData();
-
-        // if (uri != null && uri.toString().length() > 0) {
-
-        try {
-            mService.stop(); // stop whatever is currently playing
-            // mService.openFile(filename);
-            mService.play();
-            mIsPlaying = true;
-            setPlayButtonImage();
-            // setIntent(new Intent());
+        Track serviceTrack = mService.getTrack();
+        
+        if (serviceTrack == null) {
+            Log.d(TAG, "track is null!");
         }
-        catch (Exception ex) {
-            Log.d(TAG, "couldn't start playback: " + ex);
-        }
-        // }
+        
+        // Only start track if the track is different
+        if (serviceTrack == null || ( serviceTrack != null && trackId != serviceTrack.getId() ) ) {
 
-        // updateTrackInfo();
+            Track track = getTrack(trackId);
+            
+            try {
+                mService.stop(); // stop whatever is currently playing
+                // mService.openFile(filename);
+                mService.setTrack(track);
+                
+                updateTrackInfo();
+                
+                mService.play();
+                mIsPlaying = true;
+                setPlayButtonImage();
+
+                // This resets the intent, I assume?
+                //setIntent(new Intent());
+            }
+            catch (Exception e) {
+                Log.d(TAG, "Unable to start playback: " + e.getMessage());
+            }
+        }
+
+        //updateTrackInfo();
         // long next = refreshNow();
         // queueNextRefresh(next);
+    }
 
+    // This should update the UI to reflect the current state of the player
+    // for the Track's data (name, artist, album, image, etc..)
+    private void updateTrackInfo() {
+        Log.d(TAG, "updateTrackInfo() called");
+        
+        Track track = mService.getTrack();
+        
+        if ( track != null ) {
+            //mArtistNameLabel.setText(track.getArtist());
+            //mAlbumNameLabel.setText(track.getAlbum());
+            mTrackNameLabel.setText(track.getName());
+            
+            SocksoServer server = ServerFactory.getServer(this);
+            CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
+            coverFetcher.download("tr" + track.getServerId(), mAlbumCover);
+        }
+        
+    }
+
+    // This should update the parts of the UI that need to change quickly and often:
+    // * progress bar
+    // * timers
+    private void refreshNow() {
+        // TODO
     }
 
     @Override
@@ -309,15 +451,24 @@ public class PlayerActivity extends Activity {
         Log.d(TAG, "onStart() ran");
         super.onStart();
 
-        handleIntent(getIntent());
-
+        // Start the PlayerService
+        Intent playerIntent = new Intent(this, PlayerService.class);
+        startService(playerIntent);
+        
+        // Bind to PlayerService
         if ( !mIsBound ) {
-            Intent intent = new Intent(PlayerActivity.this, PlayerService.class);
-            bindService(intent, mServiceConn, BIND_AUTO_CREATE);
+            Intent bindIntent = new Intent(PlayerActivity.this, PlayerService.class);
+            bindService(bindIntent, mServiceConn, BIND_AUTO_CREATE);
             mIsBound = true;
         }
-
-        // updateTrackInfo();
+        
+        // Setup listener to PlayerService
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(PlayerService.TRACK_CHANGED);
+        intentFilter.addAction(PlayerService.TRACK_ENDED);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mStatusListener, new IntentFilter(intentFilter));
+        
+        //updateTrackInfo();
         // long next = refreshNow();
         // queueNextRefresh(next);
     }
@@ -329,22 +480,28 @@ public class PlayerActivity extends Activity {
         // mPaused = true;
 
         // mHandler.removeMessages(REFRESH);
-        // unregisterReceiver(mStatusListener);
         if (mIsBound) {
             unbindService(mServiceConn);
             mIsBound = false;
         }
-        // mPlayerService = null;
-
+        
+        // unregisterReceiver(mStatusListener);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mStatusListener);
+        
         super.onStop();
     }
 
     @Override
+    public void onPause() {
+        Log.d(TAG, "onPause() ran");
+        super.onPause();
+    }
+    
+    @Override
     public void onResume() {
         Log.d(TAG, "onResume() ran");
         super.onResume();
-
-        // updateTrackInfo();
+        //updateTrackInfo();
         // setPlayButtonImage();
     }
 
@@ -357,30 +514,9 @@ public class PlayerActivity extends Activity {
         super.onDestroy();
     }
 
-    private void handleIntent(Intent intent) {
-        Log.d(TAG, "handleIntent() called");
-
-        String action = intent.getAction();
-        Bundle bundle = intent.getExtras();
-
-        Log.d(TAG, "intent.getAction(): " + action);
-        if (bundle != null) {
-            Log.d(TAG, "bundle.isEmpty()?:  " + bundle.isEmpty());
-
-            for (String key : bundle.keySet()) {
-                Log.d(TAG, "key: " + key + ", long: " + bundle.getLong("track_id"));
-            }
-        }
-        
-        // if (action == ACTION_PLAY) {
-        startService(new Intent(this, PlayerService.class));
-        // }
-    }
-
     protected void togglePlayPause() {
 
         if (mService != null) {
-
             if (mService.isPlaying()) {
                 mService.pause();
                 mIsPlaying = false;
@@ -389,7 +525,6 @@ public class PlayerActivity extends Activity {
                 mService.play();
                 mIsPlaying = true;
             }
-
             // TODO refreshNow();
             setPlayButtonImage();
         }
