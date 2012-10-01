@@ -1,6 +1,7 @@
 package com.pugh.sockso.android.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,7 +24,6 @@ import android.widget.TextView;
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.ServerFactory;
 import com.pugh.sockso.android.SocksoServer;
-import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
@@ -144,6 +144,11 @@ public class AlbumListFragmentActivity extends FragmentActivity {
         public void onListItemClick(ListView l, View v, int position, long id) {
             // TODO Insert desired behavior here.
             Log.i(TAG, "onListItemClick(): Item clicked: " + id);
+            
+            Intent intent = new Intent(getActivity(), AlbumActivity.class);
+            intent.putExtra("album_id", id);
+            
+            startActivity(intent);
         }
 
         @Override

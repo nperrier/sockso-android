@@ -2,6 +2,7 @@ package com.pugh.sockso.android.data;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import android.content.ContentProvider;
@@ -52,13 +53,12 @@ public class SocksoProvider extends ContentProvider {
     static {
         sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME, ARTISTS_CODE);
         sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME + "/#", ARTISTS_ID_CODE);
-        sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME + "/#/" + TrackColumns.TABLE_NAME,
-                ARTISTS_ID_TRACKS_CODE);
+        sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME + "/#/" + TrackColumns.TABLE_NAME, ARTISTS_ID_TRACKS_CODE);
 
         sURIMatcher.addURI(AUTHORITY, AlbumColumns.TABLE_NAME, ALBUMS_CODE);
         sURIMatcher.addURI(AUTHORITY, AlbumColumns.TABLE_NAME + "/#", ALBUMS_ID_CODE);
         sURIMatcher.addURI(AUTHORITY, AlbumColumns.TABLE_NAME + "/#/" + TrackColumns.TABLE_NAME, ALBUMS_ID_TRACKS_CODE);
-
+        
         sURIMatcher.addURI(AUTHORITY, TrackColumns.TABLE_NAME, TRACKS_CODE);
         sURIMatcher.addURI(AUTHORITY, TrackColumns.TABLE_NAME + "/#", TRACKS_ID_CODE);
 
@@ -265,18 +265,18 @@ public class SocksoProvider extends ContentProvider {
             break;
         case ALBUMS_CODE:
             Log.d(TAG, "In ALBUMS_CODE");
-
+            // Gets all albums and the artists associated with them
             queryBuilder.setProjectionMap(sAlbumProjectionMap);
             queryBuilder.setTables(AlbumColumns.TABLE_NAME + " JOIN " + ArtistColumns.TABLE_NAME + " ON "
                     + AlbumColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID);
             break;
         case ALBUMS_ID_CODE:
             Log.d(TAG, "In ALBUMS_ID_CODE");
-            /*
+            /* 
              * SELECT <projection>
              * FROM artists JOIN albums
              * ON artists.server_id=albums.artist_id
-             * WHERE albums._id=1
+             * WHERE albums._id=<id>
              */
 
             queryBuilder.setProjectionMap(sAlbumProjectionMap);
@@ -284,6 +284,26 @@ public class SocksoProvider extends ContentProvider {
                     + AlbumColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID);
             queryBuilder.appendWhere(AlbumColumns.FULL_ID + "=" + uri.getLastPathSegment());
 
+            break;
+        case ALBUMS_ID_TRACKS_CODE:
+            Log.d(TAG, "In ALBUMS_ID_TRACKS_CODE");
+            /*
+             * SELECT tracks.name as track_name, albums.name as album_name
+             * FROM albums
+             * JOIN tracks ON tracks.album_id=albums.server_id
+             * WHERE albums._id=<id>
+             */
+                        
+            List<String> segments = uri.getPathSegments();
+            String albumId = segments.get(1);
+            Log.d(TAG, "Path segment[1]: " + albumId);
+            
+            queryBuilder.setProjectionMap(sTrackProjectionMap); // TODO Need another projection def?
+            queryBuilder.setTables(AlbumColumns.TABLE_NAME + " JOIN " + TrackColumns.TABLE_NAME + " ON "
+                    + TrackColumns.FULL_ALBUM_ID + "=" + AlbumColumns.FULL_SERVER_ID);
+            queryBuilder.appendWhere(AlbumColumns.FULL_ID + "=" + albumId);
+            
+            
             break;
         case TRACKS_CODE:
             Log.d(TAG, "In TRACKS_CODE");
