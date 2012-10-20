@@ -47,18 +47,18 @@ final public class BatchOperation {
 		
 		// Apply the mOperations to the content provider
 		try {
-			
 			ContentProviderResult[] results = mResolver.applyBatch(SocksoProvider.AUTHORITY, mOperations);
 			
 			if((results != null) && (results.length > 0)){
 				result = results[0].uri;
-			}
-			
-		} catch (final OperationApplicationException e1) {
-			Log.e(TAG, "storing contact data failed", e1);
-		} catch (final RemoteException e2) {
-			Log.e(TAG, "storing contact data failed", e2);
+			}	
+		} 
+		catch (OperationApplicationException e) {
+			Log.e(TAG, "Failed to apply batch operation: ", e);
 		}
+        catch (RemoteException e) {
+            Log.e(TAG, "Failed to apply batch operation", e);
+        }
 		
 		mOperations.clear();
 		

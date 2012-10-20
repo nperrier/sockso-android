@@ -150,10 +150,9 @@ public class MusicManager {
 
         contentValues.put(TrackColumns.SERVER_ID, track.getServerId());
         contentValues.put(TrackColumns.NAME, track.getName());
+        contentValues.put(TrackColumns.TRACK_NO, track.getTrackNumber());
         contentValues.put(TrackColumns.ARTIST_ID, track.getArtistId());
         contentValues.put(TrackColumns.ALBUM_ID, track.getAlbumId());
-        // TODO contentValues.put(.TrackColumns.TRACK_NO,
-        // track.getTrackNumber());
 
         Uri insertUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
 

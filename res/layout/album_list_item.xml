@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:contentDescription="@+string/album_image_description"
         android:src="@drawable/icon" />
-
+ 
     <LinearLayout
         android:id="@+id/album_details_id"
         android:layout_width="wrap_content"

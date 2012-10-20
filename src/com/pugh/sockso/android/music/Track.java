@@ -11,6 +11,7 @@ public class Track implements MusicItem {
 
 	private static final String ID     = "id";
 	private static final String NAME   = "name";
+	private static final String NUMBER = "number";
 	private static final String ARTIST = "artist";
 	private static final String ALBUM  = "album";
 
@@ -120,7 +121,6 @@ public class Track implements MusicItem {
 	public String toString(){
 		return this.name;
 	}
-	
 
 	/*
 	 * "id": 497,
@@ -141,7 +141,8 @@ public class Track implements MusicItem {
 		Track track = new Track();
 		track.setServerId(jsonObj.getInt(ID));
 		track.setName(jsonObj.getString(NAME));
-
+		track.setTrackNumber(jsonObj.getInt(NUMBER));
+        
 		//ArtistBuilder artistBuilder = new ArtistBuilder();
 		//Artist artist = artistBuilder.build(jsonObject.getJSONObject(ARTIST_KEY));
 		//track.setArtist(artist);

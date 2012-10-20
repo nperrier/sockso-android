@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="100dp"
-    android:orientation="horizontal" >
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/album_image_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:contentDescription="@+string/album_image_description"
         android:src="@drawable/icon" 
-        android:padding="10dp"/>
-
+        android:padding="10dp"
+        android:layout_alignParentLeft="true"/>
+
     <LinearLayout
         android:id="@+id/album_details_id"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/play_album_button"
+        android:layout_toRightOf="@id/album_image_id"
         android:minHeight="?android:attr/listPreferredItemHeight"
-        android:orientation="vertical" 
-        android:padding="10dp">
+        android:orientation="vertical"
+        android:padding="10dp" >
 
         <TextView
             android:id="@+id/album_title_id"
@@ -31,6 +35,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall" />
+    
     </LinearLayout>
 
-</LinearLayout>
+    <ImageButton
+        android:id="@+id/play_album_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@android:drawable/ic_media_play" />
+
+</RelativeLayout>
