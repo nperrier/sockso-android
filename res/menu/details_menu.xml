@@ -6,6 +6,10 @@
         android:icon="@android:drawable/ic_menu_gallery" 
         android:title="@string/menu_library"/>
     <item
+        android:id="@+id/menu_item_player"
+        android:icon="@android:drawable/ic_media_play" 
+        android:title="@string/menu_player"/>
+    <item
         android:id="@+id/menu_item_settings"
         android:icon="@android:drawable/ic_menu_preferences"
         android:title="@string/menu_preferences"/>

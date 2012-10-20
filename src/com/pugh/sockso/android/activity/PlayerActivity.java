@@ -89,7 +89,7 @@ public class PlayerActivity extends Activity {
         Log.d(TAG, "onCreate() ran");
 
         super.onCreate(savedInstanceState);
-
+ 
         setContentView(R.layout.player);
 
         // All player buttons

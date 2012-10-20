@@ -16,6 +16,9 @@ import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -179,7 +182,7 @@ public class AlbumActivity extends FragmentActivity {
             TextView titleText = (TextView) mAlbumDetailsView.findViewById(R.id.album_title_id);
             titleText.setText(album.getName());
 
-            // Album Cover 
+            // Album Cover
             ImageView albumCover = (ImageView) mAlbumDetailsView.findViewById(R.id.album_image_id);
             SocksoServer server = ServerFactory.getServer(getActivity());
             CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
@@ -189,12 +192,13 @@ public class AlbumActivity extends FragmentActivity {
             ImageButton playButton = (ImageButton) mAlbumDetailsView.findViewById(R.id.play_album_button);
 
             playButton.setOnClickListener(new View.OnClickListener() {
+
                 @Override
                 public void onClick(View view) {
                     Log.d(TAG, "view: " + view.getClass());
-                    
+
                     // Call PlayerActivity with the album tracks set
-                    
+
                 }
             });
 
@@ -261,6 +265,49 @@ public class AlbumActivity extends FragmentActivity {
             mAdapter.swapCursor(null);
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.details_menu, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        Intent intent;
+
+        switch (item.getItemId()) {
+
+        case R.id.menu_item_library:
+
+            intent = new Intent(this, TabControllerActivity.class);
+            startActivity(intent);
+
+            break;
+        case R.id.menu_item_player:
+
+            intent = new Intent(this, PlayerActivity.class);
+            startActivity(intent);
+
+            break;
+        case R.id.menu_item_settings:
+
+            intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+
+            break;
+
+        default:
+            // No-op
+            break;
+        }
+
+        return true;
     }
 
 }

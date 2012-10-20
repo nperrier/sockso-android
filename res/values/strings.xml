@@ -27,4 +27,7 @@
     <string name="prefs_port_summary">Port</string>
     <string name="prefs_port_title">Port</string>
     <string name="notification_playing">Playing</string>
+    <string name="menu_preferences">Preferences</string>
+    <string name="menu_library">Library</string>
+    <string name="menu_player">Player</string>
 </resources>

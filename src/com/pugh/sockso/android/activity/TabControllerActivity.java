@@ -56,7 +56,7 @@ public class TabControllerActivity extends FragmentActivity {
 				TrackListFragmentActivity.TrackListFragment.class, null);
 
 		mTabsAdapter.addTab(
-				mTabHost.newTabSpec("artists").setIndicator("Artists"),
+				mTabHost.newTabSpec("artists").setIndicator("Artists"), 
 				ArtistListFragmentActivity.ArtistListFragment.class, null);
 
 		mTabsAdapter.addTab(mTabHost.newTabSpec("albums")

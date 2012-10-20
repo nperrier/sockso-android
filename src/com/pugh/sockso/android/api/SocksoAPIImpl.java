@@ -270,7 +270,7 @@ public class SocksoAPIImpl implements SocksoAPI {
 
 	public List<Artist> getArtists() throws IOException, JSONException {
 		Log.d(TAG, "getArtists() ran");
-		
+		  
 		List<Artist> artists = new ArrayList<Artist>();
 		ArtistAPI api = new ArtistAPI(mBaseApiUrl);
 
