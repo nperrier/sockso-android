@@ -243,6 +243,25 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         }
     }
 
+    public int getPosition() {
+        
+        if (mPlayer != null) {
+            return mPlayer.getCurrentPosition();
+        }
+        
+        return 0;
+    }
+    
+    public int getDuration() {
+        
+        if (mPlayer != null) {
+            return mPlayer.getDuration();
+        }
+        
+        return 0;
+    }
+    
+    
     /**
      * Reconfigures MediaPlayer according to audio focus settings and starts/restarts it. This
      * method starts/restarts the MediaPlayer respecting the current audio focus state. So if
@@ -280,7 +299,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     @Override
     public void onCompletion(MediaPlayer player) {
         Log.d(TAG, "onCompletion() called");
-
+        
         // TODO: When complete, the next track in the playlist should play,
         // unless there are no tracks left
         // for now, we'll just set the state to Stopped and rm the notification

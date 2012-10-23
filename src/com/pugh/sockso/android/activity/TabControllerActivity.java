@@ -26,7 +26,7 @@ import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 public class TabControllerActivity extends FragmentActivity {
 
 	private final static String TAG = TabControllerActivity.class.getSimpleName();
-	
+
 	TabHost mTabHost;
 	ViewPager mViewPager;
 	TabsAdapter mTabsAdapter;
@@ -35,16 +35,16 @@ public class TabControllerActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate ran");
-		
+
 		// Check if we have an account first
 		if( !SocksoAccountAuthenticator.hasSocksoAccount(getApplicationContext()) ){
 			Intent intent = new Intent(TabControllerActivity.this, LoginActivity.class);
 			//startActivityForResult(intent, NEW_ACCOUNT);
 			startActivity(intent);
 		}
-		
+
 		setContentView(R.layout.tab_host);
-		
+
 		mTabHost = (TabHost) findViewById(android.R.id.tabhost);
 		mTabHost.setup();
 
@@ -56,7 +56,7 @@ public class TabControllerActivity extends FragmentActivity {
 				TrackListFragmentActivity.TrackListFragment.class, null);
 
 		mTabsAdapter.addTab(
-				mTabHost.newTabSpec("artists").setIndicator("Artists"), 
+				mTabHost.newTabSpec("artists").setIndicator("Artists"),
 				ArtistListFragmentActivity.ArtistListFragment.class, null);
 
 		mTabsAdapter.addTab(mTabHost.newTabSpec("albums")
@@ -68,8 +68,8 @@ public class TabControllerActivity extends FragmentActivity {
 
 		Log.i(TAG, "onCreate() ended");
 	}
-	
-	
+
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
@@ -81,7 +81,10 @@ public class TabControllerActivity extends FragmentActivity {
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
-		// your stuff or nothing
+		if ( savedInstanceState != null) {
+			Log.d(TAG, "Restoring state: " + savedInstanceState.getString("tab"));
+			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
+		}
 	}
 
 	/**

@@ -1,19 +1,27 @@
 package com.pugh.sockso.android.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -28,6 +36,7 @@ import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 import com.pugh.sockso.android.music.Track;
+import com.pugh.sockso.android.player.MusicUtils;
 import com.pugh.sockso.android.player.PlayerService;
 
 public class PlayerActivity extends Activity {
@@ -44,6 +53,7 @@ public class PlayerActivity extends Activity {
     private ImageButton mRepeatButton;
     private ImageButton mShuffleButton;
 
+    
     // View seekbar
     private SeekBar mTrackProgressBar;
 
@@ -65,12 +75,16 @@ public class PlayerActivity extends Activity {
     // Is this activity bound to the PlayerService?
     private boolean mIsBound     = false;
 
+    // Is the activity paused?
+    private boolean mIsActivityPaused = false;
+    
     private boolean mIsShuffling = false;
     private boolean mIsRepeating = false;
-    private boolean mIsPlaying   = false;
     
     // Intent actions
     public static final String ACTION_PLAY = "com.pugh.sockso.android.player.ACTION_PLAY";
+    
+    private final static int REFRESH = 1;
 
     /**
      * Establish a connection with the service.
@@ -103,6 +117,8 @@ public class PlayerActivity extends Activity {
         mShuffleButton  = (ImageButton) findViewById(R.id.shuffleButton);
 
         mTrackProgressBar = (SeekBar) findViewById(R.id.trackProgressBar);
+        mTrackProgressBar.setMax(100); // 100%
+        
         mTrackCurrentDurationLabel = (TextView) findViewById(R.id.trackCurrentDurationLabel);
         mTrackTotalDurationLabel   = (TextView) findViewById(R.id.trackTotalDurationLabel);
 
@@ -246,7 +262,41 @@ public class PlayerActivity extends Activity {
 
     }
 
+    
+    private final Handler mHandler = new Handler() {
+        
+        @Override
+        public void handleMessage(Message msg) {
+            
+            switch (msg.what) {
 
+                case REFRESH:
+                    
+                    long next = refreshTime();
+                    queueNextRefresh(next);
+                    
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+    };
+
+    
+    private void queueNextRefresh( long delay ) {
+        
+        Log.d(TAG, "queueNextRefresh() delay: " + delay);
+        
+        if ( ! mIsActivityPaused ) {
+            Message message = mHandler.obtainMessage(REFRESH);
+            mHandler.removeMessages(REFRESH);
+            mHandler.sendMessageDelayed(message, delay);
+        }
+        
+    }
+    
+    
     private BroadcastReceiver mStatusListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -261,13 +311,12 @@ public class PlayerActivity extends Activity {
                 // set new max for progress bar
                 
                 updateTrackInfo();
-                setPlayButtonImage();
-                //queueNextRefresh(1);
+                //TODO setPlayButtonImage(mService.isPlaying());
+                queueNextRefresh(1);
             }
             else if (action.equals(PlayerService.TRACK_ENDED)) {
-                
-                mIsPlaying = false;
-                setPlayButtonImage();
+            
+                setPlayButtonImage(false);
             }
         }
     };
@@ -314,13 +363,9 @@ public class PlayerActivity extends Activity {
             Log.d(TAG, "service is in the middle of playing something");
             // something is playing now, so just update the view
 
-            if (mService.isPlaying()) {
-                mIsPlaying = true;
-            }
-
             setRepeatButtonImage();
             setShuffleButtonImage();
-            setPlayButtonImage();
+            setPlayButtonImage(mService.isPlaying());
             
             updateTrackInfo();
             
@@ -404,8 +449,7 @@ public class PlayerActivity extends Activity {
                 updateTrackInfo();
                 
                 mService.play();
-                mIsPlaying = true;
-                setPlayButtonImage();
+                setPlayButtonImage(true);
 
                 // This resets the intent, I assume?
                 //setIntent(new Intent());
@@ -415,9 +459,9 @@ public class PlayerActivity extends Activity {
             }
         }
 
-        //updateTrackInfo();
-        // long next = refreshNow();
-        // queueNextRefresh(next);
+        updateTrackInfo();
+        long next = refreshTime();
+        queueNextRefresh(next);
     }
 
     // This should update the UI to reflect the current state of the player
@@ -425,12 +469,19 @@ public class PlayerActivity extends Activity {
     private void updateTrackInfo() {
         Log.d(TAG, "updateTrackInfo() called");
         
+        if (mService == null)
+            return;
+        
         Track track = mService.getTrack();
         
         if ( track != null ) {
             //mArtistNameLabel.setText(track.getArtist());
             //mAlbumNameLabel.setText(track.getAlbum());
             mTrackNameLabel.setText(track.getName());
+            
+            String duration = MusicUtils.millisToTimer(mService.getDuration());
+            
+            mTrackTotalDurationLabel.setText(duration);
             
             SocksoServer server = ServerFactory.getServer(this);
             CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
@@ -442,15 +493,43 @@ public class PlayerActivity extends Activity {
     // This should update the parts of the UI that need to change quickly and often:
     // * progress bar
     // * timers
-    private void refreshNow() {
-        // TODO
-    }
+    private long refreshTime() {
+        
+        long half = 500; // half a second
+        long whole = 1000; // whole second
+        
+        if ( mService == null ) {
+            return half;
+        }
+        
+        int position = mService.getPosition();
+        int progress = 0;
+        
+        if ( position > 0 ) {          
 
+            int duration = mService.getDuration();
+            
+            progress = MusicUtils.getProgressPercentage(position, duration);
+            
+            String currentTime = MusicUtils.millisToTimer(position);
+            
+            mTrackCurrentDurationLabel.setText(currentTime);
+        }
+        
+        Log.d(TAG, "refreshTime() progress: " + progress);
+        mTrackProgressBar.setProgress(progress);
+        
+        return whole;
+    }
+    
+    
     @Override
     public void onStart() {
         Log.d(TAG, "onStart() ran");
         super.onStart();
 
+        mIsActivityPaused = false;
+        
         // Start the PlayerService
         Intent playerIntent = new Intent(this, PlayerService.class);
         startService(playerIntent);
@@ -469,17 +548,18 @@ public class PlayerActivity extends Activity {
         LocalBroadcastManager.getInstance(this).registerReceiver(mStatusListener, new IntentFilter(intentFilter));
         
         //updateTrackInfo();
-        // long next = refreshNow();
-        // queueNextRefresh(next);
+        long next = refreshTime();
+        queueNextRefresh(next);
     }
 
     @Override
     public void onStop() {
         Log.d(TAG, "onStop() ran");
 
-        // mPaused = true;
+        mIsActivityPaused = true;
 
-        // mHandler.removeMessages(REFRESH);
+        mHandler.removeMessages(REFRESH);
+        
         if (mIsBound) {
             unbindService(mServiceConn);
             mIsBound = false;
@@ -502,7 +582,7 @@ public class PlayerActivity extends Activity {
         Log.d(TAG, "onResume() ran");
         super.onResume();
         //updateTrackInfo();
-        // setPlayButtonImage();
+        //setPlayButtonImage();
     }
 
     @Override
@@ -517,22 +597,21 @@ public class PlayerActivity extends Activity {
     protected void togglePlayPause() {
 
         if (mService != null) {
+            
             if (mService.isPlaying()) {
                 mService.pause();
-                mIsPlaying = false;
+                setPlayButtonImage(false);
             }
             else {
                 mService.play();
-                mIsPlaying = true;
+                setPlayButtonImage(true);
             }
-            // TODO refreshNow();
-            setPlayButtonImage();
         }
     }
 
-    protected void setPlayButtonImage() {
+    protected void setPlayButtonImage(boolean isPlaying) {
 
-        if (mIsPlaying) {
+        if (isPlaying) {
             mPlayButton.setImageResource(R.drawable.btn_pause);
         }
         else {
@@ -570,4 +649,42 @@ public class PlayerActivity extends Activity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.player_menu, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        Intent intent;
+
+        switch (item.getItemId()) {
+
+        case R.id.menu_item_library:
+
+            intent = new Intent(this, TabControllerActivity.class);
+
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+
+            break;
+        case R.id.menu_item_settings:
+
+            intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+
+            break;
+
+        default:
+            // No-op
+            break;
+        }
+
+        return true;
+    }
 }
