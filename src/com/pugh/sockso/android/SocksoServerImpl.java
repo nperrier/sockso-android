@@ -15,6 +15,9 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
 import android.graphics.Bitmap;
@@ -74,9 +77,21 @@ public class SocksoServerImpl implements SocksoServer {
 
     public Bitmap downloadBitmap(String url) {
 
-        final HttpClient client = new DefaultHttpClient();
+        HttpParams httpParameters = new BasicHttpParams();
+        
+        // Set the timeout in milliseconds until a connection is established.
+        // The default value is zero, that means the timeout is not used.
+        int timeoutConnection = 3000; // 3 seconds
+        HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+        
+        // Set the default socket timeout (SO_TIMEOUT)
+        // in milliseconds which is the timeout for waiting for data.
+        int timeoutSocket = 5000;  // 5 seconds
+        HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
+        
+        final HttpClient client = new DefaultHttpClient(httpParameters);
         final HttpGet getRequest = new HttpGet(url);
-
+       
         try {
             HttpResponse response = client.execute(getRequest);
             final int statusCode = response.getStatusLine().getStatusCode();
