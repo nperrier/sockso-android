@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.ServerFactory;
@@ -52,7 +53,6 @@ public class PlayerActivity extends Activity {
     private ImageButton mRepeatButton;
     private ImageButton mShuffleButton;
 
-    
     // View seekbar
     private SeekBar mTrackProgressBar;
 
@@ -72,7 +72,7 @@ public class PlayerActivity extends Activity {
     private PlayerService mService;
 
     // Is this activity bound to the PlayerService?
-    private boolean mIsBound     = false;
+    private boolean mIsBound = false;
 
     // Is the activity paused?
     private boolean mIsActivityPaused = false;
@@ -317,6 +317,12 @@ public class PlayerActivity extends Activity {
             
                 setPlayButtonImage(false);
             }
+            else if (action.equals(PlayerService.TRACK_ERROR)) {
+                Log.d(TAG, "Track error!");                
+                
+                // TODO Could this happen in the middle of playing? TEST IT
+                Toast.makeText(PlayerActivity.this, R.string.player_error, Toast.LENGTH_LONG).show();
+            }
         }
     };
     
@@ -500,6 +506,7 @@ public class PlayerActivity extends Activity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(PlayerService.TRACK_CHANGED);
         intentFilter.addAction(PlayerService.TRACK_ENDED);
+        intentFilter.addAction(PlayerService.TRACK_ERROR);
         LocalBroadcastManager.getInstance(this).registerReceiver(mStatusListener, new IntentFilter(intentFilter));
         
         //updateTrackInfo();

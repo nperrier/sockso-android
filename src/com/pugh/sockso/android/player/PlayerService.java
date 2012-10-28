@@ -59,13 +59,16 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
     // This is to notify the activity that a track changed (or ended) and should update the UI
     public static final String TRACK_CHANGED = "com.pugh.sockso.android.player.TRACK_CHANGED";
-    public static final String TRACK_ENDED = "com.pugh.sockso.android.player.TRACK_ENDED";
+    public static final String TRACK_ENDED   = "com.pugh.sockso.android.player.TRACK_ENDED";
+    
+    public static final String TRACK_ERROR   = "com.pugh.sockso.android.player.TRACK_ERROR";
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate() called");
         super.onCreate();
     }
+    
 
     @Override
     public void onDestroy() {
@@ -87,12 +90,14 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         // clearNotification();
         // releaseLocks();
     }
+    
 
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind() ran");
         return mBinder;
     }
+    
 
     @Override
     public boolean onUnbind(Intent intent) {
@@ -117,11 +122,11 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     public boolean isPlaying() {
         Log.d(TAG, "isPlaying() called");
 
-        if (mPlayer == null || !mPlayer.isPlaying()) {
+        if ( mPlayer == null ) {
             return false;
         }
 
-        return true;
+        return mPlayer.isPlaying();
     }
 
     public void pause() {
@@ -145,8 +150,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
             return false;
         }
 
-        return mState == State.Paused;
-
+        return (mState == State.Paused);
     }
 
     // TODO Remove once playlist is setup
@@ -307,11 +311,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
         // Do this only if there are no tracks in the playlist:
         // Notify activity to update UI:
-        Log.d(TAG, "Broadcasting message: TRACK_ENDED");
-
-        Intent intent = new Intent(TRACK_ENDED);
-        // intent.putExtra("message", "This is my message!");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        notifyChange(TRACK_ENDED);
     }
 
     @Override
@@ -327,13 +327,17 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
     @Override
     public boolean onError(MediaPlayer player, int what, int extra) {
-        Log.d(TAG, "onError() called");
-
-        // TODO handle errors
-
-        // MediaPlayer.MEDIA_ERROR_UNKNOWN
-
-        return false;
+        Log.e(TAG, "onError() called");
+        Log.e(TAG, "what: " + what);
+        
+        // Reset the player back to a valid state:
+        mPlayer.reset();
+        mState = State.Retrieving; // TODO correct state?
+        
+        // Notify the activity so the user can be notified
+        notifyChange(TRACK_ERROR);
+        
+        return true;
     }
 
     /**
@@ -342,7 +346,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
      * (such as playing music), and must appear to the user as a notification.
      * That's why we create the notification here.
      */
-    void setUpAsForeground(final String text) {
+    private void setUpAsForeground(final String text) {
 
         Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
         intent.setAction("From Service!");
@@ -380,7 +384,8 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
      * or that the play-state changed (paused/resumed).
      */
     private void notifyChange(String what) {
-
+        Log.d(TAG, "Broadcasting message: " + what);
+        
         Intent intent = new Intent(what);
         /*
          * TODO Set this stuff
@@ -390,7 +395,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
          * intent.putExtra("track", getTrackName());
          * intent.putExtra("playing", isPlaying());
          */
-        sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
         /*
          * if (what.equals(QUEUE_CHANGED)) {
