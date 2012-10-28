@@ -286,6 +286,7 @@ public class AlbumActivity extends FragmentActivity {
         case R.id.menu_item_library:
 
             intent = new Intent(this, TabControllerActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
 
             break;
