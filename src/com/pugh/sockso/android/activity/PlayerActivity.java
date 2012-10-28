@@ -33,8 +33,7 @@ import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.ServerFactory;
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.data.CoverArtFetcher;
-import com.pugh.sockso.android.data.SocksoProvider;
-import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
+import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.music.Track;
 import com.pugh.sockso.android.player.MusicUtils;
 import com.pugh.sockso.android.player.PlayerService;
@@ -378,50 +377,6 @@ public class PlayerActivity extends Activity {
     }
     
     
-    // TODO Should the Track object be created by the activity or service?
-    private Track getTrack( long trackId ) {
-        Log.d(TAG, "getTrack() called");
-        
-        Track track = null;
-        
-        // Start the PlayerActivity and send it the id
-        // of the track which the player activity will retrieve
-        // from the content provider and send to the player service
-        
-        String[] projection = { TrackColumns.SERVER_ID, 
-                                TrackColumns.ARTIST_NAME, 
-                                TrackColumns.NAME,
-                                TrackColumns.TRACK_NO
-                              };
-        Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME + "/" + trackId);
-        
-        ContentResolver cr = getContentResolver();
-        Cursor cursor = cr.query(uri, projection, null, null, null);
-        
-        Log.d(TAG, "col count: " + cursor.getColumnCount());
-        Log.d(TAG, "column_name[0]: " + cursor.getColumnName(0));
-        Log.d(TAG, "row count: " + cursor.getCount());
-        
-        cursor.moveToNext();
-        
-        long serverTrackId = cursor.getLong(0);
-        String artistName = cursor.getString(1);
-        String trackName  = cursor.getString(2);
-        int trackNumber   = cursor.getInt(3);
-        
-        cursor.close();
-        Log.d(TAG, "serverTrackId: " + serverTrackId);
-        
-        track = new Track();
-        track.setId(trackId); // TODO Should be long type
-        track.setServerId(serverTrackId);
-        track.setName(trackName);
-        track.setArtist(artistName);
-        track.setTrackNumber(trackNumber);
-        
-        return track;
-    }
-    
     private void startPlayback( long trackId ) {
         Log.d(TAG, "startPlayback() called with trackId: " + trackId);
 
@@ -439,7 +394,7 @@ public class PlayerActivity extends Activity {
         // Only start track if the track is different
         if (serviceTrack == null || ( serviceTrack != null && trackId != serviceTrack.getId() ) ) {
 
-            Track track = getTrack(trackId);
+            Track track = MusicManager.getTrack(getContentResolver(), trackId);
             
             try {
                 mService.stop(); // stop whatever is currently playing

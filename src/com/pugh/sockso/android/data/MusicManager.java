@@ -7,6 +7,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
@@ -160,4 +161,45 @@ public class MusicManager {
         batchOperation.add(cpo);
     }
 
+    // TODO Should the Track object be created by the activity or service?
+    public static Track getTrack( final ContentResolver contentResolver , long trackId ) {
+        Log.d(TAG, "getTrack() called");
+        
+        Track track = null;
+        
+        // Start the PlayerActivity and send it the id
+        // of the track which the player activity will retrieve
+        // from the content provider and send to the player service
+        
+        String[] projection = { 
+                                TrackColumns.SERVER_ID, 
+                                TrackColumns.ARTIST_NAME, 
+                                TrackColumns.NAME,
+                                TrackColumns.TRACK_NO
+                              };
+        Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME + "/" + trackId);
+        
+        Cursor cursor = contentResolver.query(uri, projection, null, null, null);
+        
+        cursor.moveToNext();
+        
+        long serverTrackId = cursor.getLong(0);
+        String artistName = cursor.getString(1);
+        String trackName  = cursor.getString(2);
+        int trackNumber   = cursor.getInt(3);
+        
+        cursor.close();
+        
+        Log.d(TAG, "serverTrackId: " + serverTrackId);
+        
+        track = new Track();
+        track.setId(trackId);
+        track.setServerId(serverTrackId);
+        track.setName(trackName);
+        track.setArtist(artistName);
+        track.setTrackNumber(trackNumber);
+        
+        return track;
+    }
+    
 }
