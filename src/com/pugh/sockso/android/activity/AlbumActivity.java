@@ -293,6 +293,7 @@ public class AlbumActivity extends FragmentActivity {
         case R.id.menu_item_player:
 
             intent = new Intent(this, PlayerActivity.class);
+            intent.setAction(PlayerActivity.ACTION_VIEW_PLAYER);
             startActivity(intent);
 
             break;
