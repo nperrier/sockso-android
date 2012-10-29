@@ -100,6 +100,7 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 
             SocksoServer server = ServerFactory.getServer(mContext);
             CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
+            coverFetcher.setDimensions(115, 115);
             // TODO REMOVE & REPLACE
             coverFetcher.download("al" + albumId, viewHolder.cover);
         }

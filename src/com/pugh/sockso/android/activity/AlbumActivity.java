@@ -186,7 +186,7 @@ public class AlbumActivity extends FragmentActivity {
             ImageView albumCover = (ImageView) mAlbumDetailsView.findViewById(R.id.album_image_id);
             SocksoServer server = ServerFactory.getServer(getActivity());
             CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
-
+            coverFetcher.setDimensions(150, 150);
             coverFetcher.download("al" + album.getServerId(), albumCover);
 
             ImageButton playButton = (ImageButton) mAlbumDetailsView.findViewById(R.id.play_album_button);

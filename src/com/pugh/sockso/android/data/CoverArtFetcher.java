@@ -16,14 +16,21 @@ public class CoverArtFetcher {
     private static final String TAG = CoverArtFetcher.class.getSimpleName();
 
     private SocksoServer mServer;
+    private int width  = -1;
+    private int height = -1;
 
     public CoverArtFetcher(SocksoServer server) {
         this.mServer = server;
     }
 
+    public void setDimensions(int width, int height) {
+        this.width  = width;
+        this.height = height;
+    }    
+    
     public Bitmap downloadBitmap(String musicItemId) {
 
-        String url = mServer.getRootUrl() + "/file/cover/" + musicItemId; 
+        String url = mServer.getRootUrl() + "/file/cover/" + musicItemId;
         
         return mServer.downloadBitmap(url);
     }
@@ -76,6 +83,11 @@ public class CoverArtFetcher {
                 ImageView imageView = imageViewReference.get();
                 BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
+                if ( width > 0 && height > 0 ) {
+                    // resize bitmap
+                    bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+                }
+                
                 // Change bitmap only if this process is still associated with it
                 if (this == bitmapDownloaderTask) {
                     imageView.setImageBitmap(bitmap);
