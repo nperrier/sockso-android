@@ -391,7 +391,7 @@ public class PlayerActivity extends Activity {
 
     
     private void playTrack( long trackId ) {
-        Log.d(TAG, "startPlayback() called");
+        Log.d(TAG, "playTrack() called");
 
         if (mService == null) {
             Log.d(TAG, "mService is null");
@@ -440,7 +440,7 @@ public class PlayerActivity extends Activity {
 
         mService.stop(); // stop whatever is currently playing
         mService.open(tracks);
-            
+        
         setPlayButtonImage(true);
         //updateTrackInfo();
             

@@ -177,12 +177,12 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     private void configAndStartMediaPlayer() {
         Log.d(TAG, "configAndStartMediaPlayer() called");
 
-        // TODO Volume should be initially max, but ducked for phone calls, etc..
-        mPlayer.setVolume(1.0f, 1.0f);
-
-        mPlayer.start();
+        Track track = mPlaylist.get(mPlayIndex);
+        String notificationText = getString(R.string.notification_playing) + ": " 
+                + track.getArtist() + " - \"" + track.getName() + "\"";
         
-        setUpAsForeground(getString(R.string.notification_playing));
+        mPlayer.start();
+        setUpAsForeground(notificationText);
     }
     
     /**
@@ -254,6 +254,9 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
             Log.d(TAG, "Creating a new MediaPlayer!");
 
             mPlayer = new MediaPlayer();
+            
+            // TODO Volume should be initially max, but ducked for phone calls, etc..
+            mPlayer.setVolume(1.0f, 1.0f);
 
             // Listeners to the media player's events
             mPlayer.setOnPreparedListener(this);
