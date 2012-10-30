@@ -30,6 +30,7 @@ import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.ServerFactory;
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.data.CoverArtFetcher;
+import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
@@ -102,14 +103,8 @@ public class AlbumActivity extends FragmentActivity {
             int trackTitleCol = cursor.getColumnIndex(TrackColumns.NAME);
             viewHolder.title.setText(cursor.getString(trackTitleCol));
 
-            // TODO
             int trackNumberCol = cursor.getColumnIndex(TrackColumns.TRACK_NO);
-
-            Log.d(TAG, "trackNumberCol: " + trackNumberCol);
-
             int trackNumber = cursor.getInt(trackNumberCol);
-
-            Log.d(TAG, "trackNumber: " + trackNumber);
 
             viewHolder.trackNumber.setText(String.valueOf(trackNumber));
         }
@@ -134,39 +129,6 @@ public class AlbumActivity extends FragmentActivity {
             super.onCreate(savedInstanceState);
         }
 
-        // TODO: Have the MusicManager handle this?
-        private Album getAlbum(long albumId) {
-            Log.d(TAG, "getAlbumInfo() called");
-
-            Album album = null;
-
-            String[] projection = { AlbumColumns.SERVER_ID, AlbumColumns.ARTIST_NAME, AlbumColumns.NAME };
-            Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + AlbumColumns.TABLE_NAME + "/" + albumId);
-
-            ContentResolver cr = getActivity().getContentResolver();
-            Cursor cursor = cr.query(uri, projection, null, null, null);
-
-            Log.d(TAG, "col count: " + cursor.getColumnCount());
-            Log.d(TAG, "column_name[0]: " + cursor.getColumnName(0));
-            Log.d(TAG, "row count: " + cursor.getCount());
-
-            cursor.moveToNext();
-
-            long serverAlbumId = cursor.getLong(0);
-            String artistName = cursor.getString(1);
-            String trackName = cursor.getString(2);
-
-            cursor.close();
-            Log.d(TAG, "serverAlbumId: " + serverAlbumId);
-
-            album = new Album();
-            album.setId(albumId);
-            album.setServerId(serverAlbumId);
-            album.setName(trackName);
-            album.setArtist(artistName);
-
-            return album;
-        }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -174,7 +136,7 @@ public class AlbumActivity extends FragmentActivity {
 
             mAlbumDetailsView = inflater.inflate(R.layout.album_details_header, null, false);
 
-            Album album = getAlbum(mAlbumId);
+            Album album = MusicManager.getAlbum(getActivity().getContentResolver() , mAlbumId);
 
             TextView artistText = (TextView) mAlbumDetailsView.findViewById(R.id.album_artist_id);
             artistText.setText(album.getArtist());
@@ -195,10 +157,14 @@ public class AlbumActivity extends FragmentActivity {
 
                 @Override
                 public void onClick(View view) {
-                    Log.d(TAG, "view: " + view.getClass());
+                    // TODO Call PlayerActivity with the album tracks set
+                    Log.i(TAG, "playButton clicked: " + view);
 
-                    // Call PlayerActivity with the album tracks set
+                    Intent intent = new Intent(getActivity(), PlayerActivity.class);
+                    intent.setAction(PlayerActivity.ACTION_PLAY_ALBUM);
+                    intent.putExtra("album_id", mAlbumId);
 
+                    startActivity(intent);
                 }
             });
 
@@ -235,9 +201,9 @@ public class AlbumActivity extends FragmentActivity {
             Log.i(TAG, "onListItemClick(): Item clicked: " + id + ", position: " + position);
 
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
-            intent.setAction(PlayerActivity.ACTION_PLAY);
+            intent.setAction(PlayerActivity.ACTION_PLAY_TRACK);
             intent.putExtra("track_id", id);
-
+            
             startActivity(intent);
         }
 

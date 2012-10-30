@@ -298,9 +298,12 @@ public class SocksoProvider extends ContentProvider {
             String albumId = segments.get(1);
             Log.d(TAG, "Path segment[1]: " + albumId);
             
-            queryBuilder.setProjectionMap(sTrackProjectionMap); // TODO Need another projection def?
-            queryBuilder.setTables(AlbumColumns.TABLE_NAME + " JOIN " + TrackColumns.TABLE_NAME + " ON "
-                    + TrackColumns.FULL_ALBUM_ID + "=" + AlbumColumns.FULL_SERVER_ID);
+            queryBuilder.setProjectionMap(sTrackProjectionMap);
+            queryBuilder.setTables(AlbumColumns.TABLE_NAME 
+                    + " JOIN " + TrackColumns.TABLE_NAME 
+                    + " ON " + TrackColumns.FULL_ALBUM_ID + "=" + AlbumColumns.FULL_SERVER_ID 
+                    + " JOIN " + ArtistColumns.TABLE_NAME
+                    + " ON " + TrackColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID );
             queryBuilder.appendWhere(AlbumColumns.FULL_ID + "=" + albumId);
             
             

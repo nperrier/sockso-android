@@ -1,5 +1,6 @@
 package com.pugh.sockso.android.data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.v4.content.CursorLoader;
 import android.util.Log;
 
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
@@ -162,21 +164,17 @@ public class MusicManager {
     }
 
     // TODO Should the Track object be created by the activity or service?
-    public static Track getTrack( final ContentResolver contentResolver , long trackId ) {
+    public static Track getTrack( final ContentResolver contentResolver, long trackId ) {
         Log.d(TAG, "getTrack() called");
         
         Track track = null;
         
-        // Start the PlayerActivity and send it the id
-        // of the track which the player activity will retrieve
-        // from the content provider and send to the player service
-        
         String[] projection = { 
-                                TrackColumns.SERVER_ID, 
-                                TrackColumns.ARTIST_NAME, 
-                                TrackColumns.NAME,
-                                TrackColumns.TRACK_NO
-                              };
+                TrackColumns.SERVER_ID, 
+                TrackColumns.ARTIST_NAME, 
+                TrackColumns.NAME,
+                TrackColumns.TRACK_NO
+                };
         Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME + "/" + trackId);
         
         Cursor cursor = contentResolver.query(uri, projection, null, null, null);
@@ -200,6 +198,84 @@ public class MusicManager {
         track.setTrackNumber(trackNumber);
         
         return track;
+    }
+
+
+    public static Album getAlbum( final ContentResolver contentResolver, long albumId ) {
+        Log.d(TAG, "getAlbumInfo() called");
+
+        Album album = null;
+
+        String[] projection = { 
+                AlbumColumns.SERVER_ID, 
+                AlbumColumns.ARTIST_NAME, 
+                AlbumColumns.NAME 
+                };
+        Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + AlbumColumns.TABLE_NAME + "/" + albumId);
+
+        Cursor cursor = contentResolver.query(uri, projection, null, null, null);
+
+        cursor.moveToNext();
+
+        long serverAlbumId = cursor.getLong(0);
+        String artistName = cursor.getString(1);
+        String trackName = cursor.getString(2);
+
+        cursor.close();
+        
+        Log.d(TAG, "serverAlbumId: " + serverAlbumId);
+
+        album = new Album();
+        album.setId(albumId);
+        album.setServerId(serverAlbumId);
+        album.setName(trackName);
+        album.setArtist(artistName);
+
+        return album;
+    }
+
+    public static List<Track> getTrackForAlbum(ContentResolver contentResolver, long albumId) {       
+        Log.d(TAG, "getTrackForAlbum() called");
+        
+        List<Track> tracks = new ArrayList<Track>(10);
+        
+        String[] projection = {
+                TrackColumns._ID,
+                TrackColumns.SERVER_ID, 
+                TrackColumns.ARTIST_NAME,
+                TrackColumns.ALBUM_NAME,
+                TrackColumns.NAME,
+                TrackColumns.TRACK_NO
+                };
+        Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + AlbumColumns.TABLE_NAME + "/" + albumId
+                + "/" + TrackColumns.TABLE_NAME);        
+        Cursor cursor = contentResolver.query(uri, projection, null, null,  TrackColumns.TRACK_NO + " ASC");
+        
+        while (cursor.moveToNext()) {
+
+            long trackId = cursor.getLong(0);
+            long serverTrackId = cursor.getLong(1);
+            String artistName = cursor.getString(2);
+            String albumName = cursor.getString(3);
+            String trackName = cursor.getString(4);
+            int trackNumber = cursor.getInt(5);
+
+            Log.d(TAG, "serverTrackId: " + serverTrackId);
+
+            Track track = new Track();
+            track.setId(trackId);
+            track.setServerId(serverTrackId);
+            track.setName(trackName);
+            track.setArtist(artistName);
+            track.setAlbum(albumName);
+            track.setTrackNumber(trackNumber);
+            
+            tracks.add(track);
+        }
+        
+        cursor.close();
+        
+        return tracks;
     }
     
 }

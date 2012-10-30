@@ -1,6 +1,6 @@
 package com.pugh.sockso.android.player;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Notification;
@@ -27,19 +27,9 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
     private static final String TAG = PlayerService.class.getSimpleName();
 
-    // indicates the state our service:
-    enum State {
-        Retrieving, // the MediaRetriever is retrieving music
-        Stopped, // media player is stopped and not prepared to play
-        Preparing, // media player is preparing...
-        Playing, // playback active (media player ready!). (but the media player may actually be
-                 // paused in this state if we don't have audio focus. But we stay in this state
-                 // so that we know we have to resume playback once we get focus back)
-        Paused // playback paused (media player ready!)
-    };
-
-    private State mState = State.Retrieving; // correct start state?
-
+    // State for when the player is done preparing, currently playing a track, or paused:
+    private boolean mIsInitialized = false;
+    
     // Media Player
     private MediaPlayer mPlayer = null;
 
@@ -55,17 +45,21 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     private IBinder mBinder = new PlayerServiceBinder();
 
     // TODO Remove once playlist setup
-    private Track mTrack = null;
+    private int mPlayIndex = 0;
 
     // This is to notify the activity that a track changed (or ended) and should update the UI
+    public static final String TRACK_STARTED = "com.pugh.sockso.android.player.TRACK_STARTED";
+    public static final String TRACK_RESUMED = "com.pugh.sockso.android.player.TRACK_RESUMED";
     public static final String TRACK_CHANGED = "com.pugh.sockso.android.player.TRACK_CHANGED";
     public static final String TRACK_ENDED   = "com.pugh.sockso.android.player.TRACK_ENDED";
-    
     public static final String TRACK_ERROR   = "com.pugh.sockso.android.player.TRACK_ERROR";
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate() called");
+        
+        mPlaylist = new ArrayList<Track>();
+        
         super.onCreate();
     }
     
@@ -138,30 +132,57 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
             // stop being a foreground service
             stopForeground(true);
-
-            mState = State.Paused;
         }
     }
 
-    public boolean isPaused() {
-        Log.d(TAG, "isPaused() called");
-
-        if (mPlayer == null || mPlayer.isPlaying()) {
-            return false;
+    // Sets the playlist to a single track
+    public void open(Track track) {
+        Log.d(TAG, "open(): " + track.getName());
+        
+        if ( isPlaying() ) {
+            throw new IllegalStateException("Can't call open() while track is playing!");
         }
-
-        return (mState == State.Paused);
+        
+        mPlaylist.clear();
+        mPlaylist.add(track);
+        mPlayIndex = 0;
     }
 
-    // TODO Remove once playlist is setup
-    public void setTrack(Track track) {
-        Log.d(TAG, "setTrack(): " + track.getName());
-        mTrack = track;
+    // Sets the playlist to a list of tracks
+    public void open( List<Track> tracks ) {
+        Log.d(TAG, "open(): " + tracks.size());
+        
+        if ( isPlaying() ) {
+            throw new IllegalStateException("Can't call open() while track is playing!");
+        }
+        
+        mPlaylist.clear();
+        mPlaylist.addAll(tracks);
+        mPlayIndex = 0;
     }
-
+    
     // TODO: This should return the currently playing track id OR Track object
     public Track getTrack() {
-        return mTrack;
+        return mPlaylist.get(mPlayIndex);
+    }
+    
+    /**
+     * Reconfigures MediaPlayer according to audio focus settings and starts/restarts it. This
+     * method starts/restarts the MediaPlayer respecting the current audio focus state. So if
+     * we have focus, it will play normally; if we don't have focus, it will either leave the
+     * MediaPlayer paused or set it to a low volume, depending on what is allowed by the
+     * current focus settings. This method assumes mPlayer != null, so if you are calling it,
+     * you have to do so from a context where you are sure this is the case.
+     */
+    private void configAndStartMediaPlayer() {
+        Log.d(TAG, "configAndStartMediaPlayer() called");
+
+        // TODO Volume should be initially max, but ducked for phone calls, etc..
+        mPlayer.setVolume(1.0f, 1.0f);
+
+        mPlayer.start();
+        
+        setUpAsForeground(getString(R.string.notification_playing));
     }
     
     /**
@@ -171,44 +192,51 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     public void play() {
         Log.d(TAG, "play() called");
 
-        if (mState == State.Paused) {
-            // If we're paused, just continue playback and restore the 'foreground service' state.
-            mState = State.Playing;
-            setUpAsForeground(getString(R.string.notification_playing));
+        if ( mPlaylist.size() == 0 ) {
+            return; 
+        }
+        
+        if (mPlayer != null && mIsInitialized) {
+            
             configAndStartMediaPlayer();
+            notifyChange(TRACK_RESUMED);
         }
         else {
-
+            
             createMediaPlayerIfNeeded();
 
+            Track track = mPlaylist.get(mPlayIndex);
+            
             // hardcoded TODO remove
-            String url = "http://sockso.perrierliquors.com:4444/stream/" + mTrack.getServerId();
+            String url = "http://sockso.perrierliquors.com:4444/stream/" + track.getServerId();
 
             mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
+            
             try {
                 mPlayer.setDataSource(url);
-                // mPlayer.prepareAsync();
-                // TODO I don't know why, but prepareAsync does not work correctly, just hangs
-                mPlayer.prepare();
-
-                // puts the notification in the status bar
-                setUpAsForeground("Sockso: (playing)");
-                configAndStartMediaPlayer();
+                mPlayer.prepareAsync();
             }
-            catch (IOException e) {
-                Log.e(TAG, "IOException with url " + url + ": " + e.getMessage());
+            catch (Exception e) {
+                Log.e(TAG, "Exception with url " + url + ": " + e.getMessage());
             }
         }
     }
 
-    // TODO
+    @Override
+    public void onPrepared(MediaPlayer mp) {        
+        Log.d(TAG, "onPrepared() called");
+        
+        mIsInitialized = true;
+        configAndStartMediaPlayer();
+        notifyChange(TRACK_STARTED);
+    }
+    
     public void stop() {
         Log.d(TAG, "stop() called");
         if (mPlayer != null) {
             mPlayer.stop();
-
-            mState = State.Stopped;
+            
+            mIsInitialized = false;
             // stop being a foreground service
             stopForeground(true);
         }
@@ -219,7 +247,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
      * This will create the media player if needed, or reset the existing media player if one
      * already exists.
      */
-    void createMediaPlayerIfNeeded() {
+    private void createMediaPlayerIfNeeded() {
 
         if (mPlayer == null) {
 
@@ -243,60 +271,29 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
              */
         }
         else {
+            mIsInitialized = false;
             mPlayer.reset();
         }
     }
 
-    public int getPosition() {
+    public synchronized int getPosition() {
         
-        if (mPlayer != null) {
+        if (mIsInitialized) {
             return mPlayer.getCurrentPosition();
         }
         
         return 0;
     }
     
-    public int getDuration() {
+    public synchronized int getDuration() {
         
-        if (mPlayer != null) {
+        if (mIsInitialized) {
             return mPlayer.getDuration();
         }
         
         return 0;
     }
     
-    
-    /**
-     * Reconfigures MediaPlayer according to audio focus settings and starts/restarts it. This
-     * method starts/restarts the MediaPlayer respecting the current audio focus state. So if
-     * we have focus, it will play normally; if we don't have focus, it will either leave the
-     * MediaPlayer paused or set it to a low volume, depending on what is allowed by the
-     * current focus settings. This method assumes mPlayer != null, so if you are calling it,
-     * you have to do so from a context where you are sure this is the case.
-     */
-    void configAndStartMediaPlayer() {
-        Log.d(TAG, "configAndStartMediaPlayer() called");
-
-        // TODO Volume should be initially max, but ducked for phone calls, etc..
-        mPlayer.setVolume(1.0f, 1.0f);
-
-        if (!mPlayer.isPlaying()) {
-            mPlayer.start();
-            mState = State.Playing;
-        }
-    }
-
-    /**
-     * Called when media player is done preparing.
-     * That means we can start playing!
-     */
-    public void onPrepared(MediaPlayer player) {
-        Log.d(TAG, "onPrepared() called");
-        // mState = State.Playing;
-        // updateNotification(mSongTitle + " (playing)");
-        configAndStartMediaPlayer();
-    }
-
     /**
      * Called when the mediaplayer is done playing the current track
      */
@@ -304,14 +301,17 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     public void onCompletion(MediaPlayer player) {
         Log.d(TAG, "onCompletion() called");
         
-        // TODO: When complete, the next track in the playlist should play,
-        // unless there are no tracks left
-        // for now, we'll just set the state to Stopped and rm the notification
         stop();
-
-        // Do this only if there are no tracks in the playlist:
-        // Notify activity to update UI:
-        notifyChange(TRACK_ENDED);
+        
+        if ( mPlayIndex + 1 >= mPlaylist.size() ) {
+            
+            notifyChange(TRACK_ENDED);
+        }
+        else {
+            mPlayIndex++;
+            play();
+            notifyChange(TRACK_CHANGED);
+        }
     }
 
     @Override
@@ -322,7 +322,6 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         // intent.putExtra("percentage", percentage);
         // LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         // TODO: This should provide some feedback to the user if we're streaming
-
     }
 
     @Override
@@ -332,7 +331,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         
         // Reset the player back to a valid state:
         mPlayer.reset();
-        mState = State.Retrieving; // TODO correct state?
+        mIsInitialized = false;
         
         // Notify the activity so the user can be notified
         notifyChange(TRACK_ERROR);
@@ -349,7 +348,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     private void setUpAsForeground(final String text) {
 
         Intent intent = new Intent(getApplicationContext(), PlayerActivity.class);
-        intent.setAction("From Service!");
+        intent.setAction(PlayerActivity.ACTION_VIEW_PLAYER);
         
         //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -361,7 +360,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         mNotification.tickerText = text;
         mNotification.icon = R.drawable.ic_stat_playing;
         mNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-        mNotification.setLatestEventInfo(getApplicationContext(), TAG, text, pendingIntent);
+        mNotification.setLatestEventInfo(getApplicationContext(), getString(R.string.app_name), text, pendingIntent);
 
         startForeground(NOTIFICATION_ID, mNotification);
     }
@@ -406,5 +405,5 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
          * }
          */
     }
-
+    
 }

@@ -147,7 +147,7 @@ public class TrackListFragmentActivity extends FragmentActivity {
             Log.i(TAG, "onListItemClick(): Item clicked: " + id + ", position: " + position);
             
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
-            intent.setAction(PlayerActivity.ACTION_PLAY);
+            intent.setAction(PlayerActivity.ACTION_PLAY_TRACK);
             intent.putExtra("track_id", id);
             
             startActivity(intent);

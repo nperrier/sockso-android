@@ -43,6 +43,11 @@ public class MusicUtils {
      * @param totalDuration
      */
     public static int getProgressPercentage(long currentDuration, long totalDuration) {
+        
+        if (totalDuration == 0) {
+            return 0;
+        }
+        
         Double percentage = (double) 0;
 
         long currentSeconds = (int) (currentDuration / 1000);
@@ -63,6 +68,11 @@ public class MusicUtils {
      *            returns current duration in milliseconds
      */
     public static int progressToTimer(int progress, int totalDuration) {
+        
+        if ( progress == 0 ){
+            return 0;
+        }
+        
         int currentDuration = 0;
         totalDuration = (int) (totalDuration / 1000);
         currentDuration = (int) ((((double) progress) / 100) * totalDuration);
