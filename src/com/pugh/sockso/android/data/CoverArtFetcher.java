@@ -75,6 +75,7 @@ public class CoverArtFetcher {
          */
         @Override
         protected void onPostExecute(Bitmap bitmap) {
+            
             if (isCancelled()) {
                 bitmap = null;
             }
@@ -83,7 +84,7 @@ public class CoverArtFetcher {
                 ImageView imageView = imageViewReference.get();
                 BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
-                if ( width > 0 && height > 0 ) {
+                if ( bitmap != null && width > 0 && height > 0 ) {
                     // resize bitmap
                     bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
                 }
