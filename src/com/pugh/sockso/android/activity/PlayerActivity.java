@@ -160,7 +160,8 @@ public class PlayerActivity extends Activity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "NextTrack Button clicked");
-                // TODO
+                
+                nextTrack();
             }
         });
 
@@ -172,6 +173,8 @@ public class PlayerActivity extends Activity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "PreviousTrack Button clicked");
+                
+                prevTrack();
             }
         });
 
@@ -245,6 +248,26 @@ public class PlayerActivity extends Activity {
     }
 
     
+    // TODO
+    protected void nextTrack() {
+        
+        if ( mService == null ) {
+            return;
+        }
+        
+        mService.skipTrack();
+    }
+
+    // TODO
+    protected void prevTrack() {
+        
+        if ( mService == null ) {
+            return;
+        }
+        
+        mService.prevTrack();
+    }
+
     private final Handler mHandler = new Handler() {
         
         @Override
@@ -277,37 +300,31 @@ public class PlayerActivity extends Activity {
     
     
     private BroadcastReceiver mStatusListener = new BroadcastReceiver() {
+        
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive() called");
             
             String action = intent.getAction();
             
-            if (action.equals(PlayerService.TRACK_CHANGED)) {
-                Log.d(TAG, "Track changed");
-                //updateTrackInfo();
+            if ( action.equals(PlayerService.TRACK_ENDED) 
+              || action.equals(PlayerService.TRACK_RESUMED) ) {
+                Log.d(TAG, "Track stopped/resumed");
+                setPlayButtonImage();
             }
-            else if (action.equals(PlayerService.TRACK_ENDED)) {
-            
-                setPlayButtonImage(false);
-            }
-            else if (action.equals(PlayerService.TRACK_STARTED)) {
-                Log.d(TAG, "Track started");
+            else if ( action.equals(PlayerService.TRACK_STARTED) 
+                   || action.equals(PlayerService.TRACK_CHANGED) ) {
+                Log.d(TAG, "Track started/changed");
                 
-                //setPlayButtonImage(true);
+                setPlayButtonImage();
                 updateTrackInfo();
                 //long next = refreshTime();
                 //queueNextRefresh(next);
             }
-            else if (action.equals(PlayerService.TRACK_RESUMED)) {
-                Log.d(TAG, "Track resumed");
-                
-                setPlayButtonImage(true);   
-            }
             else if (action.equals(PlayerService.TRACK_ERROR)) {
                 Log.d(TAG, "Track error");
                 
-                setPlayButtonImage(false);
+                setPlayButtonImage();
                 
                 // TODO Could this happen in the middle of playing? TEST IT
                 Toast.makeText(PlayerActivity.this, R.string.player_error, Toast.LENGTH_LONG).show();
@@ -345,48 +362,54 @@ public class PlayerActivity extends Activity {
         String action = intent.getAction();
         Log.d(TAG, "intent.getAction(): " + action);
         
-        if (action == null) {
-            return;
+        if (action != null) {
+
+            // Play a track
+            if (action.equals(ACTION_PLAY_TRACK)) {
+
+                Bundle bundle = intent.getExtras();
+                if (bundle == null) {
+                    return;
+                }
+
+                long trackId = bundle.getLong("track_id", -1);
+
+                if (trackId != -1) {
+                    playTrack(trackId);
+                }
+
+            }
+            else if (action.equals(ACTION_PLAY_ALBUM)) {
+
+                Bundle bundle = intent.getExtras();
+                if (bundle == null) {
+                    return;
+                }
+
+                long albumId = bundle.getLong("album_id", -1);
+
+                if (albumId != -1) {
+                    playAlbum(albumId);
+                }
+
+            }
+            else if (action.equals(ACTION_VIEW_PLAYER)) {
+
+            }
+
         }
-        
-        // Play a track
-        if (action.equals(ACTION_PLAY_TRACK)) {
-            
-            Bundle bundle = intent.getExtras();
-            if (bundle == null) {
-                return;
-            }
-
-            long trackId = bundle.getLong("track_id", -1);
-
-            if (trackId != -1) {
-                playTrack(trackId);
-            }
-            
-        }
-        else if (action.equals(ACTION_PLAY_ALBUM)) {
-            
-            Bundle bundle = intent.getExtras();
-            if (bundle == null) {
-                return;
-            }
-
-            long albumId = bundle.getLong("album_id", -1);
-
-            if (albumId != -1){
-                playAlbum(albumId);
-            }
-            
-        }
-        else if (action.equals(ACTION_VIEW_PLAYER)) {
            
-            // Update the UI
-            setPlayButtonImage(mService.isPlaying());
-            updateTrackInfo();
-            
-            long next = refreshTime();
-            queueNextRefresh(next);
-        }
+        // Update the UI
+        setPlayButtonImage();
+        updateTrackInfo();
+
+        long next = refreshTime();
+        queueNextRefresh(next);
+        
+        // Reset the intent that started this activity
+        // This is important: if the activity stops and then re-starts,
+        // we need to know that we've already started the playback
+        setIntent(new Intent());
     }
 
     
@@ -409,7 +432,7 @@ public class PlayerActivity extends Activity {
             mService.stop(); // stop whatever is currently playing
             mService.open(track);
             
-            setPlayButtonImage(true);
+            setPlayButtonImage();
             //updateTrackInfo();
             
             // Service starts playback asynchronously
@@ -419,7 +442,7 @@ public class PlayerActivity extends Activity {
             // just update the UI
             // setRepeatButtonImage();
             // setShuffleButtonImage();
-            setPlayButtonImage(mService.isPlaying());
+            setPlayButtonImage();
             updateTrackInfo();
         }
         
@@ -441,7 +464,7 @@ public class PlayerActivity extends Activity {
         mService.stop(); // stop whatever is currently playing
         mService.open(tracks);
         
-        setPlayButtonImage(true);
+        setPlayButtonImage();
         //updateTrackInfo();
             
         // Service starts playback asynchronously
@@ -551,10 +574,6 @@ public class PlayerActivity extends Activity {
         intentFilter.addAction(PlayerService.TRACK_ERROR);
         LocalBroadcastManager.getInstance(this).registerReceiver(mStatusListener, new IntentFilter(intentFilter));
         
-        // updateTrackInfo();
-        
-        // long next = refreshTime();
-        // queueNextRefresh(next);
     }
 
     @Override
@@ -607,17 +626,17 @@ public class PlayerActivity extends Activity {
             
         if (mService.isPlaying()) {
             mService.pause();
-            setPlayButtonImage(false);
+            setPlayButtonImage();
         }
         else {
             mService.play();
-            setPlayButtonImage(true);
+            setPlayButtonImage();
         }
     }
 
-    protected void setPlayButtonImage(boolean isPlaying) {
-
-        if (isPlaying) {
+    protected void setPlayButtonImage() {
+        
+        if (mService != null && mService.isPlaying()) {
             mPlayButton.setImageResource(R.drawable.btn_pause);
         }
         else {

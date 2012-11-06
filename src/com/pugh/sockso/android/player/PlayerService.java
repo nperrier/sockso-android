@@ -163,7 +163,12 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     
     // TODO: This should return the currently playing track id OR Track object
     public Track getTrack() {
-        return mPlaylist.get(mPlayIndex);
+        
+        if ( mPlaylist.size() > 0 ) {
+            return mPlaylist.get(mPlayIndex);
+        }
+        
+        return null;
     }
     
     /**
@@ -311,9 +316,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
             notifyChange(TRACK_ENDED);
         }
         else {
-            mPlayIndex++;
-            play();
-            notifyChange(TRACK_CHANGED);
+            nextTrack();
         }
     }
 
@@ -407,6 +410,51 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
          * saveQueue(false);
          * }
          */
+    }
+
+
+    // TODO
+    public void skipTrack() {
+        
+        if ( ! isLastTrackInPlaylist() ) {
+        
+            if ( isPlaying() ) {
+                stop();
+            }
+
+            nextTrack();
+        }
+    }
+    
+    private boolean isLastTrackInPlaylist() {
+        
+        return ( mPlayIndex >= mPlaylist.size() - 1 );
+    }
+    
+    private void nextTrack() {
+        
+        mPlayIndex++;
+        play();
+        //notifyChange(TRACK_CHANGED);
+    }
+
+    public void prevTrack() {
+        
+        if ( ! isFirstTrackInPlaylist() ) {
+        
+            if ( isPlaying() ) {
+                stop();
+            }
+
+            mPlayIndex--;
+            play();
+        }
+    }
+
+
+    private boolean isFirstTrackInPlaylist() {
+
+        return ( mPlayIndex == 0 );        
     }
     
 }
