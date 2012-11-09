@@ -1,12 +1,9 @@
 TODO List:
 
 * Implement remaining buttons on player UI:
-  - Previous/Next track
   - Progress bar seeking
   
 * Create image file cache for album cover art
-
-* Resize art to appropriate dimensions for each UI screen
 
 * Add placeholder images for cover art
 
@@ -14,13 +11,9 @@ TODO List:
 
 * Add settings/preferences 
 
-* Add menu items on all activities
-
 * Create a better "first-start" workflow for initial sync of music library
 
 * Implement syncing mechanism (requires server-side changes)
   - How to handle "delete" operations?
-  
-* Make player service handle track playlists (for playing albums/artist tracks or arbitrary playlists)
 
 * Fix player to pause & resume when system detects a phone call and when the mic jack is plugged/unplugged
