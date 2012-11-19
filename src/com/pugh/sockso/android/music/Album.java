@@ -20,6 +20,8 @@ public class Album implements MusicItem {
 	private static final String ID     = "id";
 	private static final String NAME   = "name";
 	private static final String ARTIST = "artist";
+	
+    public static final String COVER_PREFIX = "al";
 
 	private long id = 0; // local id
 	private long serverId = 0; // remote server id

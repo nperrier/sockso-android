@@ -21,9 +21,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.ServerFactory;
-import com.pugh.sockso.android.SocksoServer;
-import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
@@ -57,11 +54,16 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
         private Context mContext;
         private int mLayout;
+        CoverArtFetcher mCoverFetcher;
+
 
         public ArtistCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int flags) {
             super(context, layout, cursor, from, to, flags);
+            
             this.mContext = context;
             this.mLayout = layout;
+            this.mCoverFetcher = new CoverArtFetcher(mContext);
+            this.mCoverFetcher.setDimensions(115, 115);
         }
 
         @Override
@@ -93,11 +95,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
             int artistNameCol = cursor.getColumnIndex(ArtistColumns.NAME);
             viewHolder.artist.setText(cursor.getString(artistNameCol));
 
-            SocksoServer server = ServerFactory.getServer(mContext);
-            CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
-            coverFetcher.setDimensions(115, 115);
-            // TODO REMOVE & REPLACE
-            coverFetcher.download("ar" + artistId, viewHolder.cover);
+            mCoverFetcher.loadCoverArtArtist(artistId, viewHolder.cover);
         }
 
         // @Override

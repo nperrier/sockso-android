@@ -27,8 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.ServerFactory;
-import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.music.Track;
@@ -510,10 +508,9 @@ public class PlayerActivity extends Activity {
 
             mTrackTotalDurationLabel.setText(durationLabel);
             
-            SocksoServer server = ServerFactory.getServer(this);
-            CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
+            CoverArtFetcher coverFetcher = new CoverArtFetcher(this);
             coverFetcher.setDimensions(300, 300);
-            coverFetcher.download("tr" + track.getServerId(), mAlbumCover); // TODO rm 'tr'
+            coverFetcher.loadCoverArtTrack(track.getServerId(), mAlbumCover);
         }
     }
 
@@ -631,7 +628,7 @@ public class PlayerActivity extends Activity {
         else {
             mService.play();
             setPlayButtonImage();
-        }
+        } 
     }
 
     protected void setPlayButtonImage() {

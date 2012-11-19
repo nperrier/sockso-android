@@ -4,7 +4,6 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -13,8 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.Config;
+import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.Session;
 import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 

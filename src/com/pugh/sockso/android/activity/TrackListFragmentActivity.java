@@ -22,8 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.ServerFactory;
-import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
@@ -58,11 +56,15 @@ public class TrackListFragmentActivity extends FragmentActivity {
 
         private Context mContext;
         private int mLayout;
+        CoverArtFetcher mCoverFetcher;
 
         public TrackCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int flags) {
             super(context, layout, cursor, from, to, flags);
             this.mContext = context;
             this.mLayout = layout;
+
+            this.mCoverFetcher = new CoverArtFetcher(mContext);
+            this.mCoverFetcher.setDimensions(115, 115);
         }
 
         @Override
@@ -98,11 +100,7 @@ public class TrackListFragmentActivity extends FragmentActivity {
             int trackArtistCol = cursor.getColumnIndex(TrackColumns.ARTIST_NAME);
             viewHolder.artist.setText(cursor.getString(trackArtistCol));
 
-            SocksoServer server = ServerFactory.getServer(mContext);
-            CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
-            coverFetcher.setDimensions(115, 115);
-            // TODO REMOVE & REPLACE
-            coverFetcher.download("tr" + trackId, viewHolder.cover);
+            mCoverFetcher.loadCoverArtTrack(trackId, viewHolder.cover);
         }
 
         // @Override

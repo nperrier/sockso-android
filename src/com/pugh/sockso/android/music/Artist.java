@@ -12,6 +12,7 @@ public class Artist implements MusicItem {
 
 	private static final String ID   = "id";
 	private static final String NAME = "name";
+    public static final String COVER_PREFIX = "ar";
 
 	private long id = 0; // local id
 	private long serverId = 0; // remote server id

@@ -1,6 +1,5 @@
 package com.pugh.sockso.android.activity;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -27,8 +26,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
-import com.pugh.sockso.android.ServerFactory;
-import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.data.SocksoProvider;
@@ -146,10 +143,10 @@ public class AlbumActivity extends FragmentActivity {
 
             // Album Cover
             ImageView albumCover = (ImageView) mAlbumDetailsView.findViewById(R.id.album_image_id);
-            SocksoServer server = ServerFactory.getServer(getActivity());
-            CoverArtFetcher coverFetcher = new CoverArtFetcher(server);
+
+            CoverArtFetcher coverFetcher = new CoverArtFetcher(getActivity());
             coverFetcher.setDimensions(150, 150);
-            coverFetcher.download("al" + album.getServerId(), albumCover);
+            coverFetcher.loadCoverArtAlbum(album.getServerId(), albumCover);
 
             ImageButton playButton = (ImageButton) mAlbumDetailsView.findViewById(R.id.play_album_button);
 

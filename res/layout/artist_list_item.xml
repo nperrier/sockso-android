@@ -6,8 +6,8 @@
 
     <ImageView
         android:id="@+id/artist_image_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="76.67dp"
+        android:layout_height="76.67dp"
         android:contentDescription="@+string/artist_image_description"
         android:src="@drawable/icon" />
 

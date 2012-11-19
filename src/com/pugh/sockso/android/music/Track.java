@@ -14,6 +14,7 @@ public class Track implements MusicItem {
 	private static final String NUMBER = "number";
 	private static final String ARTIST = "artist";
 	private static final String ALBUM  = "album";
+    public static final String COVER_PREFIX = "tr";
 
 	private long id = 0; // local id
 	private long serverId = 0; // remote server id
