@@ -29,6 +29,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
     // State for when the player is done preparing, currently playing a track, or paused:
     private boolean mIsInitialized = false;
+    private boolean mIsPreparing   = false;
     
     // Media Player
     private MediaPlayer mPlayer = null;
@@ -132,7 +133,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
             // stop being a foreground service
             stopForeground(true);
-        }
+        } 
     }
 
     // Sets the playlist to a single track
@@ -197,8 +198,8 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     public void play() {
         Log.d(TAG, "play() called");
 
-        if ( mPlaylist.size() == 0 ) {
-            return; 
+        if ( mPlaylist.size() == 0 || mIsPreparing ) {
+            return;
         }
         
         if (mPlayer != null && mIsInitialized) {
@@ -219,6 +220,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
             
             try {
                 mPlayer.setDataSource(url);
+                mIsPreparing = true;
                 mPlayer.prepareAsync();
             }
             catch (Exception e) {
@@ -232,6 +234,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         Log.d(TAG, "onPrepared() called");
         
         mIsInitialized = true;
+        mIsPreparing = false;
         configAndStartMediaPlayer();
         notifyChange(TRACK_STARTED);
     }
