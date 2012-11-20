@@ -16,4 +16,4 @@ TODO List:
 * Implement syncing mechanism (requires server-side changes)
   - How to handle "delete" operations?
 
-* Fix player to pause & resume when system detects a phone call and when the mic jack is plugged/unplugged
+* Fix player to pause & resume when system detects a phone call

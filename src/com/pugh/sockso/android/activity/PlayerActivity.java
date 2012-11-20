@@ -242,7 +242,7 @@ public class PlayerActivity extends Activity {
                 // TODO notify service send seekBar location
             }
         });
-
+        
     }
 
     
@@ -301,12 +301,11 @@ public class PlayerActivity extends Activity {
         
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive() called");
+            Log.d(TAG, "mStatusListener.onReceive() called");
             
             String action = intent.getAction();
             
-            if ( action.equals(PlayerService.TRACK_ENDED) 
-              || action.equals(PlayerService.TRACK_RESUMED) ) {
+            if ( action.equals(PlayerService.PLAYSTATE_CHANGE) ) {
                 Log.d(TAG, "Track stopped/resumed");
                 setPlayButtonImage();
             }
@@ -429,12 +428,9 @@ public class PlayerActivity extends Activity {
 
             mService.stop(); // stop whatever is currently playing
             mService.open(track);
-            
-            setPlayButtonImage();
-            //updateTrackInfo();
-            
+            // updateTrackInfo();
             // Service starts playback asynchronously
-            mService.play();
+            play();
         }
         else {
             // just update the UI
@@ -461,12 +457,9 @@ public class PlayerActivity extends Activity {
 
         mService.stop(); // stop whatever is currently playing
         mService.open(tracks);
-        
-        setPlayButtonImage();
-        //updateTrackInfo();
-            
+        // updateTrackInfo();
         // Service starts playback asynchronously
-        mService.play();
+        play();
         
         long next = refreshTime();
         queueNextRefresh(next);
@@ -565,12 +558,10 @@ public class PlayerActivity extends Activity {
         // Setup listener to PlayerService
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(PlayerService.TRACK_STARTED);
-        intentFilter.addAction(PlayerService.TRACK_RESUMED);
-        intentFilter.addAction(PlayerService.TRACK_ENDED);
+        intentFilter.addAction(PlayerService.PLAYSTATE_CHANGE);
         intentFilter.addAction(PlayerService.TRACK_CHANGED);
         intentFilter.addAction(PlayerService.TRACK_ERROR);
         LocalBroadcastManager.getInstance(this).registerReceiver(mStatusListener, new IntentFilter(intentFilter));
-        
     }
 
     @Override
@@ -620,17 +611,27 @@ public class PlayerActivity extends Activity {
         if (mService == null || mService.getTrack() == null) {
             return;
         }
-            
+        
         if (mService.isPlaying()) {
-            mService.pause();
-            setPlayButtonImage();
+            pause();
         }
         else {
-            mService.play();
-            setPlayButtonImage();
+            play();           
         } 
     }
 
+    private void play() {
+        
+        mService.play();
+        setPlayButtonImage();              
+    }
+    
+    private void pause() {
+        
+        mService.pause();
+        setPlayButtonImage();
+    }
+    
     protected void setPlayButtonImage() {
         
         if (mService != null && mService.isPlaying()) {

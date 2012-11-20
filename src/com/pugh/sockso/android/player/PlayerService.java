@@ -6,7 +6,10 @@ import java.util.List;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -50,9 +53,8 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
     // This is to notify the activity that a track changed (or ended) and should update the UI
     public static final String TRACK_STARTED = "com.pugh.sockso.android.player.TRACK_STARTED";
-    public static final String TRACK_RESUMED = "com.pugh.sockso.android.player.TRACK_RESUMED";
     public static final String TRACK_CHANGED = "com.pugh.sockso.android.player.TRACK_CHANGED";
-    public static final String TRACK_ENDED   = "com.pugh.sockso.android.player.TRACK_ENDED";
+    public static final String PLAYSTATE_CHANGE   = "com.pugh.sockso.android.player.PLAYSTATE_CHANGE";
     public static final String TRACK_ERROR   = "com.pugh.sockso.android.player.TRACK_ERROR";
 
     @Override
@@ -60,6 +62,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         Log.d(TAG, "onCreate() called");
         
         mPlaylist = new ArrayList<Track>();
+        registerReceiver(mNoisyAudioStreamReceiver, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));  
         
         super.onCreate();
     }
@@ -71,7 +74,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
         mBinder = null;
 
-        super.onDestroy();
+        unregisterReceiver(mNoisyAudioStreamReceiver);
 
         if (mPlayer != null) {
             if (mPlayer.isPlaying()) {
@@ -84,6 +87,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
         // clearNotification();
         // releaseLocks();
+        super.onDestroy();
     }
     
 
@@ -100,6 +104,21 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         return super.onUnbind(intent);
     }
 
+    
+    private BroadcastReceiver mNoisyAudioStreamReceiver = new BroadcastReceiver() {
+        
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            
+            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                Log.d(TAG, "Uh Oh, something was unplugged. Pausing...");
+                pause();
+                notifyChange(PLAYSTATE_CHANGE);
+            }
+        }
+    };
+
+    
     /**
      * Class for clients to access. Because we know this service always
      * runs in the same process as its clients, we don't need to deal with IPC.
@@ -112,8 +131,8 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         public PlayerService getService() {
             return PlayerService.this;
         }
-    }
-
+    }  
+    
     public boolean isPlaying() {
         Log.d(TAG, "isPlaying() called");
 
@@ -205,7 +224,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         if (mPlayer != null && mIsInitialized) {
             
             configAndStartMediaPlayer();
-            notifyChange(TRACK_RESUMED);
+            notifyChange(PLAYSTATE_CHANGE);
         }
         else {
             
@@ -316,7 +335,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         
         if ( mPlayIndex + 1 >= mPlaylist.size() ) {
             
-            notifyChange(TRACK_ENDED);
+            notifyChange(PLAYSTATE_CHANGE);
         }
         else {
             nextTrack();
