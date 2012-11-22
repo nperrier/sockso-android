@@ -198,8 +198,10 @@ public class AlbumActivity extends FragmentActivity {
             Log.i(TAG, "onListItemClick(): Item clicked: " + id + ", position: " + position);
 
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
-            intent.setAction(PlayerActivity.ACTION_PLAY_TRACK);
-            intent.putExtra("track_id", id);
+            // Play selected album, starting from track position
+            intent.setAction(PlayerActivity.ACTION_PLAY_ALBUM);
+            intent.putExtra("album_id", mAlbumId);
+            intent.putExtra("track_position", position);
             
             startActivity(intent);
         }

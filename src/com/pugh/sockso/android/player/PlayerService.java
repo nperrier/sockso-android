@@ -434,7 +434,15 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
          */
     }
 
-
+    public void setPlaylistPosition(int pos) {
+        
+        if ( pos >= mPlaylist.size() || pos < 0 ) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        
+        mPlayIndex = pos;
+    }
+    
     // TODO
     public void skipTrack() {
         

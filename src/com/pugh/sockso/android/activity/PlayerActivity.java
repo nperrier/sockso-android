@@ -383,10 +383,13 @@ public class PlayerActivity extends Activity {
                     return;
                 }
 
-                long albumId = bundle.getLong("album_id", -1);
-
+                long albumId  = bundle.getLong("album_id", -1);
+                int trackPos = bundle.getInt("track_position", 1);
+                // Map the list view item position to playlist (offset -1)
+                trackPos--;
+                
                 if (albumId != -1) {
-                    playAlbum(albumId);
+                    playAlbum(albumId, trackPos);
                 }
 
             }
@@ -445,7 +448,7 @@ public class PlayerActivity extends Activity {
     }  
     
     
-    private void playAlbum( long albumId ) {
+    private void playAlbum( long albumId, int trackPos ) {
         Log.d(TAG, "playAlbum() called");
 
         if (mService == null) {
@@ -457,6 +460,7 @@ public class PlayerActivity extends Activity {
 
         mService.stop(); // stop whatever is currently playing
         mService.open(tracks);
+        mService.setPlaylistPosition(trackPos);
         // updateTrackInfo();
         // Service starts playback asynchronously
         play();
