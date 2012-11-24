@@ -52,8 +52,7 @@ public class CoverArtFetcher {
             return;
         }
 
-        // TODO Check the file cache:
-        
+        // TODO Check the file cache:        
         
         // Now download it:
         download(musicItemId, imageView);
@@ -62,9 +61,8 @@ public class CoverArtFetcher {
     public Bitmap downloadBitmap(String musicItemId) {
         
         SocksoServer mServer = ServerFactory.getServer(mContext);
-        String url = mServer.getRootUrl() + "/file/cover/" + musicItemId;
         
-        return mServer.downloadBitmap(url);
+        return mServer.downloadBitmap(musicItemId);
     }
 
     public void download(String musicItemId, ImageView imageView) {

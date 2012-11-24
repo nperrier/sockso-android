@@ -3,7 +3,6 @@ package com.pugh.sockso.android;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
-import android.util.Log;
 
 
 public class ServerFactory {

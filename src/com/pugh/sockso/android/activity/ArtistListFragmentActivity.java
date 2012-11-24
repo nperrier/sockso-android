@@ -1,6 +1,7 @@
 package com.pugh.sockso.android.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -136,11 +137,15 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
         @Override
         public void onListItemClick(ListView l, View v, int position, long id) {
-            // Insert desired behavior here.
             Log.i(TAG, "onListItemClick(): Item clicked: " + id);
+            
+            Intent intent = new Intent(getActivity(), ArtistActivity.class);
+            intent.putExtra("artist_id", id);
+             
+            startActivity(intent);
         }
 
-        @Override
+        @Override 
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             Log.i(TAG, "onCreateLoader() ran");
 

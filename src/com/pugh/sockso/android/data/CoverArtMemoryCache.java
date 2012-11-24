@@ -21,7 +21,7 @@ public class CoverArtMemoryCache {
     }
     
     public void addCover(String itemId, Bitmap bitmap) {
-        if (getCover(itemId) == null) {
+        if (getCover(itemId) == null && bitmap != null) {
             mCache.put(itemId, bitmap);
         }
     }

@@ -10,7 +10,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.content.CursorLoader;
 import android.util.Log;
 
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
@@ -200,9 +199,8 @@ public class MusicManager {
         return track;
     }
 
-
     public static Album getAlbum( final ContentResolver contentResolver, long albumId ) {
-        Log.d(TAG, "getAlbumInfo() called");
+        Log.d(TAG, "getAlbum() called");
 
         Album album = null;
 
@@ -276,6 +274,36 @@ public class MusicManager {
         cursor.close();
         
         return tracks;
+    }
+
+    public static Artist getArtist(ContentResolver contentResolver, long artistId) {
+        Log.d(TAG, "getArtist() called");
+
+        Artist artist = null;
+
+        String[] projection = { 
+                ArtistColumns.SERVER_ID, 
+                ArtistColumns.NAME         
+                };
+        Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + ArtistColumns.TABLE_NAME + "/" + artistId);
+
+        Cursor cursor = contentResolver.query(uri, projection, null, null, null);
+
+        cursor.moveToNext();
+
+        long serverArtistId = cursor.getLong(0);
+        String artistName = cursor.getString(1);
+
+        cursor.close();
+        
+        Log.d(TAG, "serverArtistId: " + serverArtistId);
+
+        artist = new Artist();
+        artist.setId(artistId);
+        artist.setServerId(serverArtistId);
+        artist.setName(artistName);
+
+        return artist;
     }
     
 }

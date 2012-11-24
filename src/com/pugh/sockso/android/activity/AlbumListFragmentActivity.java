@@ -141,14 +141,13 @@ public class AlbumListFragmentActivity extends FragmentActivity {
             super.onSaveInstanceState(savedInstanceState);
         }
 
-        @Override
+        @Override 
         public void onListItemClick(ListView l, View v, int position, long id) {
-            // TODO Insert desired behavior here.
             Log.i(TAG, "onListItemClick(): Item clicked: " + id);
             
             Intent intent = new Intent(getActivity(), AlbumActivity.class);
             intent.putExtra("album_id", id);
-            
+             
             startActivity(intent);
         }
 

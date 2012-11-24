@@ -41,6 +41,8 @@
         </activity>        
         <activity android:name=".activity.ArtistListFragmentActivity" >
         </activity>
+        <activity android:name=".activity.ArtistActivity" >
+        </activity>      
         <activity android:name=".activity.TrackListFragmentActivity" >
         </activity>
         <activity android:name=".activity.PlayerActivity" >

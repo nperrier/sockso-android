@@ -75,8 +75,10 @@ public class SocksoServerImpl implements SocksoServer {
         return BitmapFactory.decodeStream(conn.getInputStream());
     }
 
-    public Bitmap downloadBitmap(String url) {
+    public Bitmap downloadBitmap(String musicItemId) {
 
+        String url = getRootUrl() + "/file/cover/" + musicItemId;
+        
         HttpParams httpParameters = new BasicHttpParams();
         
         // Set the timeout in milliseconds until a connection is established.

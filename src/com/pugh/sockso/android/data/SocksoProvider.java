@@ -1,7 +1,6 @@
 package com.pugh.sockso.android.data;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +28,7 @@ public class SocksoProvider extends ContentProvider {
     public static final int ARTISTS_CODE = 100;
     public static final int ARTISTS_ID_CODE = 101;
     public static final int ARTISTS_ID_TRACKS_CODE = 102;
+    public static final int ARTISTS_ID_ALBUMS_CODE = 103;
 
     public static final int ALBUMS_CODE = 200;
     public static final int ALBUMS_ID_CODE = 201;
@@ -54,6 +54,7 @@ public class SocksoProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME, ARTISTS_CODE);
         sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME + "/#", ARTISTS_ID_CODE);
         sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME + "/#/" + TrackColumns.TABLE_NAME, ARTISTS_ID_TRACKS_CODE);
+        sURIMatcher.addURI(AUTHORITY, ArtistColumns.TABLE_NAME + "/#/" + AlbumColumns.TABLE_NAME, ARTISTS_ID_ALBUMS_CODE);
 
         sURIMatcher.addURI(AUTHORITY, AlbumColumns.TABLE_NAME, ALBUMS_CODE);
         sURIMatcher.addURI(AUTHORITY, AlbumColumns.TABLE_NAME + "/#", ALBUMS_ID_CODE);
@@ -69,12 +70,18 @@ public class SocksoProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, Playlist.TABLE_NAME + "/" + Playlist.USER_PATH + "/#", PLAYLISTS_USER_ID_CODE);
     }
 
+    private static final Map<String, String> sArtistProjectionMap = new HashMap<String, String>();
     private static final Map<String, String> sAlbumProjectionMap = new HashMap<String, String>();
     private static final Map<String, String> sTrackProjectionMap = new HashMap<String, String>();
     
     // Projection Maps
     static {
+        sArtistProjectionMap.put(ArtistColumns.SERVER_ID, ArtistColumns.FULL_SERVER_ID);
+        sArtistProjectionMap.put(ArtistColumns.NAME, ArtistColumns.FULL_NAME);
+        sArtistProjectionMap.put(ArtistColumns._ID, ArtistColumns.FULL_ID);
+        
         sAlbumProjectionMap.put(AlbumColumns.ARTIST_NAME, ArtistColumns.FULL_NAME + " AS " + AlbumColumns.ARTIST_NAME);
+        sAlbumProjectionMap.put(AlbumColumns.TRACK_COUNT, "COUNT(" + TrackColumns.FULL_ALBUM_ID + ") AS " + AlbumColumns.TRACK_COUNT);
         sAlbumProjectionMap.put(AlbumColumns.SERVER_ID, AlbumColumns.FULL_SERVER_ID);
         sAlbumProjectionMap.put(AlbumColumns.NAME, AlbumColumns.FULL_NAME);
         sAlbumProjectionMap.put(AlbumColumns._ID, AlbumColumns.FULL_ID);
@@ -119,12 +126,13 @@ public class SocksoProvider extends ContentProvider {
 
         // Mapped Columns:
         public static final String ARTIST_NAME = "artist_name";
+        public static final String TRACK_COUNT = "track_count";
 
         // Fully qualified columns (non-public)
         static final String FULL_SERVER_ID = TABLE_NAME + "." + SERVER_ID;
         static final String FULL_YEAR = TABLE_NAME + "." + YEAR;
         static final String FULL_ID = TABLE_NAME + "." + _ID;
-        static final String FULL_NAME = TABLE_NAME + "." + NAME;
+        public static final String FULL_NAME = TABLE_NAME + "." + NAME;
         static final String FULL_ARTIST_ID = TABLE_NAME + "." + ARTIST_ID;
     }
 
@@ -197,6 +205,7 @@ public class SocksoProvider extends ContentProvider {
 
         case ARTISTS_ID_CODE:
         case ARTISTS_ID_TRACKS_CODE:
+        case ARTISTS_ID_ALBUMS_CODE:
         case ALBUMS_ID_TRACKS_CODE:
         case TRACKS_ID_CODE:
         case PLAYLISTS_ID_CODE:
@@ -250,6 +259,8 @@ public class SocksoProvider extends ContentProvider {
         Log.d(TAG, "query() ran");
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+        String groupBy = null;
+        String having  = null;
 
         int uriType = sURIMatcher.match(uri);
 
@@ -262,6 +273,32 @@ public class SocksoProvider extends ContentProvider {
             Log.d(TAG, "In ARTISTS_ID_CODE");
             queryBuilder.setTables(ArtistColumns.TABLE_NAME);
             queryBuilder.appendWhere(ArtistColumns._ID + "=" + uri.getLastPathSegment());
+            break;
+        case ARTISTS_ID_ALBUMS_CODE:
+            Log.d(TAG, "In ARTISTS_ID_ALBUMS_CODE");
+            // Gets all albums for the given artist
+            
+            /*
+             * SELECT albums._id, albums.server_id, albums.name, COUNT(tracks.album_id) AS track_count
+             * FROM albums
+             *     JOIN artists ON artists.server_id = albums.artist_id
+             *     JOIN tracks ON albums.server_id = tracks.album_id
+             * WHERE artists._id=<id>
+             * GROUP BY albums.name
+             * ORDER BY albums.name ASC;
+             */
+            
+            List<String> artistSegments = uri.getPathSegments();
+            String artistId = artistSegments.get(1);
+            Log.d(TAG, "Path segment[1]: " + artistId);
+
+            queryBuilder.setProjectionMap(sAlbumProjectionMap);
+            queryBuilder.setTables(AlbumColumns.TABLE_NAME + " JOIN " + ArtistColumns.TABLE_NAME + " ON "
+                    + ArtistColumns.FULL_SERVER_ID + "=" + AlbumColumns.FULL_ARTIST_ID
+                    + " JOIN " + TrackColumns.TABLE_NAME + " ON "
+                    + TrackColumns.FULL_ALBUM_ID + "=" + AlbumColumns.FULL_SERVER_ID);
+            queryBuilder.appendWhere(ArtistColumns.FULL_ID + "=" + artistId);
+            groupBy = AlbumColumns.FULL_NAME;
             break;
         case ALBUMS_CODE:
             Log.d(TAG, "In ALBUMS_CODE");
@@ -306,7 +343,6 @@ public class SocksoProvider extends ContentProvider {
                     + " ON " + TrackColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID );
             queryBuilder.appendWhere(AlbumColumns.FULL_ID + "=" + albumId);
             
-            
             break;
         case TRACKS_CODE:
             Log.d(TAG, "In TRACKS_CODE");
@@ -334,7 +370,7 @@ public class SocksoProvider extends ContentProvider {
             throw new IllegalArgumentException("Unknown URI");
         }
 
-        Cursor cursor = queryBuilder.query(mDB.getReadableDatabase(), projection, selection, selectionArgs, null, null,
+        Cursor cursor = queryBuilder.query(mDB.getReadableDatabase(), projection, selection, selectionArgs, groupBy, having,
                 sortOrder);
 
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
