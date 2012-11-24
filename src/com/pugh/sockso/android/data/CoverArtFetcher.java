@@ -131,15 +131,14 @@ public class CoverArtFetcher {
                 BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
                 
                 // Change bitmap only if this process is still associated with it
-                if (this == bitmapDownloaderTask) {
-
-                    if ( bitmap != null && width > 0 && height > 0 ) {
+                if (this == bitmapDownloaderTask && bitmap != null) {
+                    if (width > 0 && height > 0) {
                         // resize bitmap
                         bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
                     }
-                    
+
                     imageView.setImageBitmap(bitmap);
-                    
+
                     // Now cache it in memory:
                     mMemCache.addCover(musicItemId, bitmap);
                 }
