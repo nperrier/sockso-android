@@ -369,7 +369,7 @@ public class PlayerActivity extends Activity {
                     return;
                 }
 
-                long trackId = bundle.getLong("track_id", -1);
+                long trackId = bundle.getLong(MusicManager.TRACK, -1);
 
                 if (trackId != -1) {
                     playTrack(trackId);

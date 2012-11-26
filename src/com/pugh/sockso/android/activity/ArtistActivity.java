@@ -127,7 +127,7 @@ public class ArtistActivity extends FragmentActivity {
 
             Intent intent = getActivity().getIntent();
             Bundle bundle = intent.getExtras();
-            mArtistId = bundle.getLong("artist_id", -1);
+            mArtistId = bundle.getLong(MusicManager.ARTIST, -1);
             
             super.onCreate(savedInstanceState);
         }
@@ -178,7 +178,7 @@ public class ArtistActivity extends FragmentActivity {
             // but also have a button to play it
             
             Intent intent = new Intent(getActivity(), AlbumActivity.class);
-            intent.putExtra("album_id", id);
+            intent.putExtra(MusicManager.ALBUM, id);
              
             startActivity(intent);
         }

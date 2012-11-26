@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.data.CoverArtFetcher;
+import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
 
@@ -146,7 +147,7 @@ public class AlbumListFragmentActivity extends FragmentActivity {
             Log.i(TAG, "onListItemClick(): Item clicked: " + id);
             
             Intent intent = new Intent(getActivity(), AlbumActivity.class);
-            intent.putExtra("album_id", id);
+            intent.putExtra(MusicManager.ALBUM, id);
              
             startActivity(intent);
         }

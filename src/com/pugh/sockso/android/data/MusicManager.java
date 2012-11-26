@@ -24,6 +24,10 @@ public class MusicManager {
     private static final String TAG = MusicManager.class.getSimpleName();
     private static final int BATCH_MAX = 100;
     
+    public static final String ALBUM  = "album_id";
+    public static final String ARTIST = "artist_id";
+    public static final String TRACK  = "track_id";
+
     // TODO This should be only run to populate the database
     // the very first time
     // This is going to be inserting a LOT of data, especially for

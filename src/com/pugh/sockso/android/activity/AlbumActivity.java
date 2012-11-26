@@ -121,7 +121,7 @@ public class AlbumActivity extends FragmentActivity {
 
             Intent intent = getActivity().getIntent();
             Bundle bundle = intent.getExtras();
-            mAlbumId = bundle.getLong("album_id", -1);
+            mAlbumId = bundle.getLong(MusicManager.ALBUM, -1);
 
             super.onCreate(savedInstanceState);
         }
@@ -159,7 +159,7 @@ public class AlbumActivity extends FragmentActivity {
 
                     Intent intent = new Intent(getActivity(), PlayerActivity.class);
                     intent.setAction(PlayerActivity.ACTION_PLAY_ALBUM);
-                    intent.putExtra("album_id", mAlbumId);
+                    intent.putExtra(MusicManager.ALBUM, mAlbumId);
 
                     startActivity(intent);
                 }
@@ -200,7 +200,7 @@ public class AlbumActivity extends FragmentActivity {
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
             // Play selected album, starting from track position
             intent.setAction(PlayerActivity.ACTION_PLAY_ALBUM);
-            intent.putExtra("album_id", mAlbumId);
+            intent.putExtra(MusicManager.ALBUM, mAlbumId);
             intent.putExtra("track_position", position);
             
             startActivity(intent);

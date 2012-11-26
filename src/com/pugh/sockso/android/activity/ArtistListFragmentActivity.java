@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.data.CoverArtFetcher;
+import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
 
@@ -140,7 +141,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
             Log.i(TAG, "onListItemClick(): Item clicked: " + id);
             
             Intent intent = new Intent(getActivity(), ArtistActivity.class);
-            intent.putExtra("artist_id", id);
+            intent.putExtra(MusicManager.ARTIST, id);
              
             startActivity(intent);
         }

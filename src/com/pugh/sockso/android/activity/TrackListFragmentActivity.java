@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.data.CoverArtFetcher;
+import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 
@@ -146,7 +147,7 @@ public class TrackListFragmentActivity extends FragmentActivity {
             
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
             intent.setAction(PlayerActivity.ACTION_PLAY_TRACK);
-            intent.putExtra("track_id", id);
+            intent.putExtra(MusicManager.TRACK, id);
             
             startActivity(intent);
         }
