@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,8 +22,8 @@ import com.pugh.sockso.android.music.Track;
 public class MusicManager {
 
     private static final String TAG = MusicManager.class.getSimpleName();
-    private static final int BATCH_MAX = 50;
-
+    private static final int BATCH_MAX = 100;
+    
     // TODO This should be only run to populate the database
     // the very first time
     // This is going to be inserting a LOT of data, especially for
@@ -45,77 +44,72 @@ public class MusicManager {
 
         List<Track> tracks = (List<Track>) musicItems.get("tracks");
         syncTracks(tracks, context, resolver);
-
     }
 
-    // TODO
     private static void syncArtists(List<Artist> artists, Context context, ContentResolver resolver) {
         Log.d(TAG, "syncArtists() ran");
 
-        final BatchOperation batchOperation = new BatchOperation(context, resolver);
+        final Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + ArtistColumns.TABLE_NAME);
+        final BatchOperation batchOperation = new BatchOperation(uri, context, resolver);
 
         for (final Artist artist : artists) {
-            // add an insert operation for each artist
-            addArtist(artist, context, resolver, batchOperation);
+            addArtist(artist, batchOperation);
 
-            // A sync adapter should batch operations on multiple items,
-            // because it will make a dramatic performance difference.
-            // (UI updates, etc)
             if (batchOperation.size() >= BATCH_MAX) {
                 Log.d(TAG, "syncArtists(): " + BATCH_MAX + " batched. Executing current batch...");
                 batchOperation.execute();
             }
-
         }
 
-        batchOperation.execute();
+        // add the remaining
+        if (batchOperation.size() >= 0) {
+            batchOperation.execute();
+        }
     }
 
     private static void syncAlbums(List<Album> albums, Context context, ContentResolver resolver) {
         Log.d(TAG, "syncAlbums() ran");
-
-        final BatchOperation batchOperation = new BatchOperation(context, resolver);
+        
+        final Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + AlbumColumns.TABLE_NAME);
+        final BatchOperation batchOperation = new BatchOperation(uri, context, resolver);
 
         for (final Album album : albums) {
-            // add an insert operation for each artist
-            addAlbum(album, context, resolver, batchOperation);
+            addAlbum(album, batchOperation);
 
-            // A sync adapter should batch operations on multiple items,
-            // because it will make a dramatic performance difference.
-            // (UI updates, etc)
             if (batchOperation.size() >= BATCH_MAX) {
                 Log.d(TAG, "syncAlbums(): " + BATCH_MAX + " batched. Executing current batch...");
                 batchOperation.execute();
             }
-
         }
 
-        batchOperation.execute();
+        // add the remaining
+        if (batchOperation.size() >= 0) {
+            batchOperation.execute();
+        }
     }
 
     private static void syncTracks(List<Track> tracks, Context context, ContentResolver resolver) {
         Log.d(TAG, "syncTracks() ran");
-
-        final BatchOperation batchOperation = new BatchOperation(context, resolver);
+        
+        final Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
+        final BatchOperation batchOperation = new BatchOperation(uri, context, resolver);
 
         for (final Track track : tracks) {
-            // add an insert operation for each artist
-            addTrack(track, context, resolver, batchOperation);
+            addTrack(track, batchOperation);
 
-            // A sync adapter should batch operations on multiple items,
-            // because it will make a dramatic performance difference.
-            // (UI updates, etc)
             if (batchOperation.size() >= BATCH_MAX) {
                 Log.d(TAG, "syncTracks(): " + BATCH_MAX + " batched. Executing current batch...");
                 batchOperation.execute();
             }
         }
 
-        batchOperation.execute();
+        // add the remaining
+        if (batchOperation.size() >= 0) {
+            batchOperation.execute();
+        }
     }
 
-    // TODO
-    public static void addArtist(Artist artist, Context context, ContentResolver resolver, BatchOperation batchOperation) {
+    private static void addArtist(Artist artist, BatchOperation batchOperation) {
         Log.d(TAG, "addArtist() ran");
 
         ContentValues contentValues = new ContentValues();
@@ -123,13 +117,10 @@ public class MusicManager {
         contentValues.put(ArtistColumns.SERVER_ID, artist.getServerId());
         contentValues.put(ArtistColumns.NAME, artist.getName());
 
-        Uri insertUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + ArtistColumns.TABLE_NAME);
-
-        ContentProviderOperation cpo = ContentProviderOperation.newInsert(insertUri).withValues(contentValues).build();
-        batchOperation.add(cpo);
+        batchOperation.add(contentValues);
     }
 
-    private static void addAlbum(Album album, Context context, ContentResolver resolver, BatchOperation batchOperation) {
+    private static void addAlbum(Album album, BatchOperation batchOperation) {
         Log.d(TAG, "addAlbum() ran");
 
         ContentValues contentValues = new ContentValues();
@@ -139,13 +130,10 @@ public class MusicManager {
         contentValues.put(AlbumColumns.ARTIST_ID, album.getArtistId());
         // TODO .AlbumColumns.YEAR;
 
-        Uri insertUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + AlbumColumns.TABLE_NAME);
-
-        ContentProviderOperation cpo = ContentProviderOperation.newInsert(insertUri).withValues(contentValues).build();
-        batchOperation.add(cpo);
+        batchOperation.add(contentValues);
     }
 
-    private static void addTrack(Track track, Context context, ContentResolver resolver, BatchOperation batchOperation) {
+    private static void addTrack(Track track, BatchOperation batchOperation) {
         Log.d(TAG, "addTrack() ran");
 
         ContentValues contentValues = new ContentValues();
@@ -156,13 +144,9 @@ public class MusicManager {
         contentValues.put(TrackColumns.ARTIST_ID, track.getArtistId());
         contentValues.put(TrackColumns.ALBUM_ID, track.getAlbumId());
 
-        Uri insertUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
-
-        ContentProviderOperation cpo = ContentProviderOperation.newInsert(insertUri).withValues(contentValues).build();
-        batchOperation.add(cpo);
+        batchOperation.add(contentValues);
     }
 
-    // TODO Should the Track object be created by the activity or service?
     public static Track getTrack( final ContentResolver contentResolver, long trackId ) {
         Log.d(TAG, "getTrack() called");
         
@@ -178,6 +162,7 @@ public class MusicManager {
         
         Cursor cursor = contentResolver.query(uri, projection, null, null, null);
         
+        // TODO check return value (if false, return null)
         cursor.moveToNext();
         
         long serverTrackId = cursor.getLong(0);

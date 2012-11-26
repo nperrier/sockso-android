@@ -1,14 +1,12 @@
 package com.pugh.sockso.android.data;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.OperationApplicationException;
 import android.net.Uri;
-import android.os.RemoteException;
 import android.util.Log;
 
 /**
@@ -19,49 +17,38 @@ final public class BatchOperation {
 	private final String TAG = BatchOperation.class.getSimpleName();
 
 	private final ContentResolver mResolver;
+	private final Uri mUri;
 
 	// List for storing the batch mOperations
-	private final ArrayList<ContentProviderOperation> mOperations;
+	private final List<ContentValues> mOperations;
 
-	public BatchOperation(Context context, ContentResolver resolver) {
+	public BatchOperation(Uri uri, Context context, ContentResolver resolver) {
+	    mUri = uri;
 		mResolver = resolver;
-		mOperations = new ArrayList<ContentProviderOperation>();
+		mOperations = new ArrayList<ContentValues>();
 	}
 
 	public int size() {
 		return mOperations.size();
 	}
 
-	public void add(ContentProviderOperation cpo) {
-		mOperations.add(cpo);
+	public void add(ContentValues cv) {
+		mOperations.add(cv);
 	}
 
-	public Uri execute() {
+	public int execute() {
 		Log.d(TAG, "execute() batch");
-		
-		Uri result = null;
 
-		if (mOperations.size() == 0) {
-			return result;
-		}
-		
-		// Apply the mOperations to the content provider
-		try {
-			ContentProviderResult[] results = mResolver.applyBatch(SocksoProvider.AUTHORITY, mOperations);
-			
-			if((results != null) && (results.length > 0)){
-				result = results[0].uri;
-			}	
-		} 
-		catch (OperationApplicationException e) {
-			Log.e(TAG, "Failed to apply batch operation: ", e);
-		}
-        catch (RemoteException e) {
-            Log.e(TAG, "Failed to apply batch operation", e);
+        if (mOperations.size() == 0) {
+            return 0;
         }
+
+		// Apply the mOperations to the content provider
+		//ContentProviderResult[] results = mResolver.applyBatch(SocksoProvider.AUTHORITY, mOperations);
+		int rows = mResolver.bulkInsert(mUri, mOperations.toArray(new ContentValues[mOperations.size()]) );
 		
 		mOperations.clear();
 		
-		return result;
+		return rows;
 	}
 }

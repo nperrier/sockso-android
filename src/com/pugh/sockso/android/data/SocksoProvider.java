@@ -9,6 +9,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
@@ -22,7 +23,7 @@ public class SocksoProvider extends ContentProvider {
 
     private static final String TAG = SocksoProvider.class.getSimpleName();
 
-    public static final String AUTHORITY = "com.pugh.sockso.android.data.SocksoProvider";
+    public static final String AUTHORITY = SocksoProvider.class.getName();
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
     public static final int ARTISTS_CODE = 100;
@@ -100,7 +101,7 @@ public class SocksoProvider extends ContentProvider {
 
         // Table:
         public static final String TABLE_NAME = "artists";
-
+        
         // Columns:
         public static final String SERVER_ID = "server_id";
         public static final String NAME = "name";
@@ -222,33 +223,33 @@ public class SocksoProvider extends ContentProvider {
         Log.d(TAG, "insert() ran");
 
         int uriType = sURIMatcher.match(uri);
-
-        SQLiteDatabase sqlDB = mDB.getWritableDatabase();
-
-        long inserted_id = 0;
-
+        String table;
+        
         switch (uriType) {
 
         case ARTISTS_CODE:
-            inserted_id = sqlDB.insert(ArtistColumns.TABLE_NAME, null, values);
+            table = ArtistColumns.TABLE_NAME;
             break;
-
         case ALBUMS_CODE:
-            inserted_id = sqlDB.insert(AlbumColumns.TABLE_NAME, null, values);
+            table = AlbumColumns.TABLE_NAME;
             break;
-
         case TRACKS_CODE:
-            inserted_id = sqlDB.insert(TrackColumns.TABLE_NAME, null, values);
+            table = TrackColumns.TABLE_NAME;
             break;
-
         case PLAYLISTS_CODE:
-            inserted_id = sqlDB.insert(Playlist.TABLE_NAME, null, values);
+            table = Playlist.TABLE_NAME;
             break;
-
         default:
             throw new IllegalArgumentException("Unknown or Invalid URI " + uri);
         }
 
+        SQLiteDatabase sqlDB = mDB.getWritableDatabase();
+        long inserted_id = sqlDB.insertOrThrow(table, null, values);
+        
+        if (inserted_id <= 0) {
+            throw new SQLException("Failed to insert row into " + uri);
+        }
+        
         getContext().getContentResolver().notifyChange(uri, null);
 
         return Uri.withAppendedPath(uri, "/" + inserted_id);
@@ -265,6 +266,7 @@ public class SocksoProvider extends ContentProvider {
         int uriType = sURIMatcher.match(uri);
 
         switch (uriType) {
+        
         case ARTISTS_CODE:
             Log.d(TAG, "In ARTISTS_CODE");
             queryBuilder.setTables(ArtistColumns.TABLE_NAME);
@@ -417,6 +419,62 @@ public class SocksoProvider extends ContentProvider {
         getContext().getContentResolver().notifyChange(uri, null);
 
         return rowsAffected;
+    }
+
+    /**
+     * Override the default behavior, which is to iterate over each ContentValue and call insert() (SLOW!!)
+     * 
+     * Running this in a db transaction causes the write operation to run once per batch of ContentValues
+     * which is a dramatic performance increase
+     */
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        Log.d(TAG, "bulkInsert() called");
+        
+        int numInserted = 0;
+        
+        int uriType = sURIMatcher.match(uri);
+        String table;
+        
+        switch (uriType) {
+
+        case ARTISTS_CODE:
+            table = ArtistColumns.TABLE_NAME;
+            break;
+        case ALBUMS_CODE:
+            table = AlbumColumns.TABLE_NAME;
+            break;
+        case TRACKS_CODE:
+            table = TrackColumns.TABLE_NAME;
+            break;
+        case PLAYLISTS_CODE:
+            table = Playlist.TABLE_NAME;
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown or Invalid URI " + uri);
+        }
+        
+        SQLiteDatabase sqlDB = mDB.getWritableDatabase();
+        sqlDB.beginTransaction();
+        
+        try {
+            for (ContentValues cv : values) {
+                long newID = sqlDB.insertOrThrow(table, null, cv);
+                
+                if (newID <= 0) {
+                    throw new SQLException("Failed to insert row into " + uri);
+                }
+            }
+            
+            sqlDB.setTransactionSuccessful();
+            getContext().getContentResolver().notifyChange(uri, null);
+            numInserted = values.length;
+        } 
+        finally {
+            sqlDB.endTransaction();
+        }
+        
+        return numInserted;
     }
 
 }
