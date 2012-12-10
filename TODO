@@ -1,5 +1,7 @@
 TODO List:
 
+* Use layout @include tag to group common views widgits for list items and other layouts
+
 * Implement remaining buttons on player UI:
   - Progress bar seeking
   
@@ -17,3 +19,10 @@ TODO List:
   - How to handle "delete" operations?
 
 * Fix player to pause & resume when system detects a phone call
+
+* Move cover art image retrieval to ContentProvider
+
+* Fix memory issue with loading images in listview while "flinging" (scrolling really fast)
+
+* Implement search functionality
+

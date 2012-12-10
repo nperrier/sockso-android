@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -22,28 +23,29 @@ public class SocksoProvider extends ContentProvider {
     private SocksoDB mDB;
 
     private static final String TAG = SocksoProvider.class.getSimpleName();
-
-    public static final String AUTHORITY = SocksoProvider.class.getName();
+    public static final String AUTHORITY = "com.pugh.sockso.android.data.SocksoProvider";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY);
-
-    public static final int ARTISTS_CODE = 100;
-    public static final int ARTISTS_ID_CODE = 101;
+    
+    public static final int ARTISTS_CODE           = 100;
+    public static final int ARTISTS_ID_CODE        = 101;
     public static final int ARTISTS_ID_TRACKS_CODE = 102;
     public static final int ARTISTS_ID_ALBUMS_CODE = 103;
+    
+    public static final int ALBUMS_CODE            = 200;
+    public static final int ALBUMS_ID_CODE         = 201;
+    public static final int ALBUMS_ID_TRACKS_CODE  = 202;
 
-    public static final int ALBUMS_CODE = 200;
-    public static final int ALBUMS_ID_CODE = 201;
-    public static final int ALBUMS_ID_TRACKS_CODE = 202;
+    public static final int TRACKS_CODE            = 300;
+    public static final int TRACKS_ID_CODE         = 301;
 
-    public static final int TRACKS_CODE = 300;
-    public static final int TRACKS_ID_CODE = 301;
-
-    public static final int PLAYLISTS_CODE = 400;
-    public static final int PLAYLISTS_ID_CODE = 401;
-    public static final int PLAYLISTS_SITE_CODE = 402;
-    public static final int PLAYLISTS_USER_CODE = 403;
+    public static final int PLAYLISTS_CODE         = 400;
+    public static final int PLAYLISTS_ID_CODE      = 401;
+    public static final int PLAYLISTS_SITE_CODE    = 402;
+    public static final int PLAYLISTS_USER_CODE    = 403;
     public static final int PLAYLISTS_USER_ID_CODE = 404;
 
+    public static final int SEARCH_CODE            = 500;
+    
     // MIME-types:
     public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + AUTHORITY;
     public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + AUTHORITY;
@@ -69,6 +71,8 @@ public class SocksoProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, Playlist.TABLE_NAME + "/" + Playlist.SITE_PATH, PLAYLISTS_SITE_CODE);
         sURIMatcher.addURI(AUTHORITY, Playlist.TABLE_NAME + "/" + Playlist.USER_PATH, PLAYLISTS_USER_CODE);
         sURIMatcher.addURI(AUTHORITY, Playlist.TABLE_NAME + "/" + Playlist.USER_PATH + "/#", PLAYLISTS_USER_ID_CODE);
+        
+        sURIMatcher.addURI(AUTHORITY, SearchColumns.TABLE_NAME + "/*", SEARCH_CODE);
     }
 
     private static final Map<String, String> sArtistProjectionMap = new HashMap<String, String>();
@@ -101,15 +105,16 @@ public class SocksoProvider extends ContentProvider {
 
         // Table:
         public static final String TABLE_NAME = "artists";
+        public static final String MIME_TYPE  = "artist";
         
         // Columns:
         public static final String SERVER_ID = "server_id";
-        public static final String NAME = "name";
+        public static final String NAME      = "name";
 
         // Fully qualified columns (non-public)
-        static final String FULL_ID = TABLE_NAME + "." + _ID;
+        static final String FULL_ID        = TABLE_NAME + "." + _ID;
         static final String FULL_SERVER_ID = TABLE_NAME + "." + SERVER_ID;
-        static final String FULL_NAME = TABLE_NAME + "." + NAME;
+        static final String FULL_NAME      = TABLE_NAME + "." + NAME;
     }
 
     public final static class AlbumColumns implements BaseColumns {
@@ -118,23 +123,24 @@ public class SocksoProvider extends ContentProvider {
 
         // Table:
         public static final String TABLE_NAME = "albums";
+        public static final String MIME_TYPE  = "album";
 
         // Columns:
         public static final String SERVER_ID = "server_id";
-        public static final String NAME = "name";
+        public static final String NAME      = "name";
         public static final String ARTIST_ID = "artist_id";
-        public static final String YEAR = "year";
+        public static final String YEAR      = "year";
 
         // Mapped Columns:
         public static final String ARTIST_NAME = "artist_name";
         public static final String TRACK_COUNT = "track_count";
 
         // Fully qualified columns (non-public)
-        static final String FULL_SERVER_ID = TABLE_NAME + "." + SERVER_ID;
-        static final String FULL_YEAR = TABLE_NAME + "." + YEAR;
-        static final String FULL_ID = TABLE_NAME + "." + _ID;
+        static final String FULL_SERVER_ID   = TABLE_NAME + "." + SERVER_ID;
+        static final String FULL_YEAR        = TABLE_NAME + "." + YEAR;
+        static final String FULL_ID          = TABLE_NAME + "." + _ID;
         public static final String FULL_NAME = TABLE_NAME + "." + NAME;
-        static final String FULL_ARTIST_ID = TABLE_NAME + "." + ARTIST_ID;
+        static final String FULL_ARTIST_ID   = TABLE_NAME + "." + ARTIST_ID;
     }
 
     public final static class TrackColumns implements BaseColumns {
@@ -143,25 +149,26 @@ public class SocksoProvider extends ContentProvider {
 
         // Table:
         public static final String TABLE_NAME = "tracks";
-
+        public static final String MIME_TYPE  = "track";
+        
         // Columns:
         public static final String SERVER_ID = "server_id";
-        public static final String NAME = "name";
+        public static final String NAME      = "name";
         public static final String ARTIST_ID = "artist_id";
-        public static final String ALBUM_ID = "album_id";
-        public static final String TRACK_NO = "track_no";
+        public static final String ALBUM_ID  = "album_id";
+        public static final String TRACK_NO  = "track_no";
 
         // Mapped Columns:
         public static final String ARTIST_NAME = "artist_name";
-        public static final String ALBUM_NAME = "album_name";
+        public static final String ALBUM_NAME  = "album_name";
         
         // Fully qualified columns (non-public)
         static final String FULL_SERVER_ID = TABLE_NAME + "." + SERVER_ID;
-        static final String FULL_NAME = TABLE_NAME + "." + NAME;
+        static final String FULL_NAME      = TABLE_NAME + "." + NAME;
         static final String FULL_ARTIST_ID = TABLE_NAME + "." + ARTIST_ID;
-        static final String FULL_ALBUM_ID = TABLE_NAME + "." + ALBUM_ID;
-        static final String FULL_TRACK_NO = TABLE_NAME + "." + TRACK_NO;
-        static final String FULL_ID = TABLE_NAME + "." + _ID;
+        static final String FULL_ALBUM_ID  = TABLE_NAME + "." + ALBUM_ID;
+        static final String FULL_TRACK_NO  = TABLE_NAME + "." + TRACK_NO;
+        static final String FULL_ID        = TABLE_NAME + "." + _ID;
     }
 
     public final static class Playlist implements BaseColumns {
@@ -176,10 +183,28 @@ public class SocksoProvider extends ContentProvider {
 
         // Columns:
         public static final String SERVER_ID = "server_id";
-        public static final String NAME = "name";
-        public static final String USER_ID = "user_id";
+        public static final String NAME      = "name";
+        public static final String USER_ID   = "user_id";
     }
 
+    public final static class SearchColumns implements BaseColumns {
+
+        private SearchColumns() {}
+
+        // Table:
+        public static final String TABLE_NAME  = "search";
+        
+        // Columns:
+        public static final String SERVER_ID   = "server_id";
+        public static final String MIME_TYPE   = "mime_type";
+        public static final String ARTIST_NAME = "artist";
+        public static final String ALBUM_NAME  = "album";
+        public static final String TRACK_NAME  = "track";
+        public static final String GROUP_ORDER = "group_order";
+        public static final String MATCH       = "match";
+    }
+    
+    
     @Override
     public boolean onCreate() {
         mDB = new SocksoDB(getContext());
@@ -202,6 +227,7 @@ public class SocksoProvider extends ContentProvider {
         case PLAYLISTS_CODE:
         case PLAYLISTS_SITE_CODE:
         case PLAYLISTS_USER_CODE:
+        case SEARCH_CODE:
             return CONTENT_TYPE;
 
         case ARTISTS_ID_CODE:
@@ -344,7 +370,6 @@ public class SocksoProvider extends ContentProvider {
                     + " JOIN " + ArtistColumns.TABLE_NAME
                     + " ON " + TrackColumns.FULL_ARTIST_ID + "=" + ArtistColumns.FULL_SERVER_ID );
             queryBuilder.appendWhere(AlbumColumns.FULL_ID + "=" + albumId);
-            
             break;
         case TRACKS_CODE:
             Log.d(TAG, "In TRACKS_CODE");
@@ -368,15 +393,29 @@ public class SocksoProvider extends ContentProvider {
                     + " ON " + TrackColumns.FULL_ALBUM_ID + "=" + AlbumColumns.FULL_SERVER_ID);
             queryBuilder.appendWhere(TrackColumns.FULL_ID + "=" + uri.getLastPathSegment());
             break;
+        case SEARCH_CODE:
+            Log.d(TAG, "In SEARCH_CODE");
+            /* SELECT _id, mime_type, artist, album, track 
+             * FROM search
+             * WHERE match LIKE '%<query>%'
+             * ORDER BY group_order;
+             */
+
+            String searchString = uri.getLastPathSegment();
+            
+            queryBuilder.setTables(SearchColumns.TABLE_NAME);
+            queryBuilder.appendWhere(SearchColumns.MATCH + " LIKE ");
+            queryBuilder.appendWhereEscapeString("%" + searchString + "%");
+            break;
         default:
             throw new IllegalArgumentException("Unknown URI");
         }
 
         Cursor cursor = queryBuilder.query(mDB.getReadableDatabase(), projection, selection, selectionArgs, groupBy, having,
                 sortOrder);
-
+        
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
-
+        
         return cursor;
     }
 
@@ -400,24 +439,23 @@ public class SocksoProvider extends ContentProvider {
         case ARTISTS_CODE:
             rowsAffected = sqlDB.delete(ArtistColumns.TABLE_NAME, selection, selectionArgs);
             break;
-
         case ARTISTS_ID_CODE:
             String id = uri.getLastPathSegment();
-            if (TextUtils.isEmpty(selection)) {
-                rowsAffected = sqlDB.delete(ArtistColumns.TABLE_NAME, ArtistColumns._ID + "=" + id, null);
+            
+            String whereClause = ArtistColumns._ID + "=" + id;
+            if ( ! TextUtils.isEmpty(selection) ) {
+                whereClause += " AND " + selection;
             }
-            else {
-                rowsAffected = sqlDB.delete(ArtistColumns.TABLE_NAME, selection + " and " + ArtistColumns._ID + "="
-                        + id, selectionArgs);
-            }
+            rowsAffected = sqlDB.delete(ArtistColumns.TABLE_NAME, whereClause, selectionArgs);            
             break;
-
         default:
             throw new IllegalArgumentException("Unknown or Invalid URI " + uri);
         }
 
-        getContext().getContentResolver().notifyChange(uri, null);
-
+        if (rowsAffected > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        
         return rowsAffected;
     }
 
@@ -430,8 +468,6 @@ public class SocksoProvider extends ContentProvider {
     @Override
     public int bulkInsert(Uri uri, ContentValues[] values) {
         Log.d(TAG, "bulkInsert() called");
-        
-        int numInserted = 0;
         
         int uriType = sURIMatcher.match(uri);
         String table;
@@ -457,6 +493,8 @@ public class SocksoProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mDB.getWritableDatabase();
         sqlDB.beginTransaction();
         
+        int numInserted = values.length;
+        
         try {
             for (ContentValues cv : values) {
                 long newID = sqlDB.insertOrThrow(table, null, cv);
@@ -467,14 +505,15 @@ public class SocksoProvider extends ContentProvider {
             }
             
             sqlDB.setTransactionSuccessful();
-            getContext().getContentResolver().notifyChange(uri, null);
-            numInserted = values.length;
-        } 
+            
+            if ( numInserted > 0 ) {
+                getContext().getContentResolver().notifyChange(uri, null);
+            }
+        }
         finally {
             sqlDB.endTransaction();
         }
         
         return numInserted;
     }
-
 }

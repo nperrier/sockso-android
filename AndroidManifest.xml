@@ -19,10 +19,15 @@
     <uses-permission android:name="android.permission.READ_SYNC_STATS" />
 
     <application
+        android:allowBackup="false"
         android:debuggable="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar" >
+        <meta-data
+            android:name="android.app.default_searchable"
+            android:value=".activity.SearchActivity" />
+
         <activity android:name=".activity.LoginActivity" >
         </activity>
         <activity
@@ -38,18 +43,31 @@
         <activity android:name=".activity.AlbumListFragmentActivity" >
         </activity>
         <activity android:name=".activity.AlbumActivity" >
-        </activity>        
+        </activity>
         <activity android:name=".activity.ArtistListFragmentActivity" >
         </activity>
         <activity android:name=".activity.ArtistActivity" >
-        </activity>      
+        </activity>
         <activity android:name=".activity.TrackListFragmentActivity" >
         </activity>
         <activity android:name=".activity.PlayerActivity" >
         </activity>
         <activity
+            android:name=".activity.SearchActivity"
+            android:exported="false"
+            android:launchMode="singleTop" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+        <activity
             android:name=".activity.SettingsActivity"
-            android:configChanges="orientation|keyboardHidden" >
+            android:configChanges="orientation|keyboardHidden"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -60,12 +78,13 @@
         <provider
             android:name=".data.SocksoProvider"
             android:authorities="com.pugh.sockso.android.data.SocksoProvider"
+            android:exported="true"
             android:multiprocess="true" >
         </provider>
 
         <service
             android:name=".sync.SocksoSyncService"
-            android:exported="true" >
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -77,7 +96,7 @@
         </service>
         <service
             android:name=".account.SocksoAccountAuthenticatorService"
-            android:exported="true" >
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

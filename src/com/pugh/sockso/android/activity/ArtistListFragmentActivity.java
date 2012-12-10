@@ -56,7 +56,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
         private Context mContext;
         private int mLayout;
-        CoverArtFetcher mCoverFetcher;
+        private CoverArtFetcher mCoverFetcher;
 
 
         public ArtistCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int flags) {

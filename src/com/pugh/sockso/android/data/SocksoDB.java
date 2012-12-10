@@ -2,6 +2,7 @@ package com.pugh.sockso.android.data;
 
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
 import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
+import com.pugh.sockso.android.data.SocksoProvider.SearchColumns;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 
 import android.content.Context;
@@ -11,7 +12,8 @@ import android.util.Log;
 
 public class SocksoDB extends SQLiteOpenHelper {
 
-	private static final String TAG  = "SocksoDB";
+	private static final String TAG = SocksoDB.class.getSimpleName();
+	
 	private static final int    DB_VERSION = 1;
 	private static final String DB_NAME    = "sockso.db";
 	
@@ -22,32 +24,38 @@ public class SocksoDB extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 
-		StringBuffer table_albums  = new StringBuffer();
-		StringBuffer table_artists = new StringBuffer();
-		StringBuffer table_tracks  = new StringBuffer();
+		StringBuilder albumsTable     = new StringBuilder();
+		StringBuilder artistsTable    = new StringBuilder();
+		StringBuilder tracksTable     = new StringBuilder();
+		StringBuilder searchView      = new StringBuilder();
 		
 		// Artists table
-		table_artists.append("CREATE TABLE ").append(ArtistColumns.TABLE_NAME)
-					 .append(" (")
-					 .append(ArtistColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-					 .append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")					 
-					 .append(ArtistColumns.NAME).append(" TEXT NOT NULL")
-					 .append(")").append(";");
-
-		// Albums Table
-		table_albums.append("CREATE TABLE ").append(AlbumColumns.TABLE_NAME)
-					.append(" (")
-					.append(AlbumColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
-					.append(AlbumColumns.NAME).append(" TEXT NOT NULL, ")	
-					.append(AlbumColumns.YEAR).append(" INTEGER, ")
-					.append(AlbumColumns.ARTIST_ID).append(" INTEGER, ")
-					.append("FOREIGN KEY(").append(AlbumColumns.ARTIST_ID).append(") REFERENCES ")
-					.append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append(") ")
-					.append(")").append(";");
+		artistsTable.append("CREATE TABLE ").append(ArtistColumns.TABLE_NAME)
+		            .append(" (")
+				    .append(ArtistColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")					 
+					.append(ArtistColumns.NAME).append(" TEXT NOT NULL")
+					.append(");\n")
+					.append("CREATE INDEX ").append(ArtistColumns.SERVER_ID).append("_i")
+					.append(" ON ").append(ArtistColumns.TABLE_NAME).append(" (").append(ArtistColumns.SERVER_ID).append(");");
 		
-		// TrackAPIBuilder Table
-		table_tracks.append("CREATE TABLE ").append(TrackColumns.TABLE_NAME)
+	    // Albums Table
+		albumsTable.append("CREATE TABLE ").append(AlbumColumns.TABLE_NAME)
+		           .append(" (")
+		           .append(AlbumColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+		           .append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
+		           .append(AlbumColumns.NAME).append(" TEXT NOT NULL, ")
+		           .append(AlbumColumns.YEAR).append(" INTEGER, ")
+		           .append(AlbumColumns.ARTIST_ID).append(" INTEGER, ")
+		           .append("FOREIGN KEY(").append(AlbumColumns.ARTIST_ID).append(") REFERENCES ")
+		           .append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append(") ")
+		           .append(");\n")
+		           .append("CREATE INDEX ").append(AlbumColumns.SERVER_ID).append("_i")
+		           .append(" ON ").append(AlbumColumns.TABLE_NAME).append(" (").append(AlbumColumns.SERVER_ID)
+		           .append(");");
+
+		// Tracks Table
+		tracksTable.append("CREATE TABLE ").append(TrackColumns.TABLE_NAME)
 					.append(" (")
 					.append(TrackColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
 					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
@@ -59,16 +67,60 @@ public class SocksoDB extends SQLiteOpenHelper {
 					.append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append("), ")
 					.append("FOREIGN KEY(").append(TrackColumns.ALBUM_ID).append(") REFERENCES ")
 					.append(AlbumColumns.TABLE_NAME).append("(").append(AlbumColumns._ID).append(")")
-					.append(")").append(";");
+					.append(");\n")
+					.append("CREATE INDEX ").append(TrackColumns.SERVER_ID).append("_i")
+                    .append(" ON ").append(TrackColumns.TABLE_NAME).append(" (").append(TrackColumns.SERVER_ID)
+                    .append(");");
 
+		// View for searching across all the tables:
+		searchView.append("CREATE VIEW ").append(SearchColumns.TABLE_NAME).append(" AS ")
+                   .append("SELECT ")
+                   .append(ArtistColumns.FULL_ID).append(" AS ").append(SearchColumns._ID).append(", ")
+                   .append("'").append(ArtistColumns.MIME_TYPE).append("' AS ").append(SearchColumns.MIME_TYPE).append(", ")
+                   .append(ArtistColumns.FULL_NAME).append(" AS ").append(SearchColumns.ARTIST_NAME).append(", ")
+                   .append("NULL AS ").append(SearchColumns.ALBUM_NAME).append(", ")
+                   .append("NULL AS ").append(SearchColumns.TRACK_NAME).append(", ")
+                   .append(ArtistColumns.FULL_NAME).append(" AS ").append(SearchColumns.MATCH).append(", ")
+                   .append("1 AS ").append(SearchColumns.GROUP_ORDER)
+                   .append(" FROM ").append(ArtistColumns.TABLE_NAME)
+                   .append(" UNION ALL ")
+                   .append("SELECT ")
+                   .append(AlbumColumns.FULL_ID).append(" AS ").append(SearchColumns._ID).append(", ")
+                   .append("'").append(AlbumColumns.MIME_TYPE).append("' AS ").append(SearchColumns.MIME_TYPE).append(", ")
+                   .append(ArtistColumns.FULL_NAME).append(" AS artist, ")
+                   .append(AlbumColumns.FULL_NAME).append(" AS album, ")
+                   .append("NULL AS ").append(SearchColumns.TRACK_NAME).append(", ")
+                   .append(AlbumColumns.FULL_NAME).append(" AS ").append(SearchColumns.MATCH).append(", ")
+                   .append("2 AS ").append(SearchColumns.GROUP_ORDER)
+                   .append(" FROM ").append(AlbumColumns.TABLE_NAME)
+                   .append(" JOIN ").append(ArtistColumns.TABLE_NAME)
+                   .append(" ON ").append(AlbumColumns.FULL_ARTIST_ID).append(" = ").append(ArtistColumns.FULL_SERVER_ID)
+                   .append(" UNION ALL ")
+                   .append("SELECT ")
+                   .append(TrackColumns.FULL_ID).append(" AS ").append(SearchColumns._ID).append(", ")
+                   .append("'").append(TrackColumns.MIME_TYPE).append("' AS ").append(SearchColumns.MIME_TYPE).append(", ")
+                   .append(ArtistColumns.FULL_NAME).append(" AS ").append(SearchColumns.ARTIST_NAME).append(", ")
+                   .append(AlbumColumns.FULL_NAME).append(" AS ").append(SearchColumns.ALBUM_NAME).append(", ")
+                   .append(TrackColumns.FULL_NAME).append(" AS ").append(SearchColumns.TRACK_NAME).append(", ")
+                   .append(TrackColumns.FULL_NAME).append(" AS ").append(SearchColumns.MATCH).append(", ")
+                   .append("3 AS ").append(SearchColumns.GROUP_ORDER)
+                   .append(" FROM ").append(TrackColumns.TABLE_NAME)
+                   .append(" JOIN ").append(AlbumColumns.TABLE_NAME)
+                   .append(" ON ").append(TrackColumns.FULL_ALBUM_ID).append(" = ").append(AlbumColumns.FULL_SERVER_ID)
+                   .append(" JOIN ").append(ArtistColumns.TABLE_NAME)
+                   .append(" ON ").append(TrackColumns.FULL_ARTIST_ID).append(" = ").append(ArtistColumns.FULL_SERVER_ID)
+                   .append(";");
+		
 	    Log.i(TAG, "Creating database schema:\n" + 
-	    		table_artists.toString() + "\n" +
-	    		table_albums.toString() + "\n" +
-	    		table_tracks.toString() + "\n");
+	            artistsTable + "\n" +
+	    		albumsTable  + "\n" +
+	    		tracksTable  + "\n" +
+	    		searchView   + "\n");
 	    
-	    db.execSQL(table_artists.toString());
-	    db.execSQL(table_albums.toString());
-	    db.execSQL(table_tracks.toString());
+	    db.execSQL(artistsTable.toString());
+	    db.execSQL(albumsTable.toString());
+	    db.execSQL(tracksTable.toString());
+        db.execSQL(searchView.toString());
 	}
 
 	@Override
