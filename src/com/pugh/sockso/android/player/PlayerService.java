@@ -57,6 +57,9 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     public static final String PLAYSTATE_CHANGE   = "com.pugh.sockso.android.player.PLAYSTATE_CHANGE";
     public static final String TRACK_ERROR   = "com.pugh.sockso.android.player.TRACK_ERROR";
 
+    // How much to increment/decrement the time when seeking through the track
+    private static final int SEEK_TIME = 15 * 1000; // 15 seconds
+
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate() called");
@@ -485,6 +488,27 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     private boolean isFirstTrackInPlaylist() {
 
         return ( mPlayIndex == 0 );        
+    }
+
+    public void seekBackward() {
+
+        if (isPlaying()) {
+            int currentPos = mPlayer.getCurrentPosition();
+            int seekPos = (currentPos - SEEK_TIME >= 0) ? currentPos - SEEK_TIME : 0;
+            mPlayer.seekTo(seekPos);
+        }
+    }
+
+    public void seekForward() {
+        
+        if (isPlaying()) {
+            int currentPos = mPlayer.getCurrentPosition();
+            int duration = mPlayer.getDuration();
+            // NOTE: Adding a bit extra time (20 msec) to the seekPos check as the duration 
+            // will change by a tiny amount by the time the actual seekTo() method takes place
+            int seekPos = (currentPos + SEEK_TIME + 20 < duration) ? currentPos + SEEK_TIME : duration;
+            mPlayer.seekTo(seekPos);
+        }
     }
     
 }

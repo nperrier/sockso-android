@@ -136,6 +136,7 @@ public class PlayerActivity extends Activity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "ForwardSeek Button clicked");
+                seekForward();
             }
         });
 
@@ -147,6 +148,7 @@ public class PlayerActivity extends Activity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "BackwardSeek Button clicked");
+                seekBackward();
             }
         });
 
@@ -246,7 +248,24 @@ public class PlayerActivity extends Activity {
     }
 
     
-    // TODO
+    protected void seekForward() {
+        
+        if ( mService == null ) {
+            return;
+        }
+        
+        mService.seekForward();        
+    }
+    
+    protected void seekBackward() {
+        
+        if ( mService == null ) {
+            return;
+        }
+        
+        mService.seekBackward();        
+    }
+
     protected void nextTrack() {
         
         if ( mService == null ) {
@@ -256,7 +275,6 @@ public class PlayerActivity extends Activity {
         mService.skipTrack();
     }
 
-    // TODO
     protected void prevTrack() {
         
         if ( mService == null ) {
