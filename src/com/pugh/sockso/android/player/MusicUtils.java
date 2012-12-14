@@ -63,9 +63,9 @@ public class MusicUtils {
     /**
      * Function to change progress to timer
      * 
-     * @param progress -
-     * @param totalDuration
-     *            returns current duration in milliseconds
+     * @param progress the percentage of the progress bar
+     * @param totalDuration the total duration of the track
+     * @return current duration in milliseconds
      */
     public static int progressToTimer(int progress, int totalDuration) {
         

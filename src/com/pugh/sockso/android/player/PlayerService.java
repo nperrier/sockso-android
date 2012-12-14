@@ -510,5 +510,17 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
             mPlayer.seekTo(seekPos);
         }
     }
+
+
+    public void seekTo(int seekPos) {
+        
+        if (isPlaying()) {
+            // NOTE: Adding a bit extra time (20 msec) to the seekPos check as the duration 
+            // will change by a tiny amount by the time the actual seekTo() method takes place
+            if ( seekPos >= 0 && seekPos + 20 < mPlayer.getDuration() ) {
+                mPlayer.seekTo(seekPos);
+            }
+        }
+    }
     
 }

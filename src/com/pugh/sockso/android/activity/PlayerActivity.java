@@ -73,6 +73,7 @@ public class PlayerActivity extends Activity {
     
     private boolean mIsShuffling = false;
     private boolean mIsRepeating = false;
+    private boolean mProgressIsSeeking = false;
     
     // Intent actions
     public static final String ACTION_PLAY_TRACK  = "com.pugh.sockso.android.player.ACTION_PLAY_TRACK";
@@ -222,31 +223,42 @@ public class PlayerActivity extends Activity {
             // When user starts moving the progress handler
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                Log.d(TAG, "onStartTrackingTouch() ran");
-                // TODO
+                Log.d(TAG, "onStartTrackingTouch() ran: " + seekBar.getProgress());
+
+                // Set a flag to tell the UI Handler for the progress bar not to change it 
+                // while the user is dragging it:
+                mProgressIsSeeking = true;
             }
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch) {
-
-                boolean logProgress = true;
-
-
-                if (logProgress) {
-                //    Log.d(TAG, "onProgressChanged(): " + progress);
-                }
+                //Log.d(TAG, "onProgressChanged(): " + progress);
+                // TODO
             }
 
             // When user stops moving the progress handler
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Log.d(TAG, "onStopTrackingTouch() ran");
-                // TODO notify service send seekBar location
+                Log.d(TAG, "onStopTrackingTouch() ran: " + seekBar.getProgress());
+                seekTo(seekBar.getProgress());
+                mProgressIsSeeking = false;
             }
         });
         
     }
 
+    // progress - percentage
+    protected void seekTo(int progress) {
+        
+        if ( mService == null ) {
+            return;
+        }
+        
+        // Seek position in msecs
+        int seekPos = MusicUtils.progressToTimer(progress, mService.getDuration());
+        
+        mService.seekTo(seekPos);
+    }
     
     protected void seekForward() {
         
@@ -553,7 +565,9 @@ public class PlayerActivity extends Activity {
         }
         
         //Log.d(TAG, "refreshTime() progress: " + progress);
-        mTrackProgressBar.setProgress(progress);
+        if ( ! mProgressIsSeeking ) {
+            mTrackProgressBar.setProgress(progress);
+        }
         
         return whole;
     }
