@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Contains localized strings for app -->
 <resources>
 
     <string name="app_name">Sockso</string>
+    
     <string name="server_address">Server:</string>
+    <string name="port_number">Port:</string>
     <string name="user_login">User:</string>
     <string name="user_password">Password:</string>
     <string name="login_button_text">Connect</string>
-    <string name="port_number">Port:</string>
-    <string name="ACCOUNT_TYPE">com.pugh.sockso.account</string>
+    <string name="login_required_checkbox">Login Required?</string>
+    
     <string name="login_authenticating">Authenticating…</string>
     <string name="common_ok">OK</string>
+    
     <string name="artist_image_description">Album Image</string>    
     <string name="album_image_description">Album Image</string>
     <string name="track_image_description">Track Image</string>
+    
     <string name="track_count">track(s)</string>
+    
     <string name="no_artists">No Artists Found</string>
     <string name="no_albums">No Albums Found</string>
     <string name="no_tracks">No Tracks Found</string>
+    
     <string name="prefs_login_required_summary">Set this if the server requires login with username/password combo</string>
     <string name="prefs_login_required_title">Login Required?</string>
     <string name="prefs_username_summary">Username</string>
@@ -27,10 +34,13 @@
     <string name="prefs_server_title">Server</string>
     <string name="prefs_port_summary">Port</string>
     <string name="prefs_port_title">Port</string>
+    
     <string name="notification_playing">Playing</string>
+    
     <string name="menu_preferences">Preferences</string>
     <string name="menu_library">Library</string>
     <string name="menu_player">Player</string>
+    
     <string name="player_error">Error playing track</string>
     <string name="search_hint">Search artists, albums or tracks</string>
     <string name="no_search_results">Nothing found</string>

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -30,17 +32,19 @@ public class TabControllerActivity extends FragmentActivity {
 
 	private final static String TAG = TabControllerActivity.class.getSimpleName();
 
-	TabHost mTabHost;
-	ViewPager mViewPager;
+	TabHost     mTabHost;
+	ViewPager   mViewPager;
 	TabsAdapter mTabsAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.i(TAG, "onCreate ran");
-
+		Log.d(TAG, "onCreate ran");
+        
+		PreferenceManager.setDefaultValues(this, R.xml.sockso_preferences, false);
+        
 		// Check if we have an account first
-		if( !SocksoAccountAuthenticator.hasSocksoAccount(getApplicationContext()) ){
+		if( ! SocksoAccountAuthenticator.hasSocksoAccount(getApplicationContext()) ){
 			Intent intent = new Intent(TabControllerActivity.this, LoginActivity.class);
 			//startActivityForResult(intent, NEW_ACCOUNT);
 			startActivity(intent);

@@ -47,7 +47,10 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 
 	private static final String TAG = "SocksoAccAuthenticator";
 	private static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
-	public static final String  ACCOUNT_TYPE = "com.pugh.sockso.account";
+	
+	public static final String ACCOUNT_TYPE = "com.pugh.sockso.account";
+	// Dummy account when not using credentials to access server
+	public static final String DUMMY_ACCOUNT = "Sockso"; 
 	
 	private Context mContext;
 
@@ -60,7 +63,7 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	@Override
 	public Bundle addAccount(AccountAuthenticatorResponse response, String accountType, String authTokenType,
 			String[] requiredFeatures, Bundle options) throws NetworkErrorException {
-		Log.i(TAG, "Adding Sockso account");
+		Log.d(TAG, "Adding Sockso account");
 
 		Bundle result = new Bundle();
 		
@@ -83,22 +86,27 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 
 	// LoginTask calls this one
 	public static void addAccount(Context context, Config config, Parcelable response) {
-		
-		Log.i(TAG, "Adding Sockso account explicitly");
+		Log.d(TAG, "Adding Sockso account explicitly");
 		
 		Bundle result = null;
+		String username = config.getUser();
+		String password = config.getPassword();
 		
-		Account account = new Account(config.getUser(), context.getString(R.string.ACCOUNT_TYPE));
+		if (username == null) {
+		    username = DUMMY_ACCOUNT;
+		}
+		
+		Account account = new Account(username, ACCOUNT_TYPE);
 		AccountManager am = AccountManager.get(context);
 		// TODO store a hashed password 
 		// String hashedPassword = MD5.getInstance().hash(config.getPassword());
 		
-	    final Bundle extraData = new Bundle();
-	    extraData.putString("server", config.getServer());
-	    extraData.putString("port", Integer.valueOf(config.getPort()).toString() ); // I wish I could just use putInt()...
+	    //final Bundle extraData = new Bundle();
+	    //extraData.putString("server", config.getServer());
+	    //extraData.putString("port", Integer.valueOf(config.getPort()).toString() ); // I wish I could just use putInt()...
 	    
-		if (am.addAccountExplicitly(account, config.getPassword(), extraData)) {
-			
+		if (am.addAccountExplicitly(account, password, null)) {
+		        	
 			// Add the server and port number along with the account name and password:
 			result = new Bundle();
 			result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
@@ -122,38 +130,30 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 		if(authResponse != null){
 			authResponse.onResult(result);
 		}
-		
 	}
 	
 	@Override
-	public Bundle confirmCredentials(AccountAuthenticatorResponse response, Account account, Bundle options)
-			throws NetworkErrorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Bundle editProperties(AccountAuthenticatorResponse response, String accountType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account, String authTokenType,
 			Bundle options) throws NetworkErrorException {
-		Log.i(TAG, "getAuthToken() ran");
+		Log.d(TAG, "getAuthToken() ran");
 		
-		// bad auth token type
-		if (!authTokenType.equals(PARAM_AUTHTOKEN_TYPE)) {
+		// Bad auth token type
+		if ( ! authTokenType.equals(PARAM_AUTHTOKEN_TYPE) ) {
 			final Bundle result = new Bundle();
-			result.putString(AccountManager.KEY_ERROR_MESSAGE, "invalid authTokenType");
+			result.putString(AccountManager.KEY_ERROR_MESSAGE, "Invalid authTokenType");
 			return result;
 		}
 
 		final AccountManager accountManager = AccountManager.get(mContext);
 		final String password = accountManager.getPassword(account);
+		final String username = account.name;
 
-		// checks if the account is valid and get auth token
+		// Not authenticating if dummy account
+		if(DUMMY_ACCOUNT.equalsIgnoreCase(username)) {
+		    return null;
+		}
+		
+		// Checks if the account is valid and get auth token
 		if (password != null) {
 			boolean verified = true;
 			
@@ -163,15 +163,15 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 			if (verified) {
 				final Bundle result = new Bundle();
 				result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-				result.putLong(AccountManager.KEY_ACCOUNT_TYPE, R.string.ACCOUNT_TYPE);
+				result.putString(AccountManager.KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
 				result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
 				return result;
 			}
 		}
+		
 		// Password is missing or incorrect.
 		// Start the activity to add the missing data.
 		final Intent intent = new Intent(mContext, LoginActivity.class);
-
 		intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
 		final Bundle bundle = new Bundle();
 		bundle.putParcelable(AccountManager.KEY_INTENT, intent);
@@ -180,32 +180,46 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	}
 
 	public static Boolean hasSocksoAccount(Context context) {
+	    
 		AccountManager am = AccountManager.get(context);
-		Account[] accounts = am.getAccountsByType(context.getString(R.string.ACCOUNT_TYPE));
+		Account[] accounts = am.getAccountsByType(ACCOUNT_TYPE);
 		if(accounts != null && accounts.length > 0)
 			return true;
 		else
 			return false;
 	}
-	
-	@Override
-	public String getAuthTokenLabel(String authTokenType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	@Override
-	public Bundle hasFeatures(AccountAuthenticatorResponse response, Account account, String[] features)
-			throws NetworkErrorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Bundle confirmCredentials(AccountAuthenticatorResponse response, Account account, Bundle options)
+            throws NetworkErrorException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public Bundle updateCredentials(AccountAuthenticatorResponse response, Account account, String authTokenType,
-			Bundle options) throws NetworkErrorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Bundle editProperties(AccountAuthenticatorResponse response, String accountType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getAuthTokenLabel(String authTokenType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Bundle hasFeatures(AccountAuthenticatorResponse response, Account account, String[] features)
+            throws NetworkErrorException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Bundle updateCredentials(AccountAuthenticatorResponse response, Account account, String authTokenType,
+            Bundle options) throws NetworkErrorException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

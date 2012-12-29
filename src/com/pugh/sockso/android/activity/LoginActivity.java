@@ -7,9 +7,15 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.text.Layout;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 
 import com.pugh.sockso.android.Config;
@@ -19,71 +25,109 @@ import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 
 public class LoginActivity extends Activity {
 
-	private final static String TAG = "LoginActivity";
+	private final static String TAG = LoginActivity.class.getSimpleName();
 
 	public static final String LOGIN_INTENT    = "com.pugh.sockso.android.activity.LOGIN";
-	public static final String LOGIN_PREFS     = "sockso-login-preferences";
-	public static final String SOCKSO_USER     = "sockso_user";
-	public static final String SOCKSO_SESS_KEY = "sockso_session_key";
-	public static final String SOCKSO_PASS     = "sockso_password";
-	public static final String SOCKSO_SERVER   = "sockso_server";
-	
 
+	// TODO Unused currently
+    public static final String SOCKSO_SESS_KEY = "session_key";
+	
 	private LoginTask mLoginTask;
-	private Button mLoginButton;
-	//private boolean mNewUser = false;
+	private Button    mLoginButton;
+	private CheckBox  mLoginRequiredCheckBox;
+	private ViewGroup mCredentialsView;
+	private View      mCredentialsLayout;
+	private EditText  mEditUser;
+	private EditText  mEditPass;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-
-		Log.i(TAG, "\"onCreate\" ran");
+		Log.i(TAG, "onCreate() ran");
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.login);
 
 		mLoginButton = (Button) findViewById(R.id.login_button);
+		mLoginRequiredCheckBox = (CheckBox) findViewById(R.id.login_required);
 		
+        mCredentialsView = (ViewGroup) findViewById(R.id.credentials);
+        
+        mCredentialsLayout = getLayoutInflater().inflate(R.layout.login_credentials, null);
+        
+        mEditUser = (EditText) mCredentialsLayout.findViewById(R.id.login_user);
+        mEditPass = (EditText) mCredentialsLayout.findViewById(R.id.login_password);
+        
 		mLoginButton.setOnClickListener(new View.OnClickListener() {
+		    
+		    @Override
 			public void onClick(View view) {
-				Log.i(TAG, "\"Connect\" button clicked!");
-
-				// If already running, pushing the button again should do
-				// nothing!
-				if (mLoginTask != null) {
-					return;
-				}
-
-				// TODO
-				EditText editServer = (EditText) findViewById(R.id.server_address);
-				String server = editServer.getText().toString();
-
-				EditText editUser = (EditText) findViewById(R.id.login_user);
-				String user = editUser.getText().toString();
-
-				EditText editPass = (EditText) findViewById(R.id.login_password);
-				String password = editPass.getText().toString();
-
-				// TODO improve validation
-				if (user.length() == 0 || password.length() == 0 || server.length() == 0) {
-					// SocksoApp.getInstance().presentError(v.getContext(),
-					// getResources().getString(R.string.ERROR_MISSINGINFO_TITLE),
-					// getResources().getString(R.string.ERROR_MISSINGINFO));
-					Log.e(TAG, "Username or Password was blank!");
-					return;
-				}
-
-				mLoginTask = new LoginTask(view.getContext());
-				mLoginTask.execute(user, password, server);
+		        doLogin();
 			}
 		});
+		
+		mLoginRequiredCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d(TAG, "onCheckedChanged() ran");
+                
+                if (isChecked) {
+                    mCredentialsView.addView(mCredentialsLayout);
+                }
+                else {
+                    mCredentialsView.removeView(mCredentialsLayout);
+                }
+            }
+		});
+		
+	}
+	
+	private void doLogin() {
+
+        // If already logging in, pushing the button again should do nothing
+        if (mLoginTask != null) {
+            return;
+        }
+
+        EditText editServer = (EditText) findViewById(R.id.server_address);
+        String server = editServer.getText().toString();
+
+        EditText editPort = (EditText) findViewById(R.id.port_number);
+        
+        int port;
+        try {
+            port = Integer.parseInt(editPort.getText().toString());         
+        }
+        catch (NumberFormatException e) {
+            Log.e(TAG, "Port number was not a number");
+            return;
+        }
+        
+        Config config = new Config(server, port);
+
+        // Username/Password is optional
+        if (mLoginRequiredCheckBox.isChecked()) {
+
+            String username = mEditUser.getText().toString();
+            String password = mEditPass.getText().toString();
+
+            // TODO improve validation
+            if (username.length() == 0 || password.length() == 0 || server.length() == 0) {
+                Log.e(TAG, "Username or Password was blank");
+                return;
+            }
+            config.setUser(username);
+            config.setPassword(password);
+        }
+        
+        mLoginTask = new LoginTask(this);
+        mLoginTask.execute(config);
 	}
 
-	private class LoginTask extends AsyncTask<String, Void, Session> {
+	private class LoginTask extends AsyncTask<Config, Void, Session> {
 
 		ProgressDialog mDialog;
-		Config mConfig;
-
+		
 		LoginTask(Context context) {
 			mLoginButton.setEnabled(false);
 
@@ -92,15 +136,12 @@ public class LoginActivity extends Activity {
 		}
 
 		@Override
-		public Session doInBackground(String... params) {
+		public Session doInBackground(Config... configs) {
+		    
+		    // TODO
+			Config config = configs[0];
 			
-			String user   = params[0];
-			String pass   = params[1];
-			String server = params[2];
-
-			mConfig = new Config(user, pass, server);
-				
-			Session session = login(mConfig);
+			Session session = login(config);
 
 			return null;
 		}
@@ -108,7 +149,7 @@ public class LoginActivity extends Activity {
 		Session login(final Config config) {
 
 			// TODO Implement the server later
-
+		    
 			Parcelable authResponse = null;
 			if (getIntent() != null && getIntent().getExtras() != null) {
 				authResponse = getIntent().getExtras().getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);

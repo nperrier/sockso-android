@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Contains default values for app -->
+<resources>
+    
+    <bool name="defaults_login_required">false</bool>
+    
+    <!-- TODO These are values for development -->
+    <string name="defaults_username">nperrier</string>
+    <string name="defaults_password">greenday94</string>   
+    <string name="defaults_server_address">sockso.perrierliquors.com</string>
+   
+    <integer name="defaults_port_number">4444</integer>
+    
+</resources>

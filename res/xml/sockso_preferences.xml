@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Settings" >
+
+    <EditTextPreference
+        android:key="server"
+        android:defaultValue="@string/defaults_server_address"
+        android:dialogTitle="Enter the server address"
+        android:title="@string/prefs_server_title" />
+    <EditTextPreference
+        android:key="port"
+        android:defaultValue="@integer/defaults_port_number"
+        android:dialogTitle="Enter the port number"
+        android:title="@string/prefs_port_title" />
 
     <CheckBoxPreference
-        android:defaultValue="false"
         android:key="login_required"
-        android:summary="@string/prefs_login_required_summary"
+        android:defaultValue="@bool/defaults_login_required"
         android:title="@string/prefs_login_required_title" />
 
     <EditTextPreference
-        android:defaultValue=""
         android:key="username"
-        android:summary="@string/prefs_username_summary"
+        android:defaultValue="@string/defaults_username"
+        android:dependency="login_required"
+        android:dialogTitle="Enter the username"
         android:title="@string/prefs_username_title" />
     <EditTextPreference
-        android:defaultValue=""
         android:key="password"
-        android:summary="@string/prefs_password_summary"
-        android:title="@string/prefs_password_title"
-        android:password="true" />
-    <EditTextPreference
-        android:defaultValue=""
-        android:key="server"
-        android:summary="@string/prefs_server_summary"
-        android:title="@string/prefs_server_title" />
-    <EditTextPreference
-        android:defaultValue="4444"
-        android:key="port"
-        android:summary="@string/prefs_port_summary"
-        android:title="@string/prefs_port_title" />
-
+        android:defaultValue="@string/defaults_password"
+        android:dependency="login_required"
+        android:dialogTitle="Enter the password"
+        android:password="true"
+        android:title="@string/prefs_password_title" />
+    
 </PreferenceScreen>

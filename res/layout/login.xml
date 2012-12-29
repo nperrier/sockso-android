@@ -27,7 +27,7 @@
                 android:padding="10dip"
                 android:text="@string/app_name"
                 android:textColor="#0000cc"
-                android:textSize="32dip" />
+                android:textSize="32sp" />
         </LinearLayout>
 
         <!-- Header Ends -->
@@ -56,44 +56,45 @@
                 android:layout_marginTop="5dip"
                 android:inputType="text"
                 android:singleLine="true"
-                android:text="sockso.perrierliquors.com">
+                android:text="@string/defaults_server_address" >
 
                 <requestFocus />
             </EditText>
 
             <TextView
-                android:id="@+id/login_user_label"
+                android:id="@+id/port_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/user_login"
+                android:text="@string/port_number"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <EditText
-                android:id="@+id/login_user"
+                android:id="@+id/port_number"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dip"
                 android:layout_marginTop="5dip"
-                android:inputType="text"
-                android:singleLine="true" 
-                android:text="nperrier"/>
+                android:inputType="number"
+                android:singleLine="true"
+                android:text="@integer/defaults_port_number" >
+            </EditText>
 
-            <TextView
-                android:id="@+id/login_password_label"
+            <CheckBox
+                android:id="@+id/login_required"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/user_password"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:checked="false"
+                android:text="@string/login_required_checkbox" />
 
-            <EditText
-                android:id="@+id/login_password"
-                android:layout_width="fill_parent"
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/credentials"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dip"
-                android:layout_marginTop="5dip"
-                android:inputType="textPassword"
-                android:singleLine="true" 
-                android:text="greenday94"/>
+                android:orientation="vertical"
+                >
+
+            </LinearLayout>
 
             <Button
                 android:id="@+id/login_button"
