@@ -152,7 +152,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
             String[] projection = { ArtistColumns._ID, ArtistColumns.SERVER_ID, ArtistColumns.NAME };
             Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + ArtistColumns.TABLE_NAME);
-            CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, null);
+            CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, ArtistColumns.FULL_NAME + " ASC");
 
             return cursorLoader;
         }

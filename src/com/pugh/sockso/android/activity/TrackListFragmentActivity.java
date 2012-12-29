@@ -160,7 +160,7 @@ public class TrackListFragmentActivity extends FragmentActivity {
                     TrackColumns.ARTIST_NAME, };
 
             Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
-            CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, null);
+            CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, TrackColumns.FULL_NAME + " ASC");
 
             return cursorLoader;
         }
