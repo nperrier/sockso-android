@@ -24,10 +24,13 @@ public class SocksoDB extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 
-		StringBuilder albumsTable     = new StringBuilder();
-		StringBuilder artistsTable    = new StringBuilder();
-		StringBuilder tracksTable     = new StringBuilder();
-		StringBuilder searchView      = new StringBuilder();
+        StringBuilder artistsTable = new StringBuilder();
+        StringBuilder artistsIndex = new StringBuilder();
+		StringBuilder albumsTable  = new StringBuilder();
+        StringBuilder albumsIndex  = new StringBuilder();
+		StringBuilder tracksTable  = new StringBuilder();
+	    StringBuilder tracksIndex  = new StringBuilder();
+		StringBuilder searchView   = new StringBuilder();
 		
 		// Artists table
 		artistsTable.append("CREATE TABLE ").append(ArtistColumns.TABLE_NAME)
@@ -35,9 +38,11 @@ public class SocksoDB extends SQLiteOpenHelper {
 				    .append(ArtistColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
 					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")					 
 					.append(ArtistColumns.NAME).append(" TEXT NOT NULL")
-					.append(");\n")
-					.append("CREATE INDEX ").append(ArtistColumns.SERVER_ID).append("_i")
-					.append(" ON ").append(ArtistColumns.TABLE_NAME).append(" (").append(ArtistColumns.SERVER_ID).append(");");
+					.append(")");
+		
+		artistsIndex.append("CREATE UNIQUE INDEX ").append(ArtistColumns.TABLE_NAME).append("_")
+		            .append(ArtistColumns.SERVER_ID).append("_ui").append(" ON ")
+		            .append(ArtistColumns.TABLE_NAME).append(" (").append(ArtistColumns.SERVER_ID).append(")");
 		
 	    // Albums Table
 		albumsTable.append("CREATE TABLE ").append(AlbumColumns.TABLE_NAME)
@@ -49,28 +54,30 @@ public class SocksoDB extends SQLiteOpenHelper {
 		           .append(AlbumColumns.ARTIST_ID).append(" INTEGER, ")
 		           .append("FOREIGN KEY(").append(AlbumColumns.ARTIST_ID).append(") REFERENCES ")
 		           .append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append(") ")
-		           .append(");\n")
-		           .append("CREATE INDEX ").append(AlbumColumns.SERVER_ID).append("_i")
-		           .append(" ON ").append(AlbumColumns.TABLE_NAME).append(" (").append(AlbumColumns.SERVER_ID)
-		           .append(");");
+		           .append(")");
+		
+		albumsIndex.append("CREATE UNIQUE INDEX ").append(AlbumColumns.TABLE_NAME).append("_")
+		           .append(AlbumColumns.SERVER_ID).append("_ui").append(" ON ")
+		           .append(AlbumColumns.TABLE_NAME).append(" (").append(AlbumColumns.SERVER_ID).append(")");
 
 		// Tracks Table
 		tracksTable.append("CREATE TABLE ").append(TrackColumns.TABLE_NAME)
-					.append(" (")
-					.append(TrackColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-					.append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
-					.append(TrackColumns.NAME).append(" TEXT NOT NULL, ")
-					.append(TrackColumns.TRACK_NO).append(" INTEGER, ")
-					.append(TrackColumns.ARTIST_ID).append(" INTEGER, ")
-					.append(TrackColumns.ALBUM_ID).append(" INTEGER, ")
-					.append("FOREIGN KEY(").append(TrackColumns.ARTIST_ID).append(") REFERENCES ")
-					.append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append("), ")
-					.append("FOREIGN KEY(").append(TrackColumns.ALBUM_ID).append(") REFERENCES ")
-					.append(AlbumColumns.TABLE_NAME).append("(").append(AlbumColumns._ID).append(")")
-					.append(");\n")
-					.append("CREATE INDEX ").append(TrackColumns.SERVER_ID).append("_i")
-                    .append(" ON ").append(TrackColumns.TABLE_NAME).append(" (").append(TrackColumns.SERVER_ID)
-                    .append(");");
+		           .append(" (")
+		           .append(TrackColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+		           .append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
+		           .append(TrackColumns.NAME).append(" TEXT NOT NULL, ")
+		           .append(TrackColumns.TRACK_NO).append(" INTEGER, ")
+		           .append(TrackColumns.ARTIST_ID).append(" INTEGER, ")
+		           .append(TrackColumns.ALBUM_ID).append(" INTEGER, ")
+		           .append("FOREIGN KEY(").append(TrackColumns.ARTIST_ID).append(") REFERENCES ")
+		           .append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append("), ")
+		           .append("FOREIGN KEY(").append(TrackColumns.ALBUM_ID).append(") REFERENCES ")
+		           .append(AlbumColumns.TABLE_NAME).append("(").append(AlbumColumns._ID).append(")")
+		           .append(")");
+		
+		tracksIndex.append("CREATE UNIQUE INDEX ").append(TrackColumns.TABLE_NAME).append("_")
+		           .append(TrackColumns.SERVER_ID).append("_ui").append(" ON ")
+		           .append(TrackColumns.TABLE_NAME).append(" (").append(TrackColumns.SERVER_ID).append(")");
 
 		// View for searching across all the tables:
 		searchView.append("CREATE VIEW ").append(SearchColumns.TABLE_NAME).append(" AS ")
@@ -113,13 +120,19 @@ public class SocksoDB extends SQLiteOpenHelper {
 		
 	    Log.i(TAG, "Creating database schema:\n" + 
 	            artistsTable + "\n" +
+	            artistsIndex + "\n" +
 	    		albumsTable  + "\n" +
+	    		albumsIndex  + "\n" +
 	    		tracksTable  + "\n" +
+	    		tracksIndex  + "\n" +
 	    		searchView   + "\n");
 	    
-	    db.execSQL(artistsTable.toString());
+        db.execSQL(artistsTable.toString());
+        db.execSQL(artistsIndex.toString());
 	    db.execSQL(albumsTable.toString());
+        db.execSQL(albumsIndex.toString());
 	    db.execSQL(tracksTable.toString());
+	    db.execSQL(tracksIndex.toString());
         db.execSQL(searchView.toString());
 	}
 

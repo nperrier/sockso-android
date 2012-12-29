@@ -1,8 +1,10 @@
 package com.pugh.sockso.android.data;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import org.json.JSONException;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -11,50 +13,53 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
+import com.pugh.sockso.android.ServerFactory;
+import com.pugh.sockso.android.api.SocksoAPI;
+import com.pugh.sockso.android.api.SocksoAPIImpl;
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
 import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
-import com.pugh.sockso.android.music.MusicItem;
 import com.pugh.sockso.android.music.Track;
 
 public class MusicManager {
 
     private static final String TAG = MusicManager.class.getSimpleName();
+    
     private static final int BATCH_MAX = 100;
     
     public static final String ALBUM  = "album_id";
     public static final String ARTIST = "artist_id";
     public static final String TRACK  = "track_id";
 
-    // TODO This should be only run to populate the database
-    // the very first time
-    // This is going to be inserting a LOT of data, especially for
-    // users with large music libraries (read: me)
-    // It should run in its own loader task,
-    // and perform insertions in chunked batches
-    // retrieving the data should be done in chunks too (using offset)
-    public static void syncLibrary(final Context context, final Map<String, List<? extends MusicItem>> musicItems) {
-        Log.d(TAG, "initLibrary() ran");
+    
+    public static long syncLibrary(final Context context, long syncMarker) throws IOException, JSONException {
+        Log.d(TAG, "syncLibrary() ran");
 
+        SocksoAPI socksoAPI = new SocksoAPIImpl(ServerFactory.getServer(context));
+
+        // Grab data from server
+        List<Artist> artists = socksoAPI.getArtists(syncMarker);
+        List<Album>  albums  = socksoAPI.getAlbums(syncMarker);
+        List<Track>  tracks  = socksoAPI.getTracks(syncMarker);
+        
         final ContentResolver resolver = context.getContentResolver();
-
-        List<Artist> artists = (List<Artist>) musicItems.get("artists");
-        syncArtists(artists, context, resolver);
-
-        List<Album> albums = (List<Album>) musicItems.get("albums");
-        syncAlbums(albums, context, resolver);
-
-        List<Track> tracks = (List<Track>) musicItems.get("tracks");
-        syncTracks(tracks, context, resolver);
+        
+        long newSyncMarker = System.currentTimeMillis();
+        
+        syncArtists(artists, resolver);
+        syncAlbums(albums, resolver);
+        syncTracks(tracks, resolver);
+        
+        return newSyncMarker;
     }
 
-    private static void syncArtists(List<Artist> artists, Context context, ContentResolver resolver) {
+    private static void syncArtists(List<Artist> artists, ContentResolver resolver) {
         Log.d(TAG, "syncArtists() ran");
 
         final Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + ArtistColumns.TABLE_NAME);
-        final BatchOperation batchOperation = new BatchOperation(uri, context, resolver);
+        final BatchOperation batchOperation = new BatchOperation(uri, resolver);
 
         for (final Artist artist : artists) {
             addArtist(artist, batchOperation);
@@ -71,11 +76,11 @@ public class MusicManager {
         }
     }
 
-    private static void syncAlbums(List<Album> albums, Context context, ContentResolver resolver) {
+    private static void syncAlbums(List<Album> albums, ContentResolver resolver) {
         Log.d(TAG, "syncAlbums() ran");
         
         final Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + AlbumColumns.TABLE_NAME);
-        final BatchOperation batchOperation = new BatchOperation(uri, context, resolver);
+        final BatchOperation batchOperation = new BatchOperation(uri, resolver);
 
         for (final Album album : albums) {
             addAlbum(album, batchOperation);
@@ -92,11 +97,11 @@ public class MusicManager {
         }
     }
 
-    private static void syncTracks(List<Track> tracks, Context context, ContentResolver resolver) {
+    private static void syncTracks(List<Track> tracks, ContentResolver resolver) {
         Log.d(TAG, "syncTracks() ran");
         
         final Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
-        final BatchOperation batchOperation = new BatchOperation(uri, context, resolver);
+        final BatchOperation batchOperation = new BatchOperation(uri, resolver);
 
         for (final Track track : tracks) {
             addTrack(track, batchOperation);

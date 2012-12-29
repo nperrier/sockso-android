@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
@@ -22,7 +21,7 @@ final public class BatchOperation {
 	// List for storing the batch mOperations
 	private final List<ContentValues> mOperations;
 
-	public BatchOperation(Uri uri, Context context, ContentResolver resolver) {
+	public BatchOperation(Uri uri, ContentResolver resolver) {
 	    mUri = uri;
 		mResolver = resolver;
 		mOperations = new ArrayList<ContentValues>();

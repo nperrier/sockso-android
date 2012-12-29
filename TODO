@@ -3,15 +3,15 @@ TODO List:
 * Use layout @include tag to group common views widgits for list items and other layouts
 
 * Implement remaining buttons on player UI:
-  - Progress bar seeking
+  - Playlist
+  - Shuffle
+  - Repeat
   
 * Create image file cache for album cover art
 
 * Add placeholder images for cover art
 
 * Create audio file cache for music
-
-* Add settings/preferences 
 
 * Create a better "first-start" workflow for initial sync of music library
 
@@ -23,6 +23,4 @@ TODO List:
 * Move cover art image retrieval to ContentProvider
 
 * Fix memory issue with loading images in listview while "flinging" (scrolling really fast)
-
-* Implement search functionality
 

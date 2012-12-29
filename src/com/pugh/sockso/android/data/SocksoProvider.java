@@ -114,7 +114,7 @@ public class SocksoProvider extends ContentProvider {
         // Fully qualified columns (non-public)
         static final String FULL_ID        = TABLE_NAME + "." + _ID;
         static final String FULL_SERVER_ID = TABLE_NAME + "." + SERVER_ID;
-        static final String FULL_NAME      = TABLE_NAME + "." + NAME;
+        public static final String FULL_NAME = TABLE_NAME + "." + NAME;
     }
 
     public final static class AlbumColumns implements BaseColumns {
@@ -164,7 +164,7 @@ public class SocksoProvider extends ContentProvider {
         
         // Fully qualified columns (non-public)
         static final String FULL_SERVER_ID = TABLE_NAME + "." + SERVER_ID;
-        static final String FULL_NAME      = TABLE_NAME + "." + NAME;
+        public static final String FULL_NAME = TABLE_NAME + "." + NAME;
         static final String FULL_ARTIST_ID = TABLE_NAME + "." + ARTIST_ID;
         static final String FULL_ALBUM_ID  = TABLE_NAME + "." + ALBUM_ID;
         static final String FULL_TRACK_NO  = TABLE_NAME + "." + TRACK_NO;
@@ -207,9 +207,9 @@ public class SocksoProvider extends ContentProvider {
     
     @Override
     public boolean onCreate() {
-        mDB = new SocksoDB(getContext());
-
         Log.i(TAG, "onCreate() ran");
+        
+        mDB = new SocksoDB(getContext());
 
         return true;
     }
@@ -471,20 +471,25 @@ public class SocksoProvider extends ContentProvider {
         
         int uriType = sURIMatcher.match(uri);
         String table;
+        String where;
         
         switch (uriType) {
 
         case ARTISTS_CODE:
             table = ArtistColumns.TABLE_NAME;
+            where = ArtistColumns.SERVER_ID;
             break;
         case ALBUMS_CODE:
             table = AlbumColumns.TABLE_NAME;
+            where = AlbumColumns.SERVER_ID;
             break;
         case TRACKS_CODE:
             table = TrackColumns.TABLE_NAME;
+            where = TrackColumns.SERVER_ID;
             break;
         case PLAYLISTS_CODE:
             table = Playlist.TABLE_NAME;
+            where = Playlist.SERVER_ID;
             break;
         default:
             throw new IllegalArgumentException("Unknown or Invalid URI " + uri);
@@ -493,27 +498,39 @@ public class SocksoProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mDB.getWritableDatabase();
         sqlDB.beginTransaction();
         
-        int numInserted = values.length;
+        int rowsAdded = 0;
         
         try {
+            String   whereClause = where + "=?";
+            String[] whereArgs = null;            
+            
             for (ContentValues cv : values) {
-                long newID = sqlDB.insertOrThrow(table, null, cv);
                 
-                if (newID <= 0) {
-                    throw new SQLException("Failed to insert row into " + uri);
+                whereArgs = new String[] { cv.getAsString(where) };
+
+                int affected = sqlDB.update(table, cv, whereClause, whereArgs);
+                
+                if (affected == 0) {
+                    long newID = sqlDB.insert(table, null, cv);
+                    if (newID > 0) {
+                        rowsAdded++;
+                    }
                 }
             }
             
             sqlDB.setTransactionSuccessful();
-            
-            if ( numInserted > 0 ) {
-                getContext().getContentResolver().notifyChange(uri, null);
-            }
         }
+        catch (SQLException ex) {
+            Log.w(TAG, ex);
+        } 
         finally {
             sqlDB.endTransaction();
         }
         
-        return numInserted;
+        if ( rowsAdded > 0 ) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        
+        return rowsAdded;
     }
 }

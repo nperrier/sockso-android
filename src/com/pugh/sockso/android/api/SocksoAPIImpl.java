@@ -23,9 +23,10 @@ public class SocksoAPIImpl implements SocksoAPI {
 	private static final String API = "api";
 	private static final String LIMIT = "limit";
 	private static final String OFFSET = "offset";
+	private static final String FROM_DATE = "fromDate";
 
-	private static final int DEFAULT_LIMIT = 100;
-	private static final int NO_LIMIT = -1;
+	public static final int DEFAULT_LIMIT = 100;
+	public static final int NO_LIMIT = -1;
 
 	private String mBaseApiUrl;
 	private SocksoServer mServer; 	// dependency
@@ -56,15 +57,41 @@ public class SocksoAPIImpl implements SocksoAPI {
 		}
 	}
 
-	private class ArtistAPI {
+	private class BaseAPI {
+	    
+	    protected final String mBaseUri;
+	    
+	    public BaseAPI(String baseApiUri) {
+	        mBaseUri = baseApiUri;
+	    }
+	    
+	    protected String buildUriString(int limit, int offset, long from) {
+
+            Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
+
+            if (limit != DEFAULT_LIMIT) {
+                b.appendQueryParameter(LIMIT, Integer.toString(limit));
+            }
+
+            if (offset != 0) {
+                b.appendQueryParameter(OFFSET, Integer.toString(offset));
+            }
+
+            if (from != 0) {
+                b.appendQueryParameter(FROM_DATE, Long.toString(from));
+            }
+            
+            return b.build().toString();
+	    }
+	}
+	
+	private class ArtistAPI extends BaseAPI {
 
 		public static final String ARTISTS = "artists";
-		public static final String TRACKS = "tracks";
+		public static final String TRACKS  = "tracks";
 
-		private final String mBaseUri;
-
-		public ArtistAPI(final String baseApiUri) {
-			mBaseUri = baseApiUri + "/" + ARTISTS;
+		public ArtistAPI(String baseApiUri) {
+		    super(baseApiUri + "/" + ARTISTS);
 		}
 
 		// /api/artists/$ID - ArtistAPI $ID
@@ -73,24 +100,13 @@ public class SocksoAPIImpl implements SocksoAPI {
 		}
 
 		// /api/artists?limit=<limit>&offset=<offset>
-		public String getArtists(final int limit, final int offset) {
-
-			Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
-
-			if (limit != DEFAULT_LIMIT) {
-				b.appendQueryParameter(LIMIT, Integer.toString(limit));
-			}
-
-			if (offset != 0) {
-				b.appendQueryParameter(OFFSET, Integer.toString(offset));
-			}
-
-			return b.build().toString();
+		public String getArtists(int limit, int offset, long from) {
+		    return buildUriString(limit, offset, from);
 		}
 
 		// /api/artists?limit=-1
 		public String getArtists() {
-			return getArtists(NO_LIMIT, 0);
+			return getArtists(NO_LIMIT, 0, 0);
 		}
 
 		// /api/artists/<id>/tracks
@@ -98,17 +114,19 @@ public class SocksoAPIImpl implements SocksoAPI {
 			return mBaseUri + "/" + id + "/" + TRACKS;
 		}
 
+        public String getArtistsFrom(long from) {
+            return buildUriString(NO_LIMIT, 0, from);
+        }
+
 	}
 
-	private class AlbumAPI {
+	private class AlbumAPI extends BaseAPI {
 
 		public static final String ALBUMS = "albums";
 		public static final String TRACKS = "tracks";
 
-		private final String mBaseUri;
-
-		public AlbumAPI(final String baseApiUri) {
-			this.mBaseUri = baseApiUri + "/" + ALBUMS;
+		public AlbumAPI(String baseApiUri) {
+			super(baseApiUri + "/" + ALBUMS);
 		}
 
 		// /api/albums/<id>
@@ -116,25 +134,18 @@ public class SocksoAPIImpl implements SocksoAPI {
 			return mBaseUri + "/" + id;
 		}
 
-		// /api/albums?limit=<limit>&offset=<offset>
-		public String getAlbums(final int limit, final int offset) {
-
-			Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
-
-			if (limit != DEFAULT_LIMIT) {
-				b.appendQueryParameter(LIMIT, Integer.toString(limit));
-			}
-
-			if (offset != 0) {
-				b.appendQueryParameter(OFFSET, Integer.toString(offset));
-			}
-
-			return b.build().toString();
+		public String getAlbumsFrom(long from) {
+            return buildUriString(NO_LIMIT, 0, from);
+		}
+		
+		// /api/albums?limit=<limit>&offset=<offset>&fromDate=<from>
+		public String getAlbums(int limit, int offset, long from) {
+            return buildUriString(limit, offset, from);
 		}
 
 		// /api/albums?limit=-1
 		public String getAlbums() {
-			return getAlbums(NO_LIMIT, 0);
+			return getAlbums(NO_LIMIT, 0, 0);
 		}
 
 		// /api/albums/<id>/tracks
@@ -144,14 +155,12 @@ public class SocksoAPIImpl implements SocksoAPI {
 
 	}
 
-	private class TrackAPI {
+	private class TrackAPI extends BaseAPI {
 
 		public static final String TRACKS = "tracks";
 
-		private final String mBaseUri;
-
-		public TrackAPI(final String baseApiUri) {
-			this.mBaseUri = baseApiUri + "/" + TRACKS;
+		public TrackAPI(String baseApiUri) {
+		    super(baseApiUri + "/" + TRACKS);
 		}
 
 		// /api/tracks/<id>
@@ -160,38 +169,29 @@ public class SocksoAPIImpl implements SocksoAPI {
 		}
 
 		// /api/tracks?limit=<limit>&offset=<offset>
-		public String getTracks(final int limit, final int offset) {
-
-			Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
-
-			if (limit != DEFAULT_LIMIT) {
-				b.appendQueryParameter(LIMIT, Integer.toString(limit));
-			}
-
-			if (offset != 0) {
-				b.appendQueryParameter(OFFSET, Integer.toString(offset));
-			}
-
-			return b.build().toString();
+		public String getTracks(int limit, int offset, long from) {
+            return buildUriString(limit, offset, from);
 		}
 
 		// /api/tracks?limit=-1
 		public String getTracks() {
-			return getTracks(NO_LIMIT, 0);
+			return getTracks(NO_LIMIT, 0, 0);
 		}
+
+        public String getTracksFrom(long from) {
+            return buildUriString(NO_LIMIT, 0, from);
+        }
 
 	}
 	// TODO - API method not currently supported
-	private class PlaylistAPI {
+	private class PlaylistAPI extends BaseAPI {
 
 		private static final String PLAYLISTS = "playlists";
-		private static final String USER = "user";
-		private static final String SITE = "site";
+		private static final String USER      = "user";
+		private static final String SITE      = "site";
 
-		private final String mBaseUri;
-
-		public PlaylistAPI(final String baseApiUri) {
-			this.mBaseUri = baseApiUri + "/" +PLAYLISTS;
+		public PlaylistAPI(String baseApiUri) {
+			super(baseApiUri + "/" +PLAYLISTS);
 		}
 
 		// /api/playlists?limit=-1
@@ -244,18 +244,22 @@ public class SocksoAPIImpl implements SocksoAPI {
 		return album;
 	}
 
-	public List<Album> getAlbums() throws IOException, JSONException {
+    public List<Album> getAlbums() throws IOException, JSONException {
+        return getAlbums(0);
+    }
+	
+	public List<Album> getAlbums(long from) throws IOException, JSONException {
 		Log.d(TAG, "getAlbums() ran");
 		
 		List<Album> albums = new ArrayList<Album>();
 		AlbumAPI api = new AlbumAPI(mBaseApiUrl);
 
-		String data = mServer.doGet(api.getAlbums());
+		String data = mServer.doGet(api.getAlbumsFrom(from));
 		
 		albums = Album.fromJSONArray(new JSONArray(data));
 		return albums;
 	}
-
+	
 	public Artist getArtist(final String id) throws IOException, JSONException {
 		Log.d(TAG, "getArtist(id) ran");
 		
@@ -268,13 +272,17 @@ public class SocksoAPIImpl implements SocksoAPI {
 		return artist;
 	}
 
-	public List<Artist> getArtists() throws IOException, JSONException {
+    public List<Artist> getArtists() throws IOException, JSONException {
+        return getArtists(0);
+    }
+    
+	public List<Artist> getArtists(long from) throws IOException, JSONException {
 		Log.d(TAG, "getArtists() ran");
 		  
 		List<Artist> artists = new ArrayList<Artist>();
 		ArtistAPI api = new ArtistAPI(mBaseApiUrl);
 
-		String data = mServer.doGet(api.getArtists());
+		String data = mServer.doGet(api.getArtistsFrom(from));
 
 		artists = Artist.fromJSONArray(new JSONArray(data));
 		return artists;
@@ -291,14 +299,18 @@ public class SocksoAPIImpl implements SocksoAPI {
 		track = Track.fromJSON(new JSONObject(data));
 		return track;
 	}
-
+	
 	public List<Track> getTracks() throws IOException, JSONException {
+	    return getTracks(0);
+	}
+	
+	public List<Track> getTracks(long from) throws IOException, JSONException {
 		Log.d(TAG, "getTracks() ran");
 		
 		List<Track> tracks = new ArrayList<Track>();
 		TrackAPI api = new TrackAPI(mBaseApiUrl);
 
-		String data = mServer.doGet(api.getTracks());
+		String data = mServer.doGet(api.getTracksFrom(from));
 
 		tracks = Track.fromJSONArray(new JSONArray(data));
 		return tracks;
