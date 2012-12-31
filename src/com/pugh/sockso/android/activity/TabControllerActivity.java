@@ -46,7 +46,6 @@ public class TabControllerActivity extends FragmentActivity {
 		// Check if we have an account first
 		if( ! SocksoAccountAuthenticator.hasSocksoAccount(getApplicationContext()) ){
 			Intent intent = new Intent(TabControllerActivity.this, LoginActivity.class);
-			//startActivityForResult(intent, NEW_ACCOUNT);
 			startActivity(intent);
 		}
 
@@ -59,15 +58,15 @@ public class TabControllerActivity extends FragmentActivity {
 
 		mTabsAdapter = new TabsAdapter(this, mTabHost, mViewPager);
 
+        mTabsAdapter.addTab(
+                mTabHost.newTabSpec("artists").setIndicator("Artists"),
+                ArtistListFragmentActivity.ArtistListFragment.class, null);
+
+        mTabsAdapter.addTab(mTabHost.newTabSpec("albums")
+                .setIndicator("Albums"), AlbumListFragmentActivity.AlbumListFragment.class, null);
+
 		mTabsAdapter.addTab(mTabHost.newTabSpec("tracks").setIndicator("Tracks"),
 				TrackListFragmentActivity.TrackListFragment.class, null);
-
-		mTabsAdapter.addTab(
-				mTabHost.newTabSpec("artists").setIndicator("Artists"),
-				ArtistListFragmentActivity.ArtistListFragment.class, null);
-
-		mTabsAdapter.addTab(mTabHost.newTabSpec("albums")
-				.setIndicator("Albums"), AlbumListFragmentActivity.AlbumListFragment.class, null);
 
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
