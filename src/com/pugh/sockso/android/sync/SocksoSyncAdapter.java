@@ -5,11 +5,16 @@ import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.pugh.sockso.android.Preferences;
+import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 import com.pugh.sockso.android.data.MusicManager;
 
 public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
@@ -39,6 +44,17 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (lastSyncMarker == 0) {
             Log.i(TAG, "Initial sync");
+        }
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean isNewAccount = prefs.getBoolean(Preferences.NEW_ACCOUNT, false);
+        
+        // Clear new account now that we've started syncing
+        if ( isNewAccount ) {
+            Editor editPrefs = prefs.edit();
+            editPrefs.putBoolean(Preferences.NEW_ACCOUNT, false);
+            editPrefs.commit();
+            // TODO Wipe out the database if this is a new account!
         }
         
         try {

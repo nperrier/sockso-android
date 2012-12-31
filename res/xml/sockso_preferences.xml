@@ -3,10 +3,10 @@
     android:title="Settings" >
 
     <EditTextPreference
-        android:key="server"
-        android:defaultValue="@string/defaults_server_address"
-        android:dialogTitle="Enter the server address"
-        android:title="@string/prefs_server_title" />
+        android:key="hostname"
+        android:defaultValue="@string/defaults_hostname"
+        android:dialogTitle="Enter the host name"
+        android:title="@string/prefs_hostname_title" />
     <EditTextPreference
         android:key="port"
         android:defaultValue="@integer/defaults_port_number"

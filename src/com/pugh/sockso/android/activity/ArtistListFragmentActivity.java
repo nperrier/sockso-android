@@ -2,9 +2,11 @@ package com.pugh.sockso.android.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
@@ -21,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.pugh.sockso.android.Preferences;
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.MusicManager;
@@ -109,7 +112,7 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
         private final static String TAG = ArtistListFragment.class.getSimpleName();
 
-        private static final int ARTIST_LIST_LOADER = 0x01;
+        private static final int ARTIST_LIST_LOADER = 1;
 
         private ArtistCursorAdapter mAdapter;
 
@@ -120,14 +123,17 @@ public class ArtistListFragmentActivity extends FragmentActivity {
             String[] uiBindFrom = { ArtistColumns.NAME };
             int[] uiBindTo = { R.id.artist_name_id };
 
-            getLoaderManager().initLoader(ARTIST_LIST_LOADER, null, this);
-
             mAdapter = new ArtistCursorAdapter(getActivity().getApplicationContext(), R.layout.artist_list_item, null,
-                    uiBindFrom, uiBindTo, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+                    uiBindFrom, uiBindTo, 0);
 
             setListAdapter(mAdapter);
 
             setEmptyText(getString(R.string.no_artists));
+            
+            // Start out with a progress indicator
+            setListShown(false);
+
+            getLoaderManager().initLoader(ARTIST_LIST_LOADER, null, this);
         }
 
         @Override
@@ -159,11 +165,20 @@ public class ArtistListFragmentActivity extends FragmentActivity {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            Log.d(TAG, "onLoadFinished: " + cursor.getCount());
             mAdapter.swapCursor(cursor);
+            
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            boolean isNewAccount = prefs.getBoolean(Preferences.NEW_ACCOUNT, false);
+            // Show the list once we the initial sync finishes (indicated by setting isNewAccount = false)
+            if ( ! isNewAccount ) {
+                setListShown(true);
+            }
         }
 
         @Override
         public void onLoaderReset(Loader<Cursor> arg0) {
+            Log.d(TAG, "onLoaderReset() ran");
             mAdapter.swapCursor(null);
         }
 

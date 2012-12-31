@@ -42,23 +42,21 @@
             android:padding="10dip" >
 
             <TextView
-                android:id="@+id/server_label"
+                android:id="@+id/hostname_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/server_address"
+                android:text="@string/hostname"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <EditText
-                android:id="@+id/server_address"
+                android:id="@+id/hostname"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dip"
                 android:layout_marginTop="5dip"
                 android:inputType="text"
                 android:singleLine="true"
-                android:text="@string/defaults_server_address" >
-
-                <requestFocus />
+                android:text="@string/defaults_hostname" >
             </EditText>
 
             <TextView
@@ -91,9 +89,7 @@
                 android:id="@+id/credentials"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
-
+                android:orientation="vertical" >
             </LinearLayout>
 
             <Button

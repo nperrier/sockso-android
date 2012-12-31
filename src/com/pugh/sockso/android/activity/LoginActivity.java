@@ -27,7 +27,7 @@ public class LoginActivity extends Activity {
 
 	private final static String TAG = LoginActivity.class.getSimpleName();
 
-	public static final String LOGIN_INTENT    = "com.pugh.sockso.android.activity.LOGIN";
+	public static final String LOGIN_INTENT = "com.pugh.sockso.android.activity.LOGIN";
 
 	// TODO Unused currently
     public static final String SOCKSO_SESS_KEY = "session_key";
@@ -65,6 +65,7 @@ public class LoginActivity extends Activity {
 			}
 		});
 		
+		// Show/Hide the user/pass text fields via checkbox:
 		mLoginRequiredCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
             @Override
@@ -89,8 +90,8 @@ public class LoginActivity extends Activity {
             return;
         }
 
-        EditText editServer = (EditText) findViewById(R.id.server_address);
-        String server = editServer.getText().toString();
+        EditText editHost = (EditText) findViewById(R.id.hostname);
+        String hostname = editHost.getText().toString();
 
         EditText editPort = (EditText) findViewById(R.id.port_number);
         
@@ -103,7 +104,7 @@ public class LoginActivity extends Activity {
             return;
         }
         
-        Config config = new Config(server, port);
+        Config config = new Config(hostname, port);
 
         // Username/Password is optional
         if (mLoginRequiredCheckBox.isChecked()) {
@@ -112,7 +113,7 @@ public class LoginActivity extends Activity {
             String password = mEditPass.getText().toString();
 
             // TODO improve validation
-            if (username.length() == 0 || password.length() == 0 || server.length() == 0) {
+            if (username.length() == 0 || password.length() == 0 || hostname.length() == 0) {
                 Log.e(TAG, "Username or Password was blank");
                 return;
             }
@@ -177,6 +178,7 @@ public class LoginActivity extends Activity {
 			} 
 			else {
 				Log.e(TAG, "No Session!");
+				// TODO Fail the login
 			}
 			
 			finish();

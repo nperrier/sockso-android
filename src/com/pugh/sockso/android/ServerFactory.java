@@ -1,5 +1,6 @@
 package com.pugh.sockso.android;
 
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -14,8 +15,8 @@ public class ServerFactory {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        String host = prefs.getString("server", null);
-        int    port = Integer.parseInt(prefs.getString("port", "4444"));
+        String host = prefs.getString(Preferences.HOSTNAME, null);
+        int    port = Integer.parseInt(prefs.getString(Preferences.PORT, "4444"));
 
         return new SocksoServerImpl(host, port);
     }

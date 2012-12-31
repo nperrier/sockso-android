@@ -3,7 +3,7 @@ package com.pugh.sockso.android;
 // represents a sockso configuration
 public class Config {
 
-    private String server;
+    private String hostname;
     private int    port;
     private String user;
     private String password;
@@ -12,15 +12,15 @@ public class Config {
         this(null, null, server, port);
     }
 
-    public Config(String user, String password, String server, int port) {
-        this.server = server;
+    public Config(String user, String password, String hostname, int port) {
+        this.hostname = hostname;
         this.port = port;
         this.user = user;
         this.password = password;
     }
 
-    public void setServer(String server) {
-        this.server = server;
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
     }
 
     public void setPort(int port) {
@@ -35,8 +35,8 @@ public class Config {
         this.password = password;
     }
 
-    public String getServer() {
-        return server;
+    public String getHostname() {
+        return hostname;
     }
 
     public int getPort() {

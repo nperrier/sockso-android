@@ -4,7 +4,7 @@
 
     <string name="app_name">Sockso</string>
     
-    <string name="server_address">Server:</string>
+    <string name="hostname">Hostname:</string>
     <string name="port_number">Port:</string>
     <string name="user_login">User:</string>
     <string name="user_password">Password:</string>
@@ -30,8 +30,8 @@
     <string name="prefs_username_title">Username</string>
     <string name="prefs_password_summary">Password</string>
     <string name="prefs_password_title">Password</string>
-    <string name="prefs_server_summary">Server</string>
-    <string name="prefs_server_title">Server</string>
+    <string name="prefs_hostname_summary">Hostname</string>
+    <string name="prefs_hostname_title">Hostname</string>
     <string name="prefs_port_summary">Port</string>
     <string name="prefs_port_title">Port</string>
     

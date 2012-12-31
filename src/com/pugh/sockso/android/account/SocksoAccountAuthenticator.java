@@ -8,10 +8,14 @@ import android.accounts.NetworkErrorException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.pugh.sockso.android.Preferences;
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.Config;
 import com.pugh.sockso.android.activity.AccountFailActivity;
@@ -45,14 +49,15 @@ import com.pugh.sockso.android.data.SocksoProvider;
  */
 public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 
-	private static final String TAG = "SocksoAccAuthenticator";
-	private static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
+	private static final String TAG = "SocksoAccAuthenticator";    
 	
 	public static final String ACCOUNT_TYPE = "com.pugh.sockso.account";
+	public static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
+
 	// Dummy account when not using credentials to access server
-	public static final String DUMMY_ACCOUNT = "Sockso"; 
+	private static final String DUMMY_ACCOUNT = "Sockso";
 	
-	private Context mContext;
+	private final Context mContext;
 
 	public SocksoAccountAuthenticator(Context context) {
 		super(context);
@@ -76,10 +81,10 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 		else {
 			// New accounts redirect to LoginActivity with Intent to create a new account
 			Intent intent = new Intent(mContext, LoginActivity.class);
-			intent.setAction("com.pugh.sockso.android.activity.LOGIN");
+			intent.setAction(LoginActivity.LOGIN_INTENT);
 			intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
 			result.putParcelable(AccountManager.KEY_INTENT, intent);
-		}			
+		}
 		
 		return result;
 	}
@@ -106,14 +111,20 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	    //extraData.putString("port", Integer.valueOf(config.getPort()).toString() ); // I wish I could just use putInt()...
 	    
 		if (am.addAccountExplicitly(account, password, null)) {
-		        	
+		    
 			// Add the server and port number along with the account name and password:
 			result = new Bundle();
 			result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
 			result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
 			
+			// This is a new account, so let the rest of the app know
+			// Once the initial sync has completed, this value will be cleared:
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            Editor editPrefs = prefs.edit();
+            editPrefs.putBoolean(Preferences.NEW_ACCOUNT, true);
+            editPrefs.commit();
+			
 			// Set sync enabled (if false, user must explicitly enable it through Account settings)
-			// TODO Might want to do a manual sync upon new account creation, so enable it later?
 			ContentResolver.setSyncAutomatically(account, SocksoProvider.AUTHORITY, true);
 			
 			// This tells Android to run the sync as soon as possible (otherwise it waits about 15-20 seconds
@@ -122,6 +133,7 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 			// TODO consider using a dialog for the first sync that lets the user know that the sync is running
 			Bundle syncExtras = new Bundle();
 			syncExtras.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+			syncExtras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true); // TODO not sure what this does
 			ContentResolver.requestSync(account, SocksoProvider.AUTHORITY, syncExtras);
 		}
 		
