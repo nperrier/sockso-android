@@ -5,9 +5,9 @@
     <bool name="defaults_login_required">false</bool>
     
     <!-- TODO These are values for development -->
-    <string name="defaults_username">nperrier</string>
-    <string name="defaults_password">greenday94</string>   
-    <string name="defaults_hostname">sockso.perrierliquors.com</string>
+    <string name="defaults_username"></string>
+    <string name="defaults_password"></string>   
+    <string name="defaults_hostname"></string>
     <integer name="defaults_port_number">4444</integer>
     
 </resources>
