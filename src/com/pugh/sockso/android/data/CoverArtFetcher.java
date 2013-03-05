@@ -2,13 +2,15 @@ package com.pugh.sockso.android.data;
 
 import java.lang.ref.WeakReference;
 
+import android.R;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.pugh.sockso.android.ServerFactory;
@@ -22,7 +24,7 @@ public class CoverArtFetcher {
     private static final String TAG = CoverArtFetcher.class.getSimpleName();
     
     private Context mContext;  // server needs this
-    private CoverArtMemoryCache mMemCache;
+    private CoverArtCache mCache;
     
     private int width  = -1;
     private int height = -1;
@@ -31,7 +33,7 @@ public class CoverArtFetcher {
     public CoverArtFetcher(final Context context) {
         
         this.mContext = context;
-        this.mMemCache = new CoverArtMemoryCache();
+        this.mCache = CoverArtCache.getInstance(context);
     }
     
     public void setDimensions(int width, int height) {
@@ -43,16 +45,13 @@ public class CoverArtFetcher {
 
     public void loadCoverArt(String musicItemId, ImageView imageView) {
         
-        // Check the memory cache:
-        Bitmap cover = mMemCache.getCover(musicItemId);
+        // Check the cache
+        Bitmap cover = mCache.getCover(musicItemId);
         
         if(cover != null) {
             imageView.setImageBitmap(cover);
-            Log.d(TAG, "Found " + musicItemId + " in memcache");
             return;
         }
-
-        // TODO Check the file cache:        
         
         // Now download it:
         download(musicItemId, imageView);
@@ -71,7 +70,7 @@ public class CoverArtFetcher {
             
             BitmapDownloaderTask task = new BitmapDownloaderTask(imageView);
             task.musicItemId = musicItemId;
-
+            
             // Set the ImageView to a default image while downloading
             DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
             imageView.setImageDrawable(downloadedDrawable);
@@ -79,7 +78,6 @@ public class CoverArtFetcher {
             task.execute(musicItemId);
         }
     }
-
 
     public void loadCoverArtArtist(int serverId, ImageView cover) {
         this.loadCoverArt(Artist.COVER_PREFIX + serverId, cover);
@@ -104,6 +102,7 @@ public class CoverArtFetcher {
         public BitmapDownloaderTask(ImageView imageView) {
             imageViewReference = new WeakReference<ImageView>(imageView);
         }
+
 
         /**
          * Actual download method.
@@ -135,10 +134,13 @@ public class CoverArtFetcher {
                         bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
                     }
 
+                    // Let's do a cool animation here:
+                    Animation fadeIn = AnimationUtils.loadAnimation(mContext, R.anim.fade_in);
                     imageView.setImageBitmap(bitmap);
+                    imageView.startAnimation(fadeIn);
 
-                    // Now cache it in memory:
-                    mMemCache.addCover(musicItemId, bitmap);
+                    // Now cache it:
+                    mCache.addCover(musicItemId, bitmap);
                 }
             }
         }
@@ -202,7 +204,7 @@ public class CoverArtFetcher {
         private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
 
         public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask) {
-            super(Color.YELLOW);
+            super(Color.BLACK);
             bitmapDownloaderTaskReference = new WeakReference<BitmapDownloaderTask>(bitmapDownloaderTask);
         }
 

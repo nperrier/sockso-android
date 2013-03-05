@@ -7,8 +7,6 @@ TODO List:
   - Shuffle
   - Repeat
   
-* Create image file cache for album cover art
-
 * Add placeholder images for cover art
 
 * Create audio file cache for music
@@ -24,3 +22,6 @@ TODO List:
 
 * Fix memory issue with loading images in listview while "flinging" (scrolling really fast)
 
+* Player does not seek properly when streaming from a url (fails if seek position is past mp buffer)
+  - Consider custom class to download and stream track from file instead of letting mp handle it
+  - Is there a way to tell how full the buffer is?

@@ -41,6 +41,10 @@ public class SocksoServerImpl implements SocksoServer {
         return mRootUrl;
     }
 
+    public String getStreamUrl(long id) {
+        return getRootUrl() + "/stream/" + id;
+    }
+    
     /*
      * TODO public Session authenticate(String username, String password)
      * {

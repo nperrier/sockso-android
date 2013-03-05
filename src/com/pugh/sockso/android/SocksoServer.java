@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 public interface SocksoServer {
 
     public String getRootUrl();
+    
+    public String getStreamUrl(long id);
 
     public Bitmap downloadBitmap(String url);
 
