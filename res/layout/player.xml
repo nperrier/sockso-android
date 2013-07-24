@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#4a4a4a" >
+    android:background="#000000" >
 
     <!-- Player Header -->
 
@@ -11,9 +11,10 @@
         android:layout_width="fill_parent"
         android:layout_height="60dip"
         android:layout_alignParentTop="true"
-        android:background="@layout/bg_player_header"
+        android:background="@null"
         android:paddingLeft="5dp"
-        android:paddingRight="5dp" >
+        android:paddingRight="5dp" 
+        android:orientation="vertical">
 
         <!-- Song Title -->
 
@@ -21,22 +22,24 @@
             android:id="@+id/trackNameLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:layout_marginTop="5dp"
+            android:paddingLeft="10dp"
+            android:text=""
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+        
+         <TextView
+            android:id="@+id/artistNameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingLeft="10dp"
             android:text=""
-            android:textColor="#04b3d2"
-            android:textSize="16dp"
-            android:textStyle="bold" />
+            android:textColor="#EEEEEE"
+            android:textSize="16sp" />
 
-        <!-- Playlist button -->
-
-        <ImageButton
-            android:id="@+id/playlistButton"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:background="@null"
-            android:src="@drawable/btn_playlist" />
     </LinearLayout>
 
     <!-- Song Thumbnail Image -->
@@ -64,7 +67,7 @@
         android:layout_width="fill_parent"
         android:layout_height="100dp"
         android:layout_alignParentBottom="true"
-        android:background="@layout/bg_player_footer"
+        android:background="#000000"
         android:gravity="center" >
 
         <!-- Player Buttons -->
@@ -131,10 +134,8 @@
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:paddingLeft="6dp"
-        android:paddingRight="6dp"
-        android:progressDrawable="@drawable/seekbar_progress"
-        android:thumb="@drawable/seek_handler" />
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp" />
 
     <!-- Timer Display -->
 
@@ -169,7 +170,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Repeat / Shuffle buttons -->
+    <!-- Repeat / Shuffle buttons 
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -177,7 +178,7 @@
         android:layout_above="@id/timerDisplay"
         android:gravity="center" >
 
-        <!-- Repeat Button -->
+         Repeat Button 
 
         <ImageButton
             android:id="@+id/repeatButton"
@@ -187,7 +188,7 @@
             android:background="@null"
             android:src="@drawable/btn_repeat" />
 
-        <!-- Shuffle Button -->
+         Shuffle Button 
 
         <ImageButton
             android:id="@+id/shuffleButton"
@@ -197,5 +198,6 @@
             android:background="@null"
             android:src="@drawable/btn_shuffle" />
     </LinearLayout>
+-->
 
 </RelativeLayout>

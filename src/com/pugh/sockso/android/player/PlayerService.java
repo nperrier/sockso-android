@@ -1,6 +1,7 @@
 package com.pugh.sockso.android.player;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.app.Notification;
@@ -16,17 +17,21 @@ import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.ServerFactory;
+import com.pugh.sockso.android.SocksoServer;
+import com.pugh.sockso.android.SocksoServerImpl;
 import com.pugh.sockso.android.activity.PlayerActivity;
 import com.pugh.sockso.android.music.Track;
 
 public class PlayerService extends Service implements OnPreparedListener, OnCompletionListener,
-        OnBufferingUpdateListener, OnErrorListener {
+        OnBufferingUpdateListener, OnErrorListener, OnSeekCompleteListener {
 
     private static final String TAG = PlayerService.class.getSimpleName();
 
@@ -50,13 +55,16 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
     // TODO Remove once playlist setup
     private int mPlayIndex = 0;
+    // Keep track of the value that the mediaplayer reports buffered
+    private int mBufferPercent = 0;
 
     // This is to notify the activity that a track changed (or ended) and should update the UI
-    public static final String TRACK_STARTED = "com.pugh.sockso.android.player.TRACK_STARTED";
-    public static final String TRACK_CHANGED = "com.pugh.sockso.android.player.TRACK_CHANGED";
-    public static final String PLAYSTATE_CHANGE   = "com.pugh.sockso.android.player.PLAYSTATE_CHANGE";
-    public static final String TRACK_ERROR   = "com.pugh.sockso.android.player.TRACK_ERROR";
-
+    public static final String TRACK_STARTED    = "com.pugh.sockso.android.player.TRACK_STARTED";
+    public static final String TRACK_CHANGED    = "com.pugh.sockso.android.player.TRACK_CHANGED";
+    public static final String PLAYSTATE_CHANGE = "com.pugh.sockso.android.player.PLAYSTATE_CHANGED";
+    public static final String TRACK_ERROR      = "com.pugh.sockso.android.player.TRACK_ERROR";
+    public static final String TRACK_BUFFERING  = "com.pugh.sockso.android.player.TRACK_BUFFERING";
+    
     // How much to increment/decrement the time when seeking through the track
     private static final int SEEK_TIME = 15 * 1000; // 15 seconds
 
@@ -159,7 +167,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     }
 
     // Sets the playlist to a single track
-    public void open(Track track) {
+    public void open( Track track ) {
         Log.d(TAG, "open(): " + track.getName());
         
         if ( isPlaying() ) {
@@ -184,7 +192,6 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         mPlayIndex = 0;
     }
     
-    // TODO: This should return the currently playing track id OR Track object
     public Track getTrack() {
         
         if ( mPlaylist.size() > 0 ) {
@@ -214,7 +221,6 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     }
     
     /**
-     * TODO
      * Starts playback of a previously opened file.
      */
     public void play() {
@@ -235,14 +241,15 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
             Track track = mPlaylist.get(mPlayIndex);
             
-            // hardcoded TODO remove
-            String url = "http://sockso.perrierliquors.com:4444/stream/" + track.getServerId();
-
+            SocksoServer server = ServerFactory.getServer(getApplicationContext());
+            String url = server.getStreamUrl(track.getServerId());
+             
             mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             
             try {
                 mPlayer.setDataSource(url);
                 mIsPreparing = true;
+                mBufferPercent = 0;
                 mPlayer.prepareAsync();
             }
             catch (Exception e) {
@@ -293,6 +300,7 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
             mPlayer.setOnBufferingUpdateListener(this);
             mPlayer.setOnCompletionListener(this);
             mPlayer.setOnErrorListener(this);
+            mPlayer.setOnSeekCompleteListener(this);
 
             /**
              * Make sure the media player will acquire a wake-lock while playing.
@@ -348,10 +356,10 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
     @Override
     public void onBufferingUpdate(MediaPlayer mediaPlayer, int percentage) {
         Log.d(TAG, "onBufferingUpdate(): " + percentage);
-
-        // Intent intent = new Intent(TRACK_BUFFERING);
-        // intent.putExtra("percentage", percentage);
-        // LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        this.mBufferPercent = percentage;
+        Intent intent = new Intent(TRACK_BUFFERING);
+        intent.putExtra("percentage", percentage);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         // TODO: This should provide some feedback to the user if we're streaming
     }
 
@@ -363,9 +371,13 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         // Reset the player back to a valid state:
         mPlayer.reset();
         mIsInitialized = false;
+        mIsPreparing   = false;
+        mBufferPercent = 0;
         
         // Notify the activity so the user can be notified
         notifyChange(TRACK_ERROR);
+        // Remove foreground notification
+        stopForeground(true);
         
         return true;
     }
@@ -446,7 +458,17 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
         mPlayIndex = pos;
     }
     
-    // TODO
+
+    /**
+     * Returns the current playlist
+     * 
+     * @return A read-only list of Tracks
+     */
+    public List<Track> getPlaylist() {
+        
+        return Collections.unmodifiableList(mPlaylist);
+    }
+    
     public void skipTrack() {
         
         if ( ! isLastTrackInPlaylist() ) {
@@ -492,35 +514,57 @@ public class PlayerService extends Service implements OnPreparedListener, OnComp
 
     public void seekBackward() {
 
-        if (isPlaying()) {
+        if ( !mIsPreparing && mIsInitialized ) {
             int currentPos = mPlayer.getCurrentPosition();
             int seekPos = (currentPos - SEEK_TIME >= 0) ? currentPos - SEEK_TIME : 0;
-            mPlayer.seekTo(seekPos);
+            
+            if ( seekPosToTrackPercentage(seekPos) <= mBufferPercent ) {
+                mPlayer.seekTo(seekPos);
+            }
         }
     }
 
     public void seekForward() {
         
-        if (isPlaying()) {
+        if ( !mIsPreparing && mIsInitialized ) {
             int currentPos = mPlayer.getCurrentPosition();
             int duration = mPlayer.getDuration();
             // NOTE: Adding a bit extra time (20 msec) to the seekPos check as the duration 
             // will change by a tiny amount by the time the actual seekTo() method takes place
             int seekPos = (currentPos + SEEK_TIME + 20 < duration) ? currentPos + SEEK_TIME : duration;
-            mPlayer.seekTo(seekPos);
-        }
-    }
-
-
-    public void seekTo(int seekPos) {
-        
-        if (isPlaying()) {
-            // NOTE: Adding a bit extra time (20 msec) to the seekPos check as the duration 
-            // will change by a tiny amount by the time the actual seekTo() method takes place
-            if ( seekPos >= 0 && seekPos + 20 < mPlayer.getDuration() ) {
+            
+            if ( seekPosToTrackPercentage(seekPos) <= mBufferPercent ) {
                 mPlayer.seekTo(seekPos);
             }
         }
+    }
+
+    // Valid states: {Prepared, Started, Paused, PlaybackCompleted}
+    public void seekTo(int seekPos) {
+        
+       // if ( isPlaying() && ! mIsPreparing && mIsInitialized ) {
+       // Should be able to seek while paused: isPlaying() == false indicates paused, in addition to other states
+       if ( !mIsPreparing && mIsInitialized ) {
+            // NOTE: Adding a bit extra time (20 msec) to the seekPos check as the duration 
+            // will change by a tiny amount by the time the actual seekTo() method takes place
+            if ( seekPos >= 0 && (seekPos + 20) < mPlayer.getDuration() ) {
+
+                if ( seekPosToTrackPercentage(seekPos) <= mBufferPercent ) {
+                    mPlayer.seekTo(seekPos);
+                }
+            }
+        }
+    }
+
+    private int seekPosToTrackPercentage(int seekPos) {
+        return (int)(((float) seekPos / mPlayer.getDuration()) * 100);
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer mp) {
+        
+        Log.d(TAG, "Seek completed");
+        
     }
     
 }

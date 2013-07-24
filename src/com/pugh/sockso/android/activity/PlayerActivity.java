@@ -3,6 +3,7 @@ package com.pugh.sockso.android.activity;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -97,9 +99,9 @@ public class PlayerActivity extends Activity {
         mBackwardButton = (ImageButton) findViewById(R.id.backwardButton);
         mNextButton     = (ImageButton) findViewById(R.id.nextButton);
         mPreviousButton = (ImageButton) findViewById(R.id.previousButton);
-        mPlaylistButton = (ImageButton) findViewById(R.id.playlistButton);
-        mRepeatButton   = (ImageButton) findViewById(R.id.repeatButton);
-        mShuffleButton  = (ImageButton) findViewById(R.id.shuffleButton);
+        //mPlaylistButton = (ImageButton) findViewById(R.id.playlistButton);
+        //mRepeatButton   = (ImageButton) findViewById(R.id.repeatButton);
+        //mShuffleButton  = (ImageButton) findViewById(R.id.shuffleButton);
 
         mTrackProgressBar = (SeekBar) findViewById(R.id.trackProgressBar);
         mTrackProgressBar.setMax(100); // 100%
@@ -108,12 +110,11 @@ public class PlayerActivity extends Activity {
         mTrackTotalDurationLabel   = (TextView) findViewById(R.id.trackTotalDurationLabel);
 
         mTrackNameLabel = (TextView) findViewById(R.id.trackNameLabel);
-
+        // TODO Add to the view:
+        //mAlbumNameLabel = (TextView) findViewById(R.id.);
+        mArtistNameLabel = (TextView) findViewById(R.id.artistNameLabel);
         mAlbumCover = (ImageView) findViewById(R.id.coverImage);
         
-        // TODO Add these to the view:
-        //mAlbumNameLabel = (TextView) findViewById(R.id.);
-        //mArtistNameLabel = (TextView) findViewById(R.id.);
         
         /**
          * Play button click event
@@ -182,41 +183,41 @@ public class PlayerActivity extends Activity {
         /**
          * Button Click event for Repeat button Enables repeat flag to true
          */
-        mRepeatButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                toggleRepeat();
-            }
-        });
+//        mRepeatButton.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View view) {
+//                toggleRepeat();
+//            }
+//        });
 
         /**
          * Button Click event for Shuffle button Enables shuffle flag to true
          */
-        mShuffleButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                toggleShuffle();
-
-            }
-        });
+//        mShuffleButton.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View view) {
+//                toggleShuffle();
+//
+//            }
+//        });
 
         /**
          * Button Click event for Playlist click event Launches list activity
          * which displays list of songs
          */
-        mPlaylistButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "PlaylistButton clicked");
-                /*
-                 * Intent i = new Intent(getApplicationContext(),
-                 * PlayListActivity.class); startActivityForResult(i, 100);
-                 */
-            }
-        });
+//        mPlaylistButton.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View view) {
+//                Log.d(TAG, "PlaylistButton clicked");
+//                /*
+//                 * Intent i = new Intent(getApplicationContext(),
+//                 * PlayListActivity.class); startActivityForResult(i, 100);
+//                 */
+//            }
+//        });
 
         mTrackProgressBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
@@ -244,7 +245,7 @@ public class PlayerActivity extends Activity {
                 mProgressIsSeeking = false;
             }
         });
-        
+     
     }
 
     // progress - percentage
@@ -335,7 +336,14 @@ public class PlayerActivity extends Activity {
             
             String action = intent.getAction();
             
-            if ( action.equals(PlayerService.PLAYSTATE_CHANGE) ) {
+            if ( action.equals(PlayerService.TRACK_BUFFERING)) {
+                int bufferProgress = intent.getIntExtra("percentage", 0);
+                Log.d(TAG, "Track buffer updated: " + bufferProgress);
+                if ( bufferProgress > 0 && bufferProgress < 100 ) {
+                    mTrackProgressBar.setSecondaryProgress(bufferProgress);
+                }
+            }
+            else if ( action.equals(PlayerService.PLAYSTATE_CHANGE) ) {
                 Log.d(TAG, "Track stopped/resumed");
                 setPlayButtonImage();
             }
@@ -520,7 +528,7 @@ public class PlayerActivity extends Activity {
         
         if ( track != null ) {
             
-            //mArtistNameLabel.setText(track.getArtist());
+            mArtistNameLabel.setText(track.getArtist());
             //mAlbumNameLabel.setText(track.getAlbum());
             mTrackNameLabel.setText(track.getName());
             
@@ -597,6 +605,7 @@ public class PlayerActivity extends Activity {
         intentFilter.addAction(PlayerService.PLAYSTATE_CHANGE);
         intentFilter.addAction(PlayerService.TRACK_CHANGED);
         intentFilter.addAction(PlayerService.TRACK_ERROR);
+        intentFilter.addAction(PlayerService.TRACK_BUFFERING);
         LocalBroadcastManager.getInstance(this).registerReceiver(mStatusListener, new IntentFilter(intentFilter));
     }
 
@@ -683,30 +692,30 @@ public class PlayerActivity extends Activity {
 
     }
 
-    protected void setShuffleButtonImage() {
-
-        if (mIsShuffling) {
-            mShuffleButton.setImageResource(R.drawable.btn_shuffle);
-        }
-        else {
-            mShuffleButton.setImageResource(R.drawable.btn_shuffle_focused);
-        }
-    }
+//    protected void setShuffleButtonImage() {
+//
+//        if (mIsShuffling) {
+//            mShuffleButton.setImageResource(R.drawable.btn_shuffle);
+//        }
+//        else {
+//            mShuffleButton.setImageResource(R.drawable.btn_shuffle_focused);
+//        }
+//    }
 
     protected void toggleRepeat() {
         // TODO Auto-generated method stub
 
     }
 
-    protected void setRepeatButtonImage() {
-
-        if (mIsRepeating) {
-            mRepeatButton.setImageResource(R.drawable.btn_repeat);
-        }
-        else {
-            mRepeatButton.setImageResource(R.drawable.btn_repeat_focused);
-        }
-    }
+//    protected void setRepeatButtonImage() {
+//
+//        if (mIsRepeating) {
+//            mRepeatButton.setImageResource(R.drawable.btn_repeat);
+//        }
+//        else {
+//            mRepeatButton.setImageResource(R.drawable.btn_repeat_focused);
+//        }
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -714,6 +723,14 @@ public class PlayerActivity extends Activity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.player_menu, menu);
 
+        // Get the SearchView and set the searchable configuration
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.menu_item_search).getActionView();
+        
+        // Assumes current activity is the searchable activity
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+        
         return true;
     }
 
@@ -737,7 +754,7 @@ public class PlayerActivity extends Activity {
             startActivity(intent);
 
             break;
-
+            
         default:
             // No-op
             break;
