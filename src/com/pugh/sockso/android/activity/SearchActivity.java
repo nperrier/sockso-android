@@ -380,8 +380,8 @@ public class SearchActivity extends FragmentActivity {
         
         @Override
         public void onListItemClick(ListView listView, View view, int position, long id) {
-            Log.i(TAG, "onListItemClick() - id: " + id + ", position: " + position);
-            Log.i(TAG, "onListItemClick() - listview: " + listView + ", view: " + view);
+            Log.d(TAG, "onListItemClick() - id: " + id + ", position: " + position);
+            Log.d(TAG, "onListItemClick() - listview: " + listView + ", view: " + view);
 
             Object[] sections = mAdapter.getSections();
             int sectionIndex  = mAdapter.getSectionForPosition(position);
@@ -410,7 +410,7 @@ public class SearchActivity extends FragmentActivity {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            Log.i(TAG, "onCreateLoader() ran");
+            Log.d(TAG, "onCreateLoader() ran");
 
             String query = args.getString(QUERY_STRING);
             String[] projection = { 

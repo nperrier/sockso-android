@@ -33,9 +33,11 @@ import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 import com.pugh.sockso.android.music.Album;
 
-// Album details activity
-// Shows album title, artist, track listing, cover art, etc
-// for a single album
+/**
+ * Album details activity
+ * Shows album title, artist, track listing, cover art, etc
+ * for a single album
+ */
 public class AlbumActivity extends FragmentActivity {
 
     private static final String TAG = AlbumActivity.class.getSimpleName();
@@ -65,12 +67,10 @@ public class AlbumActivity extends FragmentActivity {
     // Custom list view item (cover image | artist/album text)
     public static class TrackCursorAdapter extends SimpleCursorAdapter {
 
-        private Context mContext;
         private int mLayout;
 
         public TrackCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int flags) {
             super(context, layout, cursor, from, to, flags);
-            this.mContext = context;
             this.mLayout = layout;
         }
 
@@ -110,7 +110,7 @@ public class AlbumActivity extends FragmentActivity {
     public static class TrackListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
         private final static String TAG = TrackListFragment.class.getSimpleName();
-        private static final int TRACK_LIST_LOADER = 0x01;
+        private static final int TRACK_LIST_LOADER = 1;
         private TrackCursorAdapter mAdapter;
         private View mAlbumDetailsView;
         private long mAlbumId = -1;
@@ -126,14 +126,13 @@ public class AlbumActivity extends FragmentActivity {
             super.onCreate(savedInstanceState);
         }
 
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             Log.d(TAG, "onCreateView() called");
 
             mAlbumDetailsView = inflater.inflate(R.layout.album_details_header, null, false);
 
-            Album album = MusicManager.getAlbum(getActivity().getContentResolver() , mAlbumId);
+            Album album = MusicManager.getAlbum(getActivity().getContentResolver(), mAlbumId);
 
             TextView artistText = (TextView) mAlbumDetailsView.findViewById(R.id.album_artist_id);
             artistText.setText(album.getArtist());
@@ -155,7 +154,7 @@ public class AlbumActivity extends FragmentActivity {
                 @Override
                 public void onClick(View view) {
                     // TODO Call PlayerActivity with the album tracks set
-                    Log.i(TAG, "playButton clicked: " + view);
+                    Log.d(TAG, "playButton clicked: " + view);
 
                     Intent intent = new Intent(getActivity(), PlayerActivity.class);
                     intent.setAction(PlayerActivity.ACTION_PLAY_ALBUM);
@@ -194,21 +193,20 @@ public class AlbumActivity extends FragmentActivity {
 
         @Override
         public void onListItemClick(ListView l, View v, int position, long id) {
-
-            Log.i(TAG, "onListItemClick(): Item clicked: " + id + ", position: " + position);
+            Log.d(TAG, "onListItemClick(): Item clicked: " + id + ", position: " + position);
 
             Intent intent = new Intent(getActivity(), PlayerActivity.class);
             // Play selected album, starting from track position
             intent.setAction(PlayerActivity.ACTION_PLAY_ALBUM);
             intent.putExtra(MusicManager.ALBUM, mAlbumId);
             intent.putExtra("track_position", position);
-            
+
             startActivity(intent);
         }
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            Log.i(TAG, "onCreateLoader() ran");
+            Log.d(TAG, "onCreateLoader() ran");
 
             String[] projection = { TrackColumns._ID, TrackColumns.TRACK_NO, TrackColumns.NAME };
 
