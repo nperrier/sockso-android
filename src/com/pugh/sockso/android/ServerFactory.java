@@ -16,7 +16,7 @@ public class ServerFactory {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         String host = prefs.getString(Preferences.HOSTNAME, null);
-        int    port = Integer.parseInt(prefs.getString(Preferences.PORT, "4444"));
+        String port = prefs.getString(Preferences.PORT, "4444");
 
         return new SocksoServerImpl(host, port);
     }

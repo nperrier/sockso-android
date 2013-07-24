@@ -13,6 +13,7 @@ import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.pugh.sockso.android.Preferences;
@@ -53,6 +54,8 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	
 	public static final String ACCOUNT_TYPE = "com.pugh.sockso.account";
 	public static final String PARAM_AUTHTOKEN_TYPE = "com.pugh.sockso.android.AUTH_TOKEN";
+    public static final String NEW_ACCOUNT = "com.pugh.sockso.android.NEW_ACCOUNT";
+    
 
 	// Dummy account when not using credentials to access server
 	private static final String DUMMY_ACCOUNT = "Sockso";
@@ -103,25 +106,27 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 		
 		Account account = new Account(username, ACCOUNT_TYPE);
 		AccountManager am = AccountManager.get(context);
+		
 		// TODO store a hashed password 
 		// String hashedPassword = MD5.getInstance().hash(config.getPassword());
 		
-	    //final Bundle extraData = new Bundle();
-	    //extraData.putString("server", config.getServer());
-	    //extraData.putString("port", Integer.valueOf(config.getPort()).toString() ); // I wish I could just use putInt()...
-	    
-		if (am.addAccountExplicitly(account, password, null)) {
+		Bundle accountExtras = new Bundle();            
+		// This is a new account, so let the rest of the app know
+        // Once the initial sync has completed, this value will be cleared:
+		accountExtras.putString(NEW_ACCOUNT, Boolean.toString(true));
+		
+		if (am.addAccountExplicitly(account, password, accountExtras)) {
 		    
 			// Add the server and port number along with the account name and password:
 			result = new Bundle();
 			result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
 			result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
 			
-			// This is a new account, so let the rest of the app know
-			// Once the initial sync has completed, this value will be cleared:
+			// Set the server/port config associated with the account
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             Editor editPrefs = prefs.edit();
-            editPrefs.putBoolean(Preferences.NEW_ACCOUNT, true);
+            editPrefs.putString(Preferences.HOSTNAME, config.getHostname());
+            editPrefs.putString(Preferences.PORT, Integer.toString(config.getPort()));
             editPrefs.commit();
 			
 			// Set sync enabled (if false, user must explicitly enable it through Account settings)
@@ -192,15 +197,41 @@ public class SocksoAccountAuthenticator extends AbstractAccountAuthenticator {
 	}
 
 	public static Boolean hasSocksoAccount(Context context) {
-	    
-		AccountManager am = AccountManager.get(context);
-		Account[] accounts = am.getAccountsByType(ACCOUNT_TYPE);
-		if(accounts != null && accounts.length > 0)
-			return true;
-		else
-			return false;
+	    return getSocksoAccount(context) != null ? true : false;
 	}
 
+	public static Account getSocksoAccount(Context context) {
+	    
+        AccountManager am = AccountManager.get(context);
+        Account[] accounts = am.getAccountsByType(ACCOUNT_TYPE);
+
+        Log.d(TAG, "Found " + accounts.length + " Sockso accounts");
+        if (accounts != null && accounts.length > 0) {
+            return accounts[0];
+        }
+        
+        return null;
+	}
+	
+    /**
+     * Checks the account to see if it is brand-spankin' new
+     * 
+     * @param account
+     * @return boolean
+     */
+    public static boolean isNewAccount(Account account, Context context) {
+
+        AccountManager am = AccountManager.get(context);
+        String newAccount = am.getUserData(account, NEW_ACCOUNT);
+        Log.d(TAG, "isNewAccount(): " + newAccount);
+
+        if (!TextUtils.isEmpty(newAccount)) {
+            return Boolean.parseBoolean(newAccount);
+        }
+
+        return true;
+    }
+    
     @Override
     public Bundle confirmCredentials(AccountAuthenticatorResponse response, Account account, Bundle options)
             throws NetworkErrorException {

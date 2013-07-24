@@ -24,7 +24,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-// Singleton
 public class SocksoServerImpl implements SocksoServer {
 
     private static final String TAG = SocksoServerImpl.class.getSimpleName();
@@ -32,8 +31,7 @@ public class SocksoServerImpl implements SocksoServer {
     // private String mAuthToken; // TODO Session
     private final String mRootUrl;
 
-    // TODO Singleton?
-    public SocksoServerImpl(final String server, final int port) {
+    public SocksoServerImpl(final String server, final String port) {
         mRootUrl = "http://" + server + ":" + port;
     }
 
@@ -41,6 +39,10 @@ public class SocksoServerImpl implements SocksoServer {
         return mRootUrl;
     }
 
+    public String getStreamUrl(long id) {
+        return getRootUrl() + "/stream/" + id;
+    }
+    
     /*
      * TODO public Session authenticate(String username, String password)
      * {

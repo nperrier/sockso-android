@@ -45,16 +45,10 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
         if (lastSyncMarker == 0) {
             Log.i(TAG, "Initial sync");
         }
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean isNewAccount = prefs.getBoolean(Preferences.NEW_ACCOUNT, false);
         
-        // Clear new account now that we've started syncing
-        if ( isNewAccount ) {
-            Editor editPrefs = prefs.edit();
-            editPrefs.putBoolean(Preferences.NEW_ACCOUNT, false);
-            editPrefs.commit();
-            // TODO Wipe out the database if this is a new account!
+        if (SocksoAccountAuthenticator.isNewAccount(account, mContext)) {
+            // Clear new account now that we've started syncing
+            mAccountManager.setUserData(account, SocksoAccountAuthenticator.NEW_ACCOUNT, Boolean.toString(false));
         }
         
         try {
@@ -85,6 +79,7 @@ public class SocksoSyncAdapter extends AbstractThreadedSyncAdapter {
         return 0;
     }
 
+    
     /**
      * Save off the high-water-mark we receive back from the server.
      * 
