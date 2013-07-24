@@ -1,34 +1,35 @@
 package com.pugh.sockso.android.activity;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AlphabetIndexer;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-import com.pugh.sockso.android.Preferences;
 import com.pugh.sockso.android.R;
+import com.pugh.sockso.android.account.SocksoAccountAuthenticator;
 import com.pugh.sockso.android.data.CoverArtFetcher;
 import com.pugh.sockso.android.data.MusicManager;
 import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
+import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 
 public class AlbumListFragmentActivity extends FragmentActivity {
 
@@ -56,12 +57,12 @@ public class AlbumListFragmentActivity extends FragmentActivity {
     }
 
     // Custom list view item (cover image | artist/album text)
-    public static class AlbumCursorAdapter extends SimpleCursorAdapter {
+    public static class AlbumCursorAdapter extends SimpleCursorAdapter implements SectionIndexer {
 
         private Context mContext;
         private int mLayout;
         private CoverArtFetcher mCoverFetcher;
-
+        private SectionIndexer mAlphaIndexer;
         
         public AlbumCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int flags) {
             super(context, layout, cursor, from, to, flags);
@@ -108,7 +109,30 @@ public class AlbumListFragmentActivity extends FragmentActivity {
 
             mCoverFetcher.loadCoverArtAlbum(albumId, viewHolder.cover);
         }
+        
+        @Override
+        public Cursor swapCursor(Cursor cursor) {
+            // Create our indexer
+            if (cursor != null) {
+                mAlphaIndexer = new AlphabetIndexer(cursor, cursor.getColumnIndex(TrackColumns.NAME), 
+                        " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+            }
+            return super.swapCursor(cursor);
 
+        }
+
+        public int getPositionForSection(int section) {
+            return mAlphaIndexer.getPositionForSection(section);
+        }
+
+        public int getSectionForPosition(int position) {
+            return mAlphaIndexer.getSectionForPosition(position);
+        }
+
+        public Object[] getSections() {
+            return mAlphaIndexer.getSections();
+        }
+        
         // @Override
         // TODO, this is for filtered searches
         // public Cursor runQueryOnBackgroundThread(CharSequence constraint) {}
@@ -174,12 +198,20 @@ public class AlbumListFragmentActivity extends FragmentActivity {
         public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
             Log.d(TAG, "onLoadFinished: " + cursor.getCount());
             mAdapter.swapCursor(cursor);
+
+            // Enable FastScrolling
+            final ListView view = getListView();
+            view.setScrollBarStyle(ListView.SCROLLBARS_INSIDE_OVERLAY);
+            view.setFastScrollEnabled(true);
             
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            boolean isNewAccount = prefs.getBoolean(Preferences.NEW_ACCOUNT, false);
-            // Show the list once we the initial sync finishes (indicated by setting isNewAccount = false)
-            if ( ! isNewAccount ) {
-                setListShown(true);
+            Account account = SocksoAccountAuthenticator.getSocksoAccount(getActivity().getApplicationContext());
+
+            if ( account != null ) {
+                boolean isNewAccount = SocksoAccountAuthenticator.isNewAccount(account, getActivity().getApplicationContext());
+                // Show the list once the initial sync finishes (indicated by setting isNewAccount = false)
+                if ( ! isNewAccount ) {
+                    setListShown(true);
+                }
             }
         }
 
