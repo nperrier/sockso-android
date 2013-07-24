@@ -20,7 +20,7 @@
 
     <application
         android:allowBackup="false"
-        android:debuggable="true"
+        android:debuggable="true" 
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar" >
@@ -51,6 +51,8 @@
         <activity android:name=".activity.TrackListFragmentActivity" >
         </activity>
         <activity android:name=".activity.PlayerActivity" >
+        </activity>
+        <activity android:name=".activity.GenreListFragmentActivity" >
         </activity>
         <activity
             android:name=".activity.SearchActivity"

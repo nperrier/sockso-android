@@ -1,8 +1,12 @@
 package com.pugh.sockso.android.api;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,16 +18,19 @@ import android.util.Log;
 import com.pugh.sockso.android.SocksoServer;
 import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
+import com.pugh.sockso.android.music.Genre;
 import com.pugh.sockso.android.music.Track;
 
 public class SocksoAPIImpl implements SocksoAPI {
 
-	private static final String TAG = SocksoAPIImpl.class.getSimpleName();
+    private static final String TAG = SocksoAPIImpl.class.getSimpleName();
 
 	private static final String API = "api";
 	private static final String LIMIT = "limit";
 	private static final String OFFSET = "offset";
 	private static final String FROM_DATE = "fromDate";
+    private static final String FROM_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
 
 	public static final int DEFAULT_LIMIT = 100;
 	public static final int NO_LIMIT = -1;
@@ -42,6 +49,7 @@ public class SocksoAPIImpl implements SocksoAPI {
 		
 	}
 
+    
 	// Will have to only support a minimum version of Sockso (1.6.0?) server
 	private class ServerInfoAPI {
 		
@@ -57,7 +65,7 @@ public class SocksoAPIImpl implements SocksoAPI {
 		}
 	}
 
-	private class BaseAPI {
+	private static class BaseAPI {
 	    
 	    protected final String mBaseUri;
 	    
@@ -65,7 +73,7 @@ public class SocksoAPIImpl implements SocksoAPI {
 	        mBaseUri = baseApiUri;
 	    }
 	    
-	    protected String buildUriString(int limit, int offset, long from) {
+	    protected String buildUriString(int limit, int offset, Date from) {
 
             Uri.Builder b = Uri.parse(mBaseUri).buildUpon();
 
@@ -77,15 +85,19 @@ public class SocksoAPIImpl implements SocksoAPI {
                 b.appendQueryParameter(OFFSET, Integer.toString(offset));
             }
 
-            if (from != 0) {
-                b.appendQueryParameter(FROM_DATE, Long.toString(from));
+            if (from != null) {
+
+                DateFormat dateFormat = new SimpleDateFormat(FROM_DATE_FORMAT, Locale.US);
+                
+                b.appendQueryParameter(FROM_DATE, dateFormat.format(from));
+
             }
             
             return b.build().toString();
 	    }
 	}
 	
-	private class ArtistAPI extends BaseAPI {
+	private static class ArtistAPI extends BaseAPI {
 
 		public static final String ARTISTS = "artists";
 		public static final String TRACKS  = "tracks";
@@ -100,13 +112,13 @@ public class SocksoAPIImpl implements SocksoAPI {
 		}
 
 		// /api/artists?limit=<limit>&offset=<offset>
-		public String getArtists(int limit, int offset, long from) {
+		public String getArtists(int limit, int offset, Date from) {
 		    return buildUriString(limit, offset, from);
 		}
 
 		// /api/artists?limit=-1
 		public String getArtists() {
-			return getArtists(NO_LIMIT, 0, 0);
+			return getArtists(NO_LIMIT, 0, null);
 		}
 
 		// /api/artists/<id>/tracks
@@ -114,13 +126,13 @@ public class SocksoAPIImpl implements SocksoAPI {
 			return mBaseUri + "/" + id + "/" + TRACKS;
 		}
 
-        public String getArtistsFrom(long from) {
+        public String getArtistsFrom(Date from) {
             return buildUriString(NO_LIMIT, 0, from);
         }
 
 	}
 
-	private class AlbumAPI extends BaseAPI {
+	private static class AlbumAPI extends BaseAPI {
 
 		public static final String ALBUMS = "albums";
 		public static final String TRACKS = "tracks";
@@ -134,18 +146,18 @@ public class SocksoAPIImpl implements SocksoAPI {
 			return mBaseUri + "/" + id;
 		}
 
-		public String getAlbumsFrom(long from) {
+		public String getAlbumsFrom(Date from) {
             return buildUriString(NO_LIMIT, 0, from);
 		}
 		
 		// /api/albums?limit=<limit>&offset=<offset>&fromDate=<from>
-		public String getAlbums(int limit, int offset, long from) {
+		public String getAlbums(int limit, int offset, Date from) {
             return buildUriString(limit, offset, from);
 		}
 
 		// /api/albums?limit=-1
 		public String getAlbums() {
-			return getAlbums(NO_LIMIT, 0, 0);
+			return getAlbums(NO_LIMIT, 0, null);
 		}
 
 		// /api/albums/<id>/tracks
@@ -155,7 +167,7 @@ public class SocksoAPIImpl implements SocksoAPI {
 
 	}
 
-	private class TrackAPI extends BaseAPI {
+	private static class TrackAPI extends BaseAPI {
 
 		public static final String TRACKS = "tracks";
 
@@ -169,22 +181,52 @@ public class SocksoAPIImpl implements SocksoAPI {
 		}
 
 		// /api/tracks?limit=<limit>&offset=<offset>
-		public String getTracks(int limit, int offset, long from) {
+		public String getTracks(int limit, int offset, Date from) {
             return buildUriString(limit, offset, from);
 		}
 
 		// /api/tracks?limit=-1
 		public String getTracks() {
-			return getTracks(NO_LIMIT, 0, 0);
+			return getTracks(NO_LIMIT, 0, null);
 		}
 
-        public String getTracksFrom(long from) {
+        public String getTracksFrom(Date from) {
             return buildUriString(NO_LIMIT, 0, from);
         }
 
 	}
+	
+	public static class GenreAPI extends BaseAPI {
+
+	    public static final String GENRE = "genres";
+
+	    public GenreAPI(String baseApiUri) {
+	        super(baseApiUri + "/" + GENRE);
+	    }
+
+	    // /api/genres/<id>
+	    public String getGenre(final String id) {
+	        return mBaseUri + "/" + id;
+	    }
+
+	    // /api/genres?limit=<limit>&offset=<offset>
+	    public String getGenres(int limit, int offset, Date from) {
+	        return buildUriString(limit, offset, from);
+	    }
+
+	    // /api/genres?limit=-1
+	    public String getGenres() {
+	        return getGenres(NO_LIMIT, 0, null);
+	    }
+
+	    public String getGenresFrom(Date from) {
+	        return buildUriString(NO_LIMIT, 0, from);
+	    }
+
+	}
+	
 	// TODO - API method not currently supported
-	private class PlaylistAPI extends BaseAPI {
+	private static class PlaylistAPI extends BaseAPI {
 
 		private static final String PLAYLISTS = "playlists";
 		private static final String USER      = "user";
@@ -245,10 +287,10 @@ public class SocksoAPIImpl implements SocksoAPI {
 	}
 
     public List<Album> getAlbums() throws IOException, JSONException {
-        return getAlbums(0);
+        return getAlbums(null);
     }
 	
-	public List<Album> getAlbums(long from) throws IOException, JSONException {
+	public List<Album> getAlbums(Date from) throws IOException, JSONException {
 		Log.d(TAG, "getAlbums() ran");
 		
 		List<Album> albums = new ArrayList<Album>();
@@ -273,10 +315,10 @@ public class SocksoAPIImpl implements SocksoAPI {
 	}
 
     public List<Artist> getArtists() throws IOException, JSONException {
-        return getArtists(0);
+        return getArtists(null);
     }
     
-	public List<Artist> getArtists(long from) throws IOException, JSONException {
+	public List<Artist> getArtists(Date from) throws IOException, JSONException {
 		Log.d(TAG, "getArtists() ran");
 		  
 		List<Artist> artists = new ArrayList<Artist>();
@@ -301,10 +343,10 @@ public class SocksoAPIImpl implements SocksoAPI {
 	}
 	
 	public List<Track> getTracks() throws IOException, JSONException {
-	    return getTracks(0);
+	    return getTracks(null);
 	}
 	
-	public List<Track> getTracks(long from) throws IOException, JSONException {
+	public List<Track> getTracks(Date from) throws IOException, JSONException {
 		Log.d(TAG, "getTracks() ran");
 		
 		List<Track> tracks = new ArrayList<Track>();
@@ -315,5 +357,32 @@ public class SocksoAPIImpl implements SocksoAPI {
 		tracks = Track.fromJSONArray(new JSONArray(data));
 		return tracks;
 	}
+	
+	public Genre getGenre(final String id) throws IOException, JSONException {
+	    Log.d(TAG, "getGenre(id) ran");
 
+	    Genre genre = null;
+	    GenreAPI api = new GenreAPI(mBaseApiUrl);
+
+	    String data = mServer.doGet(api.getGenre(id));
+
+	    genre = Genre.fromJSON(new JSONObject(data));
+	    return genre;
+	}
+
+	public List<Genre> getGenres() throws IOException, JSONException {
+	    return getGenres(null);
+	}
+
+	public List<Genre> getGenres(Date from) throws IOException, JSONException {
+	    Log.d(TAG, "getGenres() ran");
+
+	    List<Genre> genres = new ArrayList<Genre>();
+	    GenreAPI api = new GenreAPI(mBaseApiUrl);
+
+	    String data = mServer.doGet(api.getGenresFrom(from));
+
+	    genres = Genre.fromJSONArray(new JSONArray(data));
+	    return genres;
+	}
 }

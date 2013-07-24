@@ -2,9 +2,9 @@ package com.pugh.sockso.android.activity;
 
 import java.util.ArrayList;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -17,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 
@@ -66,13 +67,16 @@ public class TabControllerActivity extends FragmentActivity {
                 .setIndicator("Albums"), AlbumListFragmentActivity.AlbumListFragment.class, null);
 
 		mTabsAdapter.addTab(mTabHost.newTabSpec("tracks").setIndicator("Tracks"),
-				TrackListFragmentActivity.TrackListFragment.class, null);
-
+				TrackListFragment.class, null);
+		
+        mTabsAdapter.addTab(mTabHost.newTabSpec("genres").setIndicator("Genres"),
+                GenreListFragmentActivity.GenreListFragment.class, null);
+        
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
 		}
 
-		Log.i(TAG, "onCreate() ended");
+		Log.d(TAG, "onCreate() ended");
 	}
 
 
@@ -205,13 +209,21 @@ public class TabControllerActivity extends FragmentActivity {
 		}
 
 	}
-	
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.library_menu, menu);
 
+        // Get the SearchView and set the searchable configuration
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.menu_item_search).getActionView();
+        
+        // Assumes current activity is the searchable activity
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+        
         return true;
     }
 

@@ -2,6 +2,7 @@ package com.pugh.sockso.android.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONException;
@@ -18,9 +19,11 @@ import com.pugh.sockso.android.api.SocksoAPI;
 import com.pugh.sockso.android.api.SocksoAPIImpl;
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
 import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
+import com.pugh.sockso.android.data.SocksoProvider.GenreColumns;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 import com.pugh.sockso.android.music.Album;
 import com.pugh.sockso.android.music.Artist;
+import com.pugh.sockso.android.music.Genre;
 import com.pugh.sockso.android.music.Track;
 
 public class MusicManager {
@@ -32,17 +35,20 @@ public class MusicManager {
     public static final String ALBUM  = "album_id";
     public static final String ARTIST = "artist_id";
     public static final String TRACK  = "track_id";
-
+    public static final String GENRE  = "genre_id";
     
     public static long syncLibrary(final Context context, long syncMarker) throws IOException, JSONException {
         Log.d(TAG, "syncLibrary() ran");
 
         SocksoAPI socksoAPI = new SocksoAPIImpl(ServerFactory.getServer(context));
 
+        Date syncDate = new Date(syncMarker);
+        
         // Grab data from server
-        List<Artist> artists = socksoAPI.getArtists(syncMarker);
-        List<Album>  albums  = socksoAPI.getAlbums(syncMarker);
-        List<Track>  tracks  = socksoAPI.getTracks(syncMarker);
+        List<Artist> artists = socksoAPI.getArtists(syncDate);
+        List<Genre>  genres  = socksoAPI.getGenres(syncDate);
+        List<Album>  albums  = socksoAPI.getAlbums(syncDate);
+        List<Track>  tracks  = socksoAPI.getTracks(syncDate);
         
         final ContentResolver resolver = context.getContentResolver();
         
@@ -51,6 +57,7 @@ public class MusicManager {
         syncArtists(artists, resolver);
         syncAlbums(albums, resolver);
         syncTracks(tracks, resolver);
+        syncGenres(genres, resolver);
         
         return newSyncMarker;
     }
@@ -118,6 +125,28 @@ public class MusicManager {
         }
     }
 
+
+    private static void syncGenres(List<Genre> genres, ContentResolver resolver) {
+        Log.d(TAG, "syncGenres() ran");
+        
+        final Uri uri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + GenreColumns.TABLE_NAME);
+        final BatchOperation batchOperation = new BatchOperation(uri, resolver);
+
+        for (final Genre genre : genres) {
+            addGenre(genre, batchOperation);
+
+            if (batchOperation.size() >= BATCH_MAX) {
+                Log.d(TAG, "syncGenres(): " + BATCH_MAX + " batched. Executing current batch...");
+                batchOperation.execute();
+            }
+        }
+
+        // add the remaining
+        if (batchOperation.size() >= 0) {
+            batchOperation.execute();
+        }
+    }
+    
     private static void addArtist(Artist artist, BatchOperation batchOperation) {
         Log.d(TAG, "addArtist() ran");
 
@@ -152,10 +181,23 @@ public class MusicManager {
         contentValues.put(TrackColumns.TRACK_NO, track.getTrackNumber());
         contentValues.put(TrackColumns.ARTIST_ID, track.getArtistId());
         contentValues.put(TrackColumns.ALBUM_ID, track.getAlbumId());
+        contentValues.put(TrackColumns.GENRE_ID, track.getGenreId());
 
         batchOperation.add(contentValues);
     }
 
+    private static void addGenre(Genre genre, BatchOperation batchOperation) {
+        Log.d(TAG, "addGenre() ran");
+
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(GenreColumns.SERVER_ID, genre.getServerId());
+        contentValues.put(GenreColumns.NAME, genre.getName());
+
+        batchOperation.add(contentValues);
+    }
+
+    
     public static Track getTrack( final ContentResolver contentResolver, long trackId ) {
         Log.d(TAG, "getTrack() called");
         

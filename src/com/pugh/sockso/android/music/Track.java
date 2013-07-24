@@ -14,6 +14,7 @@ public class Track implements MusicItem {
 	private static final String NUMBER = "number";
 	private static final String ARTIST = "artist";
 	private static final String ALBUM  = "album";
+	private static final String GENRE  = "genre";
     public static final String COVER_PREFIX = "tr";
 
 	private long id = 0; // local id
@@ -24,10 +25,13 @@ public class Track implements MusicItem {
 	private String image; // link to the cover of the track?
 	private long albumId;
 	private long artistId;
+	private long genreId;
 	//private Album album;
 	//private Artist artist;
+	//private Genre genre;
 	private String album;
 	private String artist;
+	private String genre;
 
 	public Track() {
 	}
@@ -118,6 +122,22 @@ public class Track implements MusicItem {
 		this.artistId = artistId;
 	}
 
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
+    public long getGenreId() {
+        return genreId;
+    }
+
+    public void setGenreId(long genreId) {
+        this.genreId = genreId;
+    }
+	
 	@Override
 	public String toString(){
 		return this.name;
@@ -126,6 +146,7 @@ public class Track implements MusicItem {
 	/*
 	 * "id": 497,
 	 * "name": "1nce Again",
+	 * "track_number": 4,
 	 * "album": {
 	 * 		"id":483,
 	 * 		"name":"Beats, Rhymes and Life"
@@ -133,7 +154,11 @@ public class Track implements MusicItem {
 	 * "artist": {
 	 * 		"id":483,
 	 * 		"name":"A Tribe Called Quest"
-	 * 			 }
+	 * 			 },
+	 * "genre": {
+	 *      "id":13,
+	 *      "name":"Hip-Hop"
+	 *          }
 	 */
 	
 	// Creates a single Track object from a JSONObject
@@ -157,6 +182,10 @@ public class Track implements MusicItem {
 		JSONObject albumJSON = jsonObj.getJSONObject(ALBUM);
 		track.setAlbum(albumJSON.getString(NAME));	
 		track.setAlbumId(albumJSON.getInt(ID));
+		
+		JSONObject genreJSON = jsonObj.getJSONObject(GENRE);
+		track.setGenre(genreJSON.getString(NAME));
+		track.setGenreId(genreJSON.getLong(ID));
 		
 		return track;
 	}

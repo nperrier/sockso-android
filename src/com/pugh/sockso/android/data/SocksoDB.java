@@ -2,6 +2,7 @@ package com.pugh.sockso.android.data;
 
 import com.pugh.sockso.android.data.SocksoProvider.AlbumColumns;
 import com.pugh.sockso.android.data.SocksoProvider.ArtistColumns;
+import com.pugh.sockso.android.data.SocksoProvider.GenreColumns;
 import com.pugh.sockso.android.data.SocksoProvider.SearchColumns;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 
@@ -30,6 +31,8 @@ public class SocksoDB extends SQLiteOpenHelper {
         StringBuilder albumsIndex  = new StringBuilder();
 		StringBuilder tracksTable  = new StringBuilder();
 	    StringBuilder tracksIndex  = new StringBuilder();
+	    StringBuilder genresTable  = new StringBuilder();
+        StringBuilder genresIndex  = new StringBuilder();
 		StringBuilder searchView   = new StringBuilder();
 		
 		// Artists table
@@ -43,12 +46,24 @@ public class SocksoDB extends SQLiteOpenHelper {
 		artistsIndex.append("CREATE UNIQUE INDEX ").append(ArtistColumns.TABLE_NAME).append("_")
 		            .append(ArtistColumns.SERVER_ID).append("_ui").append(" ON ")
 		            .append(ArtistColumns.TABLE_NAME).append(" (").append(ArtistColumns.SERVER_ID).append(")");
-		
+
+	    // Genres table
+        genresTable.append("CREATE TABLE ").append(GenreColumns.TABLE_NAME)
+                    .append(" (")
+                    .append(GenreColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
+                    .append(GenreColumns.SERVER_ID).append(" INTEGER NOT NULL, ")                   
+                    .append(GenreColumns.NAME).append(" TEXT NOT NULL")
+                    .append(")");
+        
+        genresIndex.append("CREATE UNIQUE INDEX ").append(GenreColumns.TABLE_NAME).append("_")
+                    .append(GenreColumns.SERVER_ID).append("_ui").append(" ON ")
+                    .append(GenreColumns.TABLE_NAME).append(" (").append(GenreColumns.SERVER_ID).append(")");
+        
 	    // Albums Table
 		albumsTable.append("CREATE TABLE ").append(AlbumColumns.TABLE_NAME)
 		           .append(" (")
 		           .append(AlbumColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-		           .append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
+		           .append(AlbumColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
 		           .append(AlbumColumns.NAME).append(" TEXT NOT NULL, ")
 		           .append(AlbumColumns.YEAR).append(" INTEGER, ")
 		           .append(AlbumColumns.ARTIST_ID).append(" INTEGER, ")
@@ -64,15 +79,18 @@ public class SocksoDB extends SQLiteOpenHelper {
 		tracksTable.append("CREATE TABLE ").append(TrackColumns.TABLE_NAME)
 		           .append(" (")
 		           .append(TrackColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
-		           .append(ArtistColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
+		           .append(TrackColumns.SERVER_ID).append(" INTEGER NOT NULL, ")
 		           .append(TrackColumns.NAME).append(" TEXT NOT NULL, ")
 		           .append(TrackColumns.TRACK_NO).append(" INTEGER, ")
 		           .append(TrackColumns.ARTIST_ID).append(" INTEGER, ")
 		           .append(TrackColumns.ALBUM_ID).append(" INTEGER, ")
+                   .append(TrackColumns.GENRE_ID).append(" INTEGER, ")
 		           .append("FOREIGN KEY(").append(TrackColumns.ARTIST_ID).append(") REFERENCES ")
 		           .append(ArtistColumns.TABLE_NAME).append("(").append(ArtistColumns._ID).append("), ")
 		           .append("FOREIGN KEY(").append(TrackColumns.ALBUM_ID).append(") REFERENCES ")
-		           .append(AlbumColumns.TABLE_NAME).append("(").append(AlbumColumns._ID).append(")")
+		           .append(AlbumColumns.TABLE_NAME).append("(").append(AlbumColumns._ID).append("), ")
+                   .append("FOREIGN KEY(").append(TrackColumns.GENRE_ID).append(") REFERENCES ")
+                   .append(GenreColumns.TABLE_NAME).append("(").append(GenreColumns._ID).append(")")
 		           .append(")");
 		
 		tracksIndex.append("CREATE UNIQUE INDEX ").append(TrackColumns.TABLE_NAME).append("_")
@@ -121,14 +139,18 @@ public class SocksoDB extends SQLiteOpenHelper {
 	    Log.i(TAG, "Creating database schema:\n" + 
 	            artistsTable + "\n" +
 	            artistsIndex + "\n" +
+	            genresTable  + "\n" +
+                genresIndex  + "\n" +
 	    		albumsTable  + "\n" +
 	    		albumsIndex  + "\n" +
 	    		tracksTable  + "\n" +
 	    		tracksIndex  + "\n" +
 	    		searchView   + "\n");
-	    
+        
         db.execSQL(artistsTable.toString());
-        db.execSQL(artistsIndex.toString());
+        db.execSQL(artistsIndex.toString());	    
+        db.execSQL(genresTable.toString());
+        db.execSQL(genresIndex.toString());
 	    db.execSQL(albumsTable.toString());
         db.execSQL(albumsIndex.toString());
 	    db.execSQL(tracksTable.toString());

@@ -1,39 +1,28 @@
 package com.pugh.sockso.android.activity;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AlphabetIndexer;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-import com.pugh.sockso.android.Preferences;
 import com.pugh.sockso.android.R;
 import com.pugh.sockso.android.data.CoverArtFetcher;
-import com.pugh.sockso.android.data.MusicManager;
-import com.pugh.sockso.android.data.SocksoProvider;
 import com.pugh.sockso.android.data.SocksoProvider.TrackColumns;
 
 public class TrackListFragmentActivity extends FragmentActivity {
 
     private static final String TAG = TrackListFragmentActivity.class.getSimpleName();
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,11 +45,12 @@ public class TrackListFragmentActivity extends FragmentActivity {
     }
 
     // Custom list view item (cover image | artist/album text)
-    public static class TrackCursorAdapter extends SimpleCursorAdapter {
+    public static class TrackCursorAdapter extends SimpleCursorAdapter implements SectionIndexer {
 
         private Context mContext;
         private int mLayout;
-        CoverArtFetcher mCoverFetcher;
+        private CoverArtFetcher mCoverFetcher;
+        private SectionIndexer mAlphaIndexer;
 
         public TrackCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int flags) {
             super(context, layout, cursor, from, to, flags);
@@ -107,87 +97,31 @@ public class TrackListFragmentActivity extends FragmentActivity {
             mCoverFetcher.loadCoverArtTrack(trackId, viewHolder.cover);
         }
 
+        @Override
+        public Cursor swapCursor(Cursor cursor) {
+            // Create our indexer
+            if (cursor != null) {
+                mAlphaIndexer = new AlphabetIndexer(cursor, cursor.getColumnIndex(TrackColumns.NAME), 
+                        " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+            }
+            return super.swapCursor(cursor);
+        }
+
+        public int getPositionForSection(int section) {
+            return mAlphaIndexer.getPositionForSection(section);
+        }
+
+        public int getSectionForPosition(int position) {
+            return mAlphaIndexer.getSectionForPosition(position);
+        }
+
+        public Object[] getSections() {
+            return mAlphaIndexer.getSections();
+        }
+        
         // @Override
         // TODO, this is for filtered searches
         // public Cursor runQueryOnBackgroundThread(CharSequence constraint) {}
     }
 
-    public static class TrackListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-
-        private final static String TAG = TrackListFragment.class.getSimpleName();
-
-        private static final int TRACK_LIST_LOADER = 1;
-
-        private TrackCursorAdapter mAdapter;
-
-        @Override
-        public void onActivityCreated(Bundle savedInstanceState) {
-            super.onActivityCreated(savedInstanceState);
-
-            String[] uiBindFrom = { TrackColumns.NAME };
-            int[] uiBindTo = { R.id.track_title_id };
-
-            mAdapter = new TrackCursorAdapter(getActivity().getApplicationContext(), R.layout.track_list_item, null,
-                    uiBindFrom, uiBindTo, 0);
-
-            setListAdapter(mAdapter);
-
-            setEmptyText(getString(R.string.no_tracks));
-            
-            // Start out with a progress indicator
-            setListShown(false);
-            
-            getLoaderManager().initLoader(TRACK_LIST_LOADER, null, this);
-        }
-
-        @Override
-        public void onSaveInstanceState(Bundle savedInstanceState) {
-            savedInstanceState.putString("bla", "Value1");
-            super.onSaveInstanceState(savedInstanceState);
-        }
-
-        @Override
-        public void onListItemClick(ListView l, View v, int position, long id) {
-            // Insert desired behavior here.
-            Log.i(TAG, "onListItemClick(): Item clicked: " + id + ", position: " + position);
-            
-            Intent intent = new Intent(getActivity(), PlayerActivity.class);
-            intent.setAction(PlayerActivity.ACTION_PLAY_TRACK);
-            intent.putExtra(MusicManager.TRACK, id);
-            
-            startActivity(intent);
-        }
-
-        @Override
-        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            Log.i(TAG, "onCreateLoader() ran");
-
-            String[] projection = { TrackColumns._ID, TrackColumns.SERVER_ID, TrackColumns.NAME,
-                    TrackColumns.ARTIST_NAME, };
-
-            Uri contentUri = Uri.parse(SocksoProvider.CONTENT_URI + "/" + TrackColumns.TABLE_NAME);
-            CursorLoader cursorLoader = new CursorLoader(getActivity(), contentUri, projection, null, null, TrackColumns.FULL_NAME + " ASC");
-
-            return cursorLoader;
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-            Log.d(TAG, "onLoadFinished: " + cursor.getCount());
-            mAdapter.swapCursor(cursor);
-            
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            boolean isNewAccount = prefs.getBoolean(Preferences.NEW_ACCOUNT, false);
-            // Show the list once we the initial sync finishes (indicated by setting isNewAccount = false)
-            if ( ! isNewAccount ) {
-                setListShown(true);
-            }
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Cursor> loader) {
-            mAdapter.swapCursor(null);
-        }
-
-    }
 }
